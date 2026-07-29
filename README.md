@@ -42,12 +42,13 @@ that endpoint never echoes configuration back.
 | `assets/fonts.css`, `assets/fonts/` | Self-hosted Newsreader and Plus Jakarta Sans. |
 | `vendor/` | Self-hosted React 18.3.1 UMD builds. |
 | `robots.txt`, `sitemap.xml`, `site.webmanifest`, `favicon.ico` | Crawler and installability files. |
-| `api/lead.js` | Vercel serverless adapter. |
-| `server.js` | Local dev / self-hosted server: static files + `/api/lead`. |
+| `api/lead.js` | Vercel serverless adapter (inert on LWS). |
+| `server.js` | The server: static files + `/api/lead`, with compression, caching and security headers. |
 | `lib/` | The backend proper — see below. |
-| `test/` | 106 tests, no dependencies (`node:test`). |
+| `test/` | 124 tests, no dependencies (`node:test`). |
 | `docs/WHATSAPP.md` | Meta credentials, the template to submit, error codes. |
 | `docs/DEPLOIEMENT.md` | Vercel and standalone deployment, production checklist. |
+| `DEPLOIEMENT_LWS.md` | **LWS deployment**: Node version, startup file, panel variables, verification. |
 
 `lib/` breaks down as `handler.js` (the endpoint, framework-agnostic),
 `validate.js` (allow-list validation), `format.js` (per-channel rendering),
@@ -59,10 +60,15 @@ that endpoint never echoes configuration back.
 
 ```sh
 cp .env.example .env          # fill in the values
-node --env-file=.env server.js
+npm start                     # server.js loads .env itself when present
 #  page → http://localhost:3000
 #  API  → POST http://localhost:3000/api/lead
 ```
+
+`PORT` is read from the environment, so a host that assigns one (LWS, Vercel)
+works with no change; 3000 is only the local fallback. There are **no npm
+dependencies** — the server uses `node:http`, `node:zlib` and `node:crypto`
+only, so `npm install` has nothing to fetch and cannot fail on the host.
 
 Without a `.env`, the page still works end to end: unconfigured channels are
 reported as *skipped*, not *failed*, so the form submits and confirms normally.
@@ -219,14 +225,19 @@ markup that contradicts the rendered content.
 
 ## Performance
 
-Measured with Lighthouse against `node server.js`:
+Measured with Lighthouse against `npm start`:
 
 | | Performance | Accessibility | Best practices | SEO |
 | --- | --- | --- | --- | --- |
-| Desktop | 98 | 100 | 100 | 100 |
-| Mobile | 72 | 100 | 100 | 100 |
+| Desktop | 100 | 100 | 100 | 100 |
+| Mobile | 78 | 100 | 100 | 100 |
 
-Desktop: FCP 0.6 s, LCP 1.0 s, TBT 0 ms, CLS 0.
+Desktop: FCP 0.5 s, LCP 0.8 s, TBT 0 ms, CLS 0.
+
+The server compresses text responses with Brotli or gzip (HTML 86 KB → 16 KB,
+`support.js` 69 KB → 17 KB), sets a year's immutable cache on `/uploads`,
+`/assets` and `/vendor`, and answers conditional requests with `304`. On Vercel
+`vercel.json` does the same job; the two need to be kept in step.
 
 The mobile figure is Lighthouse's simulated slow 4G with a 4x CPU slowdown.
 It is bounded by the page being **client-rendered**: nothing paints until
@@ -244,5 +255,5 @@ the HTML at build time is the only way past that ceiling — see
   compressed, which recovers most of the difference; Lighthouse estimates the
   remaining saving at ~150 ms on mobile. Minifying would mean adding a build
   step to what is currently a zero-dependency static deploy.
-- **The rate limiter is in-memory**, so on serverless it applies per warm
-  instance rather than globally.
+- **The rate limiter is in-memory**, so it resets on restart and, if the host
+  runs more than one process, each has its own counter.

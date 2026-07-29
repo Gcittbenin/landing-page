@@ -3,13 +3,19 @@
   "version": "1.0.0",
   "private": true,
   "description": "Landing page GCITT BENIN — Cité Cœur Joie & Cité Bethel, avec notification WhatsApp Business et email des prospects.",
+  "keywords": ["gcitt", "benin", "landing-page", "whatsapp-business", "immobilier"],
+  "license": "UNLICENSED",
   "type": "module",
+  "main": "server.js",
   "engines": {
-    "node": ">=18"
+    "node": ">=20.12.0"
   },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "node --test test/*.test.js"
-  }
+  },
+  "//dependencies": "Aucune dépendance runtime : le serveur n'utilise que les modules natifs de Node (node:http, node:zlib, node:crypto). `npm install` n'a donc rien à télécharger et ne peut pas échouer sur l'hébergement.",
+  "dependencies": {},
+  "devDependencies": {}
 }
