@@ -1,0 +1,24 @@
+/**
+ * Marketing tag IDs.
+ *
+ * These are public identifiers — they ship to the browser by design, so they
+ * belong here rather than in the server environment. Fill in the ones you use
+ * and leave the rest empty; each tag only loads when its ID is present, so an
+ * unconfigured tag costs nothing and makes no network request.
+ */
+window.GCITT_TRACKING = {
+  // Google Analytics 4 — "G-XXXXXXXXXX"
+  ga4: '',
+
+  // Google Tag Manager — "GTM-XXXXXXX"
+  // If you route GA4 and Meta Pixel through GTM, set this and leave the other
+  // two empty to avoid double-counting.
+  gtm: '',
+
+  // Meta Pixel — the numeric pixel ID
+  metaPixel: '',
+
+  // Log every event to the console. Turn on to verify the wiring before the
+  // real IDs exist; leave off in production.
+  debug: false,
+};

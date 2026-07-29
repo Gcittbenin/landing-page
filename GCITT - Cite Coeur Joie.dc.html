@@ -4,6 +4,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="support.js"></script>
 
+<!-- Marketing tags. IDs live in assets/tracking-config.js; each tag only
+     loads once its ID is filled in, so this is inert until then. -->
+<script src="assets/tracking-config.js"></script>
+<script src="assets/tracking.js"></script>
+
 
 
 
@@ -317,7 +322,7 @@ a:hover{color:#d21f2d}
           <div style="display:flex;align-items:center;gap:10px"><span style="color:#8fb3e8">{{ checkIcon }}</span><span style="font-size:14px;color:#e3ecf9;font-weight:600">{{ rt }}</span></div>
         </sc-for>
       </div>
-      <a href="{{ waConsultHref }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:10px;margin-top:30px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:700;font-size:14px;padding:13px 20px;border-radius:9px">{{ whatsappIcon }}Parler à un conseiller sur WhatsApp</a>
+      <a href="{{ waConsultHref }}" target="_blank" rel="noopener" sc-camel-on-click="{{ trackWaConsult }}" style="display:inline-flex;align-items:center;gap:10px;margin-top:30px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:700;font-size:14px;padding:13px 20px;border-radius:9px">{{ whatsappIcon }}Parler à un conseiller sur WhatsApp</a>
     </div>
     <div style="background:#fff;border-radius:18px;padding:36px 38px">
       <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
@@ -327,7 +332,7 @@ a:hover{color:#d21f2d}
           <p style="font-size:14.5px;color:#5b6472;margin:0 0 30px;line-height:1.6">Votre demande a bien été reçue. Un conseiller GCITT prendra contact avec vous dans les meilleurs délais.</p>
           <div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">
             <button sc-camel-on-click="{{ downloadIcs }}" style="background:#12305c;color:#fff;font-weight:700;font-size:14.5px;padding:14px 20px;border:none;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;font-family:inherit">📅 Ajouter un rendez-vous</button>
-            <a href="{{ waContinueHref }}" target="_blank" rel="noopener" style="background:#1fa855;color:#fff;font-weight:700;font-size:14.5px;padding:14px 20px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:9px">💬 Continuer sur WhatsApp</a>
+            <a href="{{ waContinueHref }}" target="_blank" rel="noopener" sc-camel-on-click="{{ trackWaContinue }}" style="background:#1fa855;color:#fff;font-weight:700;font-size:14.5px;padding:14px 20px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:9px">💬 Continuer sur WhatsApp</a>
           </div>
         </div>
       </sc-if>
@@ -337,17 +342,17 @@ a:hover{color:#d21f2d}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Nom complet</label>
-            <input required="" value="{{ form.name }}" sc-camel-on-change="{{ nameHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit">
+            <input required="" name="name" autocomplete="name" value="{{ form.name }}" sc-camel-on-change="{{ nameHandler }}" style="{{ nameErrorStyle }}">
           </div>
           <div>
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Email</label>
-            <input required="" type="email" value="{{ form.email }}" sc-camel-on-change="{{ emailHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit">
+            <input required="" type="email" name="email" autocomplete="email" value="{{ form.email }}" sc-camel-on-change="{{ emailHandler }}" style="{{ emailErrorStyle }}">
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Numéro WhatsApp</label>
-            <input required="" value="{{ form.phone }}" sc-camel-on-change="{{ phoneHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit">
+            <input required="" type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+229 01 67 21 21 28" value="{{ form.phone }}" sc-camel-on-change="{{ phoneHandler }}" style="{{ phoneErrorStyle }}">
           </div>
           <div>
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Pays de résidence</label>
@@ -357,6 +362,25 @@ a:hover{color:#d21f2d}
               <option value="Belgique">Belgique</option>
               <option value="Canada">Canada</option>
               <option value="Etats-Unis">États-Unis</option>
+              <option value="Autre">Autre</option>
+            </sc-raw-select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+          <div>
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Cité souhaitée</label>
+            <sc-raw-select value="{{ form.cite }}" sc-camel-on-change="{{ citeHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+              <option value="">Sélectionner</option>
+              <option value="Cœur Joie">Cité Cœur Joie</option>
+              <option value="Bethel">Cité Bethel</option>
+            </sc-raw-select>
+          </div>
+          <div>
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Type de villa</label>
+            <sc-raw-select value="{{ form.villaType }}" sc-camel-on-change="{{ villaTypeHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+              <option value="">Sélectionner</option>
+              <option value="F4">F4</option>
+              <option value="Duplex">Duplex</option>
               <option value="Autre">Autre</option>
             </sc-raw-select>
           </div>
@@ -400,7 +424,18 @@ a:hover{color:#d21f2d}
           <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Votre message (optionnel)</label>
           <textarea value="{{ form.message }}" sc-camel-on-change="{{ messageHandler }}" rows="3" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;resize:vertical"></textarea>
         </div>
-        <button type="submit" style="width:100%;background:#d21f2d;color:#fff;font-weight:700;font-size:15.5px;padding:16px;border:none;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px">Je réserve mon rendez-vous {{ arrowIcon }}</button>
+
+        <!-- Honeypot. Hidden from people and from screen readers; bots fill it
+             in and the server then discards the submission. -->
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">
+          <label>Ne pas remplir<input type="text" name="website" tabindex="-1" autocomplete="off" value="{{ form.website }}" sc-camel-on-change="{{ websiteHandler }}"></label>
+        </div>
+
+        <sc-if value="{{ hasFormError }}" hint-placeholder-val="{{ false }}">
+          <div role="alert" style="background:#fdecee;border:1px solid #f3b8be;color:#a3151f;border-radius:9px;padding:13px 16px;font-size:13.5px;line-height:1.5;margin-bottom:14px">{{ formError }}</div>
+        </sc-if>
+
+        <button type="submit" disabled="{{ submitDisabled }}" style="{{ submitStyle }}">{{ submitLabel }} {{ arrowIcon }}</button>
         <div style="text-align:center;font-size:12.5px;color:#8792a3;margin-top:14px">Réponse sous 24h · Confidentialité garantie</div>
       </form>
       </sc-if>
@@ -460,7 +495,7 @@ a:hover{color:#d21f2d}
           <span>contact@gcitt.com</span>
           <span>www.gcitt.com</span>
         </div>
-        <a href="{{ waFloatingHref }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#1fa855;color:#fff;font-weight:700;font-size:13.5px;padding:11px 18px;border-radius:8px;margin-top:16px">{{ whatsappIcon }}Nous écrire sur WhatsApp</a>
+        <a href="{{ waFloatingHref }}" target="_blank" rel="noopener" sc-camel-on-click="{{ trackWaFooter }}" style="display:inline-flex;align-items:center;gap:8px;background:#1fa855;color:#fff;font-weight:700;font-size:13.5px;padding:11px 18px;border-radius:8px;margin-top:16px">{{ whatsappIcon }}Nous écrire sur WhatsApp</a>
       </div>
     </div>
     <div style="display:flex;justify-content:space-between;padding-top:24px;font-size:12.5px;color:#7c8bab;flex-wrap:wrap;gap:12px">
@@ -470,7 +505,7 @@ a:hover{color:#d21f2d}
   </div>
 </footer>
 
-<a href="{{ waFloatingHref }}" target="_blank" rel="noopener" aria-label="Discuter sur WhatsApp" style="position:fixed;bottom:26px;right:26px;width:60px;height:60px;border-radius:50%;background:#1fa855;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 28px rgba(31,168,85,0.45);z-index:60">{{ whatsappFloatIcon }}</a>
+<a href="{{ waFloatingHref }}" target="_blank" rel="noopener" sc-camel-on-click="{{ trackWaFloating }}" aria-label="Discuter sur WhatsApp" style="position:fixed;bottom:26px;right:26px;width:60px;height:60px;border-radius:50%;background:#1fa855;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 28px rgba(31,168,85,0.45);z-index:60">{{ whatsappFloatIcon }}</a>
 
 </div>
 
@@ -511,8 +546,22 @@ class Component extends DCLogic {
     expandedVilla: null,
     openFaq: 0,
     submitted: false,
-    form: { name: '', email: '', phone: '', country: '', villa: '', delai: '', budget: '', message: '' }
+    submitting: false,
+    formError: '',
+    fieldErrors: {},
+    startedTracked: false,
+    // `website` is a honeypot: hidden from people, irresistible to bots. Any
+    // value in it means the submission is discarded server-side.
+    form: {
+      name: '', email: '', phone: '', country: '', cite: '', villa: '', villaType: '',
+      delai: '', budget: '', message: '', website: ''
+    }
   };
+
+  // Used server-side to reject submissions completed faster than a human can
+  // type. Set at mount rather than at first keystroke so a bot that skips the
+  // fields entirely is still caught.
+  formOpenedAt = Date.now();
 
   icon = (name) => React.createElement('span', { dangerouslySetInnerHTML: { __html: ICONS[name] }, style: { display: 'flex' } });
 
@@ -547,27 +596,97 @@ class Component extends DCLogic {
     this.setState(s => ({ expandedVilla: s.expandedVilla === id ? null : id }));
   };
 
+  // Red border on a field the server rejected.
+  fieldStyle = (name) => {
+    const invalid = !!this.state.fieldErrors[name];
+    return {
+      width: '100%', padding: '12px 14px',
+      border: '1.5px solid ' + (invalid ? '#d21f2d' : '#dfe3ea'),
+      borderRadius: '8px', fontSize: '14px', fontFamily: 'inherit'
+    };
+  };
+
   toggleFaq = (i) => {
     this.setState(s => ({ openFaq: s.openFaq === i ? -1 : i }));
   };
 
+  // Which cité and villa type each catalogue entry belongs to. Mirrors
+  // VILLA_INDEX in lib/validate.js, which re-derives these server-side rather
+  // than trusting what the browser sends.
+  static VILLA_INDEX = {
+    'Villa Fenou (F4)': { cite: 'Cœur Joie', villaType: 'F4' },
+    'Villa Kafui (Duplex)': { cite: 'Cœur Joie', villaType: 'Duplex' },
+    'Villa Bethel (F4)': { cite: 'Bethel', villaType: 'F4' },
+    'Villa Bethel (Duplex)': { cite: 'Bethel', villaType: 'Duplex' }
+  };
+
+  track = (name, params) => {
+    if (typeof window.gcittTrack === 'function') window.gcittTrack(name, params);
+  };
+
+  // Fires once per visit, on the first interaction with the form.
+  trackFormStart = () => {
+    if (this.state.startedTracked) return;
+    this.setState({ startedTracked: true });
+    this.track('form_start');
+  };
+
+  trackWhatsApp = (location) => () => {
+    this.track('whatsapp_click', { location });
+  };
+
   onChooseVilla = (villaName) => {
-    this.setState(s => ({ form: { ...s.form, villa: villaName || s.form.villa } }));
+    if (!villaName) return;
+    const derived = Component.VILLA_INDEX[villaName] || {};
+    this.setState(s => ({
+      form: { ...s.form, villa: villaName, cite: derived.cite || s.form.cite, villaType: derived.villaType || s.form.villaType }
+    }));
+    this.track('select_item', { item_name: villaName });
   };
 
   fieldHandler = (name) => (e) => {
     const value = e.target.value;
-    this.setState(s => ({ form: { ...s.form, [name]: value } }));
+    this.trackFormStart();
+    this.setState(s => {
+      const form = { ...s.form, [name]: value };
+      // Picking a villa in the form implies its cité and type, the same way
+      // clicking "Choisir cette villa" on a card does.
+      if (name === 'villa') {
+        const derived = Component.VILLA_INDEX[value];
+        if (derived) Object.assign(form, derived);
+      }
+      // Clear the field's error as soon as the prospect edits it.
+      const fieldErrors = { ...s.fieldErrors };
+      delete fieldErrors[name];
+      return { form, fieldErrors };
+    });
   };
 
-  // Intégration prévue côté backend : ce payload doit déclencher un e-mail interne + une notification
-  // WhatsApp Business vers l'équipe commerciale GCITT, et être enregistré dans un CRM.
+  // The payload POSTed to /api/lead, which notifies the sales team by
+  // WhatsApp Business and email and forwards to the CRM. No API key or token
+  // is involved here: the browser only ever talks to our own endpoint.
   buildNotificationPayload = () => {
     const f = this.state.form;
+    const attribution = window.gcittAttribution || {};
     return {
-      nom: f.name, pays: f.country, whatsapp: f.phone, email: f.email,
-      villa: f.villa, budget: f.budget, delai: f.delai, message: f.message,
-      date: new Date().toISOString(), source: 'Landing Page Cité Cœur Joie / Bethel'
+      name: f.name,
+      email: f.email,
+      phone: f.phone,
+      country: f.country,
+      cite: f.cite,
+      villa: f.villa,
+      villaType: f.villaType,
+      delai: f.delai,
+      budget: f.budget,
+      message: f.message,
+      // Acquisition channel, resolved from UTM tags, ad click IDs or referrer.
+      source: attribution.source || 'Direct',
+      sourceDetail: attribution.detail || '',
+      pageUrl: window.location.href,
+      // Anti-spam. The server re-derives the submission time itself; this only
+      // says how long the form was open.
+      formOpenedAt: this.formOpenedAt,
+      website: f.website
     };
   };
 
@@ -596,9 +715,59 @@ class Component extends DCLogic {
     URL.revokeObjectURL(url);
   };
 
-  handleSubmit = (e) => {
+  handleSubmit = async (e) => {
     e.preventDefault();
-    this.setState({ submitted: true });
+    if (this.state.submitting) return;
+
+    const f = this.state.form;
+    this.setState({ submitting: true, formError: '', fieldErrors: {} });
+    this.track('form_submit', { villa: f.villa, cite: f.cite, source: (window.gcittAttribution || {}).source });
+
+    try {
+      const res = await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(this.buildNotificationPayload())
+      });
+
+      let data = {};
+      try { data = await res.json(); } catch (err) { data = {}; }
+
+      if (res.ok && data.ok) {
+        this.setState({ submitted: true, submitting: false });
+        // The conversion event. GA4 recommended name; maps to the Meta Pixel
+        // standard "Lead" event in assets/tracking.js.
+        this.track('generate_lead', {
+          villa: f.villa,
+          cite: f.cite,
+          villa_type: f.villaType,
+          source: (window.gcittAttribution || {}).source,
+          currency: 'XOF',
+          value: 1
+        });
+        return;
+      }
+
+      if (res.status === 422 && data.fields) {
+        this.setState({
+          submitting: false,
+          fieldErrors: data.fields,
+          formError: 'Merci de corriger les champs indiqués.'
+        });
+        return;
+      }
+
+      this.setState({
+        submitting: false,
+        formError: data.error || "L'envoi a échoué. Merci de réessayer ou de nous écrire sur WhatsApp."
+      });
+    } catch (err) {
+      // Network failure, offline, endpoint unreachable.
+      this.setState({
+        submitting: false,
+        formError: "Connexion impossible. Vérifiez votre connexion internet ou écrivez-nous sur WhatsApp."
+      });
+    }
   };
 
   renderVals() {
@@ -737,11 +906,38 @@ class Component extends DCLogic {
       emailHandler: this.fieldHandler('email'),
       phoneHandler: this.fieldHandler('phone'),
       countryHandler: this.fieldHandler('country'),
+      citeHandler: this.fieldHandler('cite'),
       villaHandler: this.fieldHandler('villa'),
+      villaTypeHandler: this.fieldHandler('villaType'),
       delaiHandler: this.fieldHandler('delai'),
       budgetHandler: this.fieldHandler('budget'),
       messageHandler: this.fieldHandler('message'),
-      waFloatingHref: 'https://wa.me/2290167212128?text=' + encodeURIComponent("Bonjour, je souhaite obtenir des informations concernant les villas de la Cité Cœur Joie. Je réside actuellement à : \n\nMerci."),
+      websiteHandler: this.fieldHandler('website'),
+
+      submitting: s.submitting,
+      submitLabel: s.submitting ? 'Envoi en cours…' : 'Je réserve mon rendez-vous',
+      submitDisabled: s.submitting,
+      submitStyle: {
+        width: '100%', background: s.submitting ? '#9aa4b4' : '#d21f2d', color: '#fff',
+        fontWeight: 700, fontSize: '15.5px', padding: '16px', border: 'none', borderRadius: '9px',
+        cursor: s.submitting ? 'progress' : 'pointer', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', gap: '9px', fontFamily: 'inherit',
+        transition: 'background 0.2s ease'
+      },
+      formError: s.formError,
+      hasFormError: !!s.formError,
+      nameErrorStyle: this.fieldStyle('name'),
+      emailErrorStyle: this.fieldStyle('email'),
+      phoneErrorStyle: this.fieldStyle('phone'),
+
+      trackWaConsult: this.trackWhatsApp('section_rdv'),
+      trackWaFooter: this.trackWhatsApp('footer'),
+      trackWaFloating: this.trackWhatsApp('bouton_flottant'),
+      trackWaContinue: this.trackWhatsApp('confirmation'),
+
+      // Prefilled WhatsApp conversations. The floating button uses the generic
+      // enquiry wording; the other two are contextual.
+      waFloatingHref: 'https://wa.me/2290167212128?text=' + encodeURIComponent("Bonjour GCITT, je souhaite obtenir des informations sur vos villas disponibles."),
       waConsultHref: 'https://wa.me/2290167212128?text=' + encodeURIComponent("Bonjour, je souhaite parler à un conseiller GCITT au sujet d'un projet de construction."),
       waContinueHref: 'https://wa.me/2290167212128?text=' + encodeURIComponent('Bonjour, je viens de faire une demande de rendez-vous sur le site GCITT' + (s.form.name ? ' (' + s.form.name + ')' : '') + (s.form.villa ? ' pour la ' + s.form.villa : '') + '. Merci de me recontacter.'),
 
