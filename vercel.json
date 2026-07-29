@@ -1,5 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     { "source": "/", "destination": "/GCITT - Cite Coeur Joie.dc.html" }
   ],
@@ -9,8 +11,35 @@
       "headers": [{ "key": "Cache-Control", "value": "no-store" }]
     },
     {
+      "comment": "Content-addressed by filename; safe to cache for a year. Rename the file to bust it.",
       "source": "/uploads/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "comment": "Version-pinned React build; the filename changes on upgrade.",
+      "source": "/vendor/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/favicon.ico",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
+    },
+    {
+      "comment": "The page itself must revalidate so edits go live immediately.",
+      "source": "/(.*).dc.html",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/support.js",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
+    },
+    {
+      "source": "/(robots.txt|sitemap.xml|site.webmanifest)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
     },
     {
       "source": "/(.*)",
@@ -18,7 +47,8 @@
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains" }
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+        { "key": "Permissions-Policy", "value": "geolocation=(), microphone=(), camera=(), payment=()" }
       ]
     }
   ]

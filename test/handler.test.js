@@ -235,3 +235,68 @@ test('clientIp prefers the leftmost X-Forwarded-For entry', () => {
   assert.equal(clientIp({ 'x-real-ip': '198.51.100.4' }), '198.51.100.4');
   assert.equal(clientIp({}), 'unknown');
 });
+
+test('the prospect confirmation is sent alongside the internal alerts', async () => {
+  const fetchImpl = okFetch();
+  const res = await handleLead(post(validBody), { env: ENV, fetchImpl });
+
+  assert.equal(res.body.delivered.confirmation, true);
+  // Meta once, sales email once, prospect confirmation once.
+  assert.equal(fetchImpl.calls.length, 3);
+  const recipients = fetchImpl.calls.filter((c) => c.url.includes('resend')).map((c) => c.body.to);
+  assert.deepEqual(recipients.sort(), [['awa@example.com'], ['commercial@gcitt.com']].sort());
+});
+
+test('a failed confirmation does not fail the submission', async () => {
+  // The prospect's mailbox bounces, but the sales team was still alerted, so
+  // the prospect must not be shown an error.
+  const fetchImpl = async (url, options) => {
+    const body = JSON.parse(options.body);
+    const isConfirmation = url.includes('resend') && body.to?.[0] === 'awa@example.com';
+    return {
+      ok: !isConfirmation,
+      status: isConfirmation ? 422 : 200,
+      headers: { get: () => null },
+      text: async () => JSON.stringify(
+        isConfirmation ? { message: 'Invalid recipient' } : { messages: [{ id: 'm' }], id: 'e' }),
+    };
+  };
+
+  const res = await handleLead(post(validBody), { env: ENV, fetchImpl });
+  assert.equal(res.status, 200, 'a bounced acknowledgement must not surface as an error');
+  assert.equal(res.body.ok, true);
+  assert.equal(res.body.delivered.confirmation, false);
+  assert.equal(res.body.delivered.email, true);
+});
+
+test('UTM parameters reach the notification channels', async () => {
+  const fetchImpl = okFetch();
+  await handleLead(
+    post({
+      ...validBody,
+      source: 'TikTok',
+      utmSource: 'tiktok',
+      utmMedium: 'cpc',
+      utmCampaign: 'diaspora_juillet',
+      utmContent: 'video_a',
+      utmTerm: 'villa benin',
+      clickId: 'ttclid=ABC123',
+    }),
+    { env: ENV, fetchImpl },
+  );
+
+  const salesEmail = fetchImpl.calls.find(
+    (c) => c.url.includes('resend') && c.body.to[0] === 'commercial@gcitt.com');
+  for (const expected of ['tiktok', 'cpc', 'diaspora_juillet', 'video_a', 'ttclid=ABC123']) {
+    assert.ok(salesEmail.body.text.includes(expected), `missing ${expected} from the sales email`);
+  }
+});
+
+test('empty UTM rows are omitted for a direct visitor', async () => {
+  const fetchImpl = okFetch();
+  await handleLead(post(validBody), { env: ENV, fetchImpl });
+  const salesEmail = fetchImpl.calls.find(
+    (c) => c.url.includes('resend') && c.body.to[0] === 'commercial@gcitt.com');
+  assert.ok(!salesEmail.body.text.includes('utm_medium'), 'blank UTM rows should be dropped');
+  assert.ok(salesEmail.body.text.includes('Source d’acquisition : Direct'));
+});

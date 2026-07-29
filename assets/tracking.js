@@ -85,6 +85,10 @@
     whatsapp_click: 'Contact',
   };
 
+  // Sent to GA4 and the dataLayer but not to the Pixel: scroll milestones are
+  // volume without signal for ad optimisation, and they burn Pixel event quota.
+  var GA_ONLY = { scroll: true };
+
   /**
    * Send one event to every configured destination.
    *
@@ -111,7 +115,7 @@
       window.gtag('event', name, data);
     }
 
-    if (cfg.metaPixel && typeof window.fbq === 'function') {
+    if (cfg.metaPixel && typeof window.fbq === 'function' && !GA_ONLY[name]) {
       var standard = META_STANDARD[name];
       if (standard) window.fbq('track', standard, data);
       else window.fbq('trackCustom', name, data);
@@ -156,26 +160,59 @@
 
   var STORAGE_KEY = 'gcitt_attribution';
 
+  var CLICK_ID_PARAMS = [
+    ['gclid', 'google'],
+    ['gbraid', 'google'],
+    ['wbraid', 'google'],
+    ['fbclid', 'facebook'],
+    ['ttclid', 'tiktok'],
+    ['li_fat_id', 'linkedin'],
+    ['msclkid', 'bing'],
+  ];
+
   function detectAttribution() {
     var params = new URLSearchParams(window.location.search);
-    var utmSource = (params.get('utm_source') || '').toLowerCase().trim();
-    var utmMedium = (params.get('utm_medium') || '').trim();
-    var utmCampaign = (params.get('utm_campaign') || '').trim();
+    var get = function (name) {
+      return (params.get(name) || '').trim();
+    };
 
-    // Ad-platform click IDs are proof of paid traffic even with no UTM tags.
-    if (!utmSource) {
-      if (params.get('gclid')) utmSource = 'google';
-      else if (params.get('fbclid')) utmSource = 'facebook';
-      else if (params.get('ttclid')) utmSource = 'tiktok';
+    var utmSource = get('utm_source').toLowerCase();
+    var utmMedium = get('utm_medium');
+    var utmCampaign = get('utm_campaign');
+    var utmContent = get('utm_content');
+    var utmTerm = get('utm_term');
+
+    // Ad-platform click IDs are proof of paid traffic even with no UTM tags,
+    // and they are what the ad account needs for offline conversion import.
+    var clickId = '';
+    for (var c = 0; c < CLICK_ID_PARAMS.length; c++) {
+      var value = get(CLICK_ID_PARAMS[c][0]);
+      if (value) {
+        clickId = CLICK_ID_PARAMS[c][0] + '=' + value;
+        if (!utmSource) utmSource = CLICK_ID_PARAMS[c][1];
+        break;
+      }
     }
 
+    var utm = {
+      utmSource: utmSource,
+      utmMedium: utmMedium,
+      utmCampaign: utmCampaign,
+      utmContent: utmContent,
+      utmTerm: utmTerm,
+      clickId: clickId,
+    };
+
     if (utmSource) {
-      var detail = ['utm_source=' + utmSource];
+      var detail = [];
       if (utmMedium) detail.push('utm_medium=' + utmMedium);
       if (utmCampaign) detail.push('utm_campaign=' + utmCampaign);
+      if (utmContent) detail.push('utm_content=' + utmContent);
+      if (clickId) detail.push(clickId.split('=')[0]);
       return {
         source: UTM_LABELS[utmSource] || utmSource.charAt(0).toUpperCase() + utmSource.slice(1),
-        detail: detail.join(' · '),
+        detail: detail.join(' · ') || 'utm_source=' + utmSource,
+        utm: utm,
       };
     }
 
@@ -190,13 +227,15 @@
       // A referrer from our own domain is internal navigation, not a source.
       if (host && host !== window.location.hostname) {
         for (var i = 0; i < REFERRERS.length; i++) {
-          if (REFERRERS[i][0].test(host)) return { source: REFERRERS[i][1], detail: host };
+          if (REFERRERS[i][0].test(host)) {
+            return { source: REFERRERS[i][1], detail: host, utm: utm };
+          }
         }
-        return { source: 'Référent', detail: host };
+        return { source: 'Référent', detail: host, utm: utm };
       }
     }
 
-    return { source: 'Direct', detail: '' };
+    return { source: 'Direct', detail: '', utm: utm };
   }
 
   function loadAttribution() {
@@ -224,4 +263,50 @@
   }
 
   window.gcittAttribution = loadAttribution();
+
+  /**
+   * Scroll depth.
+   *
+   * GA4's enhanced measurement only reports a single 90% milestone. Four
+   * thresholds give a usable drop-off curve for a long landing page, which is
+   * what tells you whether prospects ever reach the form.
+   *
+   * Each threshold fires at most once per page view. The listener is passive
+   * and rAF-throttled so it never blocks scrolling, and it detaches itself
+   * once the deepest threshold is reached.
+   */
+  (function trackScrollDepth() {
+    var thresholds = [25, 50, 75, 90];
+    var fired = {};
+    var ticking = false;
+
+    function measure() {
+      ticking = false;
+      var doc = document.documentElement;
+      var scrollable = doc.scrollHeight - window.innerHeight;
+      if (scrollable <= 0) return;
+
+      var percent = ((window.scrollY || doc.scrollTop) / scrollable) * 100;
+      for (var i = 0; i < thresholds.length; i++) {
+        var t = thresholds[i];
+        if (percent >= t && !fired[t]) {
+          fired[t] = true;
+          // GA4's reserved parameter name for its own scroll event.
+          window.gcittTrack('scroll', { percent_scrolled: t });
+        }
+      }
+      if (fired[90]) window.removeEventListener('scroll', onScroll);
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(measure);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // A short page, or one restored mid-scroll, may already be past a
+    // threshold before the first scroll event.
+    measure();
+  })();
 })();

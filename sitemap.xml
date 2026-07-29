@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://nos-villas.gcitt.com/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://nos-villas.gcitt.com/uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20.jpg</image:loc>
+      <image:title>Rangée de villas à la Cité Cœur Joie, Abomey-Calavi</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nos-villas.gcitt.com/uploads/Image%20COEUR-JOIE/FENOU%20HEVIEE.jpg</image:loc>
+      <image:title>Villa Fenou F4 — Cité Cœur Joie</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nos-villas.gcitt.com/uploads/Image%20COEUR-JOIE/DUPLEX%20CJ%20.jpg</image:loc>
+      <image:title>Villa Kafui Duplex — Cité Cœur Joie</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nos-villas.gcitt.com/uploads/bethel-f4.png</image:loc>
+      <image:title>Villa Bethel F4 — Cité Bethel</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nos-villas.gcitt.com/uploads/bethel-duplex.png</image:loc>
+      <image:title>Villa Bethel Duplex — Cité Bethel</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nos-villas.gcitt.com/uploads/Image%20COEUR-JOIE/FENOU-SEJOUR.jpg</image:loc>
+      <image:title>Séjour d'une villa Fenou F4</image:title>
+    </image:image>
+  </url>
+</urlset>

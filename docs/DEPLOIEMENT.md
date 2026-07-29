@@ -109,3 +109,88 @@ createRateLimiter({
 
 Un `store` adossé à Redis (Upstash, par exemple) suffit ; rien d'autre dans le
 code n'a besoin de changer.
+
+---
+
+## Mise en ligne sur https://nos-villas.gcitt.com
+
+### 1. DNS
+
+Ajoutez le sous-domaine chez votre registrar, puis dans **Vercel → Project →
+Settings → Domains**, ajoutez `nos-villas.gcitt.com`. Vercel affiche
+l'enregistrement à créer :
+
+```
+CNAME   nos-villas   cname.vercel-dns.com.
+```
+
+Le certificat TLS est émis automatiquement une fois la propagation faite
+(quelques minutes à quelques heures selon le TTL).
+
+### 2. Variables d'environnement
+
+Toutes dans **Settings → Environment Variables**, scope *Production*. Voir
+`.env.example` pour la liste commentée.
+
+Obligatoires pour que les notifications fonctionnent :
+
+| Variable | Remarque |
+| --- | --- |
+| `META_WHATSAPP_TOKEN` | Token d'utilisateur système **permanent** |
+| `META_PHONE_NUMBER_ID` | WhatsApp → Configuration de l'API |
+| `META_BUSINESS_ACCOUNT_ID` | idem |
+| `META_WHATSAPP_TEMPLATE_NAME` | `gcitt_nouveau_prospect`, après approbation Meta |
+| `GCITT_SALES_WHATSAPP` | `2290167212128` |
+| `EMAIL_API_KEY` | Resend ou SendGrid |
+| `EMAIL_DESTINATION` | boîte commerciale réellement relevée |
+| `EMAIL_FROM` | domaine **vérifié** chez le fournisseur |
+| `ALLOWED_ORIGINS` | `https://nos-villas.gcitt.com` |
+| `SITE_URL` | `https://nos-villas.gcitt.com` |
+
+### 3. Après le premier déploiement
+
+1. **Search Console** — ajoutez la propriété `nos-villas.gcitt.com`, soumettez
+   `https://nos-villas.gcitt.com/sitemap.xml`, demandez l'indexation.
+2. **Rich Results Test** — https://search.google.com/test/rich-results sur
+   l'URL, pour valider les données structurées en conditions réelles.
+3. **Partage social** — passez l'URL dans le
+   [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/),
+   le [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) et
+   le validateur X. Ces outils mettent l'aperçu en cache : si vous changez
+   l'image ou le titre plus tard, il faudra les rafraîchir manuellement.
+4. **Prospect de test** — soumettez le formulaire et vérifiez les trois
+   arrivées : WhatsApp sur la ligne commerciale, email interne, email de
+   confirmation au prospect.
+5. **Tracking** — renseignez les identifiants dans
+   `assets/tracking-config.js`, redéployez, puis vérifiez dans GA4 (Temps réel)
+   et dans le Meta Events Manager que `generate_lead` / `Lead` remonte bien.
+
+### 4. Si le domaine sert aussi depuis un autre hébergeur
+
+Le contrôle d'origine du endpoint rejette toute requête dont l'en-tête `Origin`
+ne correspond pas à l'hôte. Si la page est servie depuis un domaine différent
+de l'API, listez-le dans `ALLOWED_ORIGINS`, sinon les soumissions renverront
+`403`.
+
+---
+
+## Limitation connue : rendu côté client
+
+La page est un document `dc-runtime` : rien ne s'affiche tant que `support.js`
+et React (~197 Ko) ne sont pas téléchargés et exécutés. C'est ce qui plafonne
+le score Lighthouse mobile autour de 72 malgré toutes les optimisations
+(images `srcset`, polices et React auto-hébergés, préchargement du LCP,
+chargement différé sous la ligne de flottaison).
+
+Le seul moyen de dépasser ce plafond est de **pré-rendre le HTML** au moment du
+build : charger la page dans un navigateur headless, sérialiser le DOM obtenu,
+et servir ce HTML statique en laissant `support.js` réhydrater ensuite. Cela
+améliorerait aussi l'indexation du contenu dynamique (cartes villas, réponses
+FAQ), aujourd'hui absent du HTML servi. Ce n'est pas mis en place ici parce que
+cela transforme un déploiement statique sans dépendance en un déploiement avec
+étape de build.
+
+À noter : le contenu **statique** de la page (titre H1, textes des sections,
+navigation, coordonnées du pied de page) est bien présent dans le HTML servi,
+puisqu'il est écrit en dur dans le template. Seules les données injectées par
+`renderVals()` dépendent de JavaScript.

@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# The lead endpoint is not content — keep it out of the index.
+Disallow: /api/
+
+# Social preview crawlers. Listed explicitly so the Open Graph and Twitter
+# Card tags are always reachable, whatever a future Disallow rule adds.
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+Sitemap: https://nos-villas.gcitt.com/sitemap.xml

@@ -1,13 +1,322 @@
 <!DOCTYPE html>
-<html><head>
+<html lang="fr"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="support.js"></script>
+
+<!-- ─────────────────────────────────────────────────────────────────────────
+     SEO, Open Graph and structured data.
+
+     These live in the static <head>, deliberately NOT in the <helmet> block
+     inside <x-dc>: helmet content is injected by the runtime once React has
+     mounted, and the crawlers for Facebook, LinkedIn, WhatsApp and X do not
+     execute JavaScript. Anything they must read has to be in the served HTML.
+     ───────────────────────────────────────────────────────────────────────── -->
+
+<title>Villas à vendre au Bénin | Cités Cœur Joie &amp; Bethel - GCITT BENIN</title>
+<meta name="description" content="Découvrez les villas GCITT BENIN dans les cités Cœur Joie et Bethel : villas F4 et duplex modernes au Bénin, avec accompagnement personnalisé, solutions de paiement adaptées et réservation sécurisée.">
+
+<link rel="canonical" href="https://nos-villas.gcitt.com/">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="googlebot" content="index, follow">
+<meta name="author" content="GCITT BENIN SA">
+<meta name="theme-color" content="#12305c">
+<meta name="format-detection" content="telephone=no">
+
+<!-- Open Graph — Facebook, LinkedIn, WhatsApp -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="GCITT BENIN">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:url" content="https://nos-villas.gcitt.com/">
+<meta property="og:title" content="Villas à vendre au Bénin | Cités Cœur Joie &amp; Bethel - GCITT BENIN">
+<meta property="og:description" content="Villas F4 et duplex modernes à Abomey-Calavi. Accompagnement de A à Z pour la diaspora, suivi de chantier transparent et réservation sécurisée avec GCITT BENIN SA.">
+<meta property="og:image" content="https://nos-villas.gcitt.com/assets/og-image.jpg">
+<meta property="og:image:secure_url" content="https://nos-villas.gcitt.com/assets/og-image.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Villas des cités Cœur Joie et Bethel construites par GCITT BENIN au Bénin">
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Villas à vendre au Bénin | Cités Cœur Joie &amp; Bethel - GCITT BENIN">
+<meta name="twitter:description" content="Villas F4 et duplex modernes à Abomey-Calavi. Accompagnement de A à Z pour la diaspora, suivi de chantier transparent et réservation sécurisée.">
+<meta name="twitter:image" content="https://nos-villas.gcitt.com/assets/og-image.jpg">
+<meta name="twitter:image:alt" content="Villas des cités Cœur Joie et Bethel construites par GCITT BENIN au Bénin">
+
+<!-- Favicons -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+
+<!-- Self-hosted webfonts. In the static head, not in <helmet>: helmet
+     content is only injected once React has mounted, which would delay the
+     font fetch until after hydration. Only the latin subsets are preloaded —
+     they are what French text actually needs. -->
+<link rel="stylesheet" href="/assets/fonts.css">
+<link rel="stylesheet" href="/assets/responsive.css">
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/plus-jakarta-sans-normal-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/newsreader-normal-latin.woff2" crossorigin>
+
+<!-- React is self-hosted rather than pulled from unpkg.
+
+     support.js resolves its CDN URLs through window.__resources, so this
+     redirects them to /vendor without touching the runtime. Three reasons:
+     a third-party CDN outage would leave the page blank, same-origin files
+     are served with our own immutable cache headers instead of costing an
+     extra DNS + TLS handshake, and no visitor data reaches a third party.
+
+     The files are the official React 18.3.1 UMD production builds. To upgrade,
+     replace both files and the version in their filenames. -->
+<script>
+  window.__resources = Object.assign({}, window.__resources, {
+    'https://unpkg.com/react@18.3.1/umd/react.production.min.js': '/vendor/react.production.min.js',
+    'https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js': '/vendor/react-dom.production.min.js'
+  });
+</script>
+<!-- The hero collage is the LCP element. Preloading it with the same
+     srcset the tag uses starts the correct fetch immediately. -->
+<link rel="preload" as="image" href="/uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20.jpg"
+      imagesrcset="/uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20-sm.jpg 780w, /uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20.jpg 1400w"
+      imagesizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw" fetchpriority="high">
+<link rel="preload" as="script" href="/vendor/react.production.min.js">
+<link rel="preload" as="script" href="/vendor/react-dom.production.min.js">
+
+<script src="support.js" defer></script>
 
 <!-- Marketing tags. IDs live in assets/tracking-config.js; each tag only
      loads once its ID is filled in, so this is inert until then. -->
-<script src="assets/tracking-config.js"></script>
-<script src="assets/tracking.js"></script>
+<script src="assets/tracking-config.js" defer></script>
+<script src="assets/tracking.js" defer></script>
+
+<!-- ─────────────────────────────────────────────────────────────────────────
+     Structured data (JSON-LD).
+
+     Inline on purpose: Google does not follow <script src> for
+     application/ld+json, so this cannot be moved to a separate file.
+     Validate with https://search.google.com/test/rich-results
+     ───────────────────────────────────────────────────────────────────────── -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://nos-villas.gcitt.com/#organization",
+      "name": "GCITT BENIN SA",
+      "legalName": "Générale du Commerce, de l'Industrie, du Transport et des Travaux",
+      "alternateName": "GCITT",
+      "url": "https://www.gcitt.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://nos-villas.gcitt.com/assets/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "image": "https://nos-villas.gcitt.com/assets/og-image.jpg",
+      "description": "Construction et promotion immobilière au Bénin. GCITT BENIN SA accompagne la diaspora dans la construction de villas au sein des cités Cœur Joie et Bethel à Abomey-Calavi.",
+      "email": "contact@gcitt.com",
+      "telephone": "+229 01 64 61 61 56",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "C/875 Aïdjèdo 1, Immeuble Basile Kossou, 03 BP 3803",
+        "addressLocality": "Cotonou",
+        "addressCountry": "BJ"
+      },
+      "areaServed": {
+        "@type": "Country",
+        "name": "Bénin"
+      },
+      "hasCredential": {
+        "@type": "EducationalOccupationalCredential",
+        "credentialCategory": "certification",
+        "name": "ISO 9001:2015"
+      }
+    },
+    {
+      "@type": "RealEstateAgent",
+      "@id": "https://nos-villas.gcitt.com/#localbusiness",
+      "name": "GCITT BENIN SA",
+      "parentOrganization": { "@id": "https://nos-villas.gcitt.com/#organization" },
+      "url": "https://nos-villas.gcitt.com/",
+      "image": "https://nos-villas.gcitt.com/assets/og-image.jpg",
+      "priceRange": "39 000 000 - 80 000 000 FCFA",
+      "currenciesAccepted": "XOF",
+      "telephone": "+229 01 67 21 21 28",
+      "email": "contact@gcitt.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "C/875 Aïdjèdo 1, Immeuble Basile Kossou, 03 BP 3803",
+        "addressLocality": "Cotonou",
+        "addressCountry": "BJ"
+      },
+      "areaServed": [
+        { "@type": "Place", "name": "Abomey-Calavi" },
+        { "@type": "Place", "name": "Cotonou" }
+      ],
+      "makesOffer": [
+        {
+          "@type": "Offer",
+          "name": "Villa Fenou (F4) — Cité Cœur Joie",
+          "price": "49000000",
+          "priceCurrency": "XOF",
+          "availability": "https://schema.org/InStock",
+          "itemOffered": {
+            "@type": "SingleFamilyResidence",
+            "name": "Villa Fenou F4",
+            "numberOfRooms": 3,
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Abomey-Calavi",
+              "addressCountry": "BJ"
+            }
+          }
+        },
+        {
+          "@type": "Offer",
+          "name": "Villa Kafui (Duplex) — Cité Cœur Joie",
+          "price": "80000000",
+          "priceCurrency": "XOF",
+          "availability": "https://schema.org/InStock",
+          "itemOffered": {
+            "@type": "SingleFamilyResidence",
+            "name": "Villa Kafui Duplex",
+            "numberOfRooms": 4,
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Abomey-Calavi",
+              "addressCountry": "BJ"
+            }
+          }
+        },
+        {
+          "@type": "Offer",
+          "name": "Villa Bethel (F4) — Cité Bethel",
+          "price": "39000000",
+          "priceCurrency": "XOF",
+          "availability": "https://schema.org/InStock",
+          "itemOffered": {
+            "@type": "SingleFamilyResidence",
+            "name": "Villa Bethel F4",
+            "numberOfRooms": 3,
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Abomey-Calavi",
+              "addressCountry": "BJ"
+            }
+          }
+        },
+        {
+          "@type": "Offer",
+          "name": "Villa Bethel (Duplex) — Cité Bethel",
+          "price": "72000000",
+          "priceCurrency": "XOF",
+          "availability": "https://schema.org/InStock",
+          "itemOffered": {
+            "@type": "SingleFamilyResidence",
+            "name": "Villa Bethel Duplex",
+            "numberOfRooms": 4,
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Abomey-Calavi",
+              "addressCountry": "BJ"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://nos-villas.gcitt.com/#website",
+      "url": "https://nos-villas.gcitt.com/",
+      "name": "Villas GCITT BENIN — Cités Cœur Joie & Bethel",
+      "inLanguage": "fr-FR",
+      "publisher": { "@id": "https://nos-villas.gcitt.com/#organization" }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://nos-villas.gcitt.com/#webpage",
+      "url": "https://nos-villas.gcitt.com/",
+      "name": "Villas à vendre au Bénin | Cités Cœur Joie & Bethel - GCITT BENIN",
+      "description": "Découvrez les villas GCITT BENIN dans les cités Cœur Joie et Bethel : villas F4 et duplex modernes au Bénin, avec accompagnement personnalisé, solutions de paiement adaptées et réservation sécurisée.",
+      "inLanguage": "fr-FR",
+      "isPartOf": { "@id": "https://nos-villas.gcitt.com/#website" },
+      "about": { "@id": "https://nos-villas.gcitt.com/#organization" },
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "https://nos-villas.gcitt.com/assets/og-image.jpg"
+      },
+      "breadcrumb": { "@id": "https://nos-villas.gcitt.com/#breadcrumb" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://nos-villas.gcitt.com/#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://nos-villas.gcitt.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Nos villas", "item": "https://nos-villas.gcitt.com/#villas" },
+        { "@type": "ListItem", "position": 3, "name": "Cité Cœur Joie", "item": "https://nos-villas.gcitt.com/#coeur-joie" },
+        { "@type": "ListItem", "position": 4, "name": "Cité Bethel", "item": "https://nos-villas.gcitt.com/#bethel" }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://nos-villas.gcitt.com/#faq",
+      "isPartOf": { "@id": "https://nos-villas.gcitt.com/#webpage" },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Comment suivre mon chantier depuis l'étranger ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "GCITT met en place un suivi régulier par photos, vidéos et rapports d'avancement, transmis tout au long de la construction pour que vous restiez informé où que vous soyez."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Comment se déroule le projet après mon rendez-vous ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Après le rendez-vous initial, nos équipes réalisent une étude de votre projet, vous accompagnent dans le choix de la villa, puis dans la signature et le lancement de la construction."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Comment choisir entre la Villa Fenou (F4) et la Villa Kafui (Duplex) ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Nos conseillers vous aident à comparer les deux modèles selon la taille de votre famille, votre budget et vos priorités, lors du rendez-vous."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quels sont les délais de construction ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Les délais dépendent du modèle choisi et de l'avancement de la cité. Nos conseillers vous communiquent un calendrier précis lors de l'étude de votre projet."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Comment fonctionne l'accompagnement de la diaspora ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "GCITT accompagne les clients de la diaspora de A à Z : rendez-vous à distance, suivi du chantier, reporting régulier et remise des clés en toute sérénité."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quels documents et modalités de paiement sont proposés ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Les modalités précises (documents, échéancier de paiement) vous sont présentées en détail par un conseiller lors de votre rendez-vous."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
 
 
 
@@ -17,9 +326,6 @@
 
 <x-dc>
 <helmet>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
 <style>
 @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 body{margin:0;font-family:'Plus Jakarta Sans',sans-serif;background:#fbfaf7;color:#1c2430;-webkit-font-smoothing:antialiased}
@@ -35,7 +341,7 @@ a:hover{color:#d21f2d}
 <!-- NAV -->
 <nav style="position:sticky;top:0;z-index:50;background:rgba(251,250,247,0.92);backdrop-filter:blur(8px);border-bottom:1px solid rgba(18,48,92,0.08);display:flex;align-items:center;justify-content:space-between;padding:14px 48px">
   <div style="display:flex;align-items:center;gap:10px">
-    <img src="uploads/logo_PDF_page-0001-removebg-preview (1).png" alt="GCITT" style="height:44px;width:auto;object-fit:contain">
+    <img width="480" height="305" fetchpriority="high" decoding="async" src="uploads/logo_PDF_page-0001-removebg-preview (1).png" alt="GCITT" style="height:44px;width:auto;object-fit:contain">
   </div>
   <div style="display:flex;align-items:center;gap:34px">
     <a href="#hero" style="font-size:14.5px;font-weight:600;color:#12305c">Accueil</a>
@@ -47,6 +353,8 @@ a:hover{color:#d21f2d}
   </div>
   <a href="#rdv" style="display:flex;align-items:center;gap:8px;background:#d21f2d;color:#fff;font-weight:700;font-size:14.5px;padding:12px 22px;border-radius:8px;box-shadow:0 6px 16px rgba(210,31,45,0.28)" style-hover="background:#b5121f">Prendre rendez-vous {{ arrowIcon }}</a>
 </nav>
+
+<main>
 
 <!-- 01 HERO -->
 <section id="hero" data-screen-label="01 Hero" style="padding:76px 48px 90px;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;max-width:1440px;margin:0 auto">
@@ -64,9 +372,9 @@ a:hover{color:#d21f2d}
     </div>
   </div>
   <div data-reveal-key="heroimg" style="display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr;gap:12px;height:520px;{{ revealStyle('heroimg') }}">
-    <img src="uploads/Image COEUR-JOIE/HEVIE CJ .jpg" alt="Rangée de villas à la Cité Cœur Joie" style="grid-row:1/3;width:100%;height:100%;object-fit:cover;border-radius:14px">
-    <img src="uploads/Image COEUR-JOIE/FENOU HEVIEE.jpg" alt="Villa Fenou F4" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
-    <img src="uploads/Image COEUR-JOIE/KAFUI NUIT.jpg" alt="Villa Kafui de nuit" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
+    <img width="1400" height="678" fetchpriority="high" decoding="async" src="uploads/Image COEUR-JOIE/HEVIE CJ .jpg" srcset="uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20-sm.jpg 780w, uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20.jpg 1400w" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw" alt="Rangée de villas à la Cité Cœur Joie" style="grid-row:1/3;width:100%;height:100%;object-fit:cover;border-radius:14px">
+    <img width="900" height="675" decoding="async" src="uploads/Image COEUR-JOIE/FENOU HEVIEE.jpg" srcset="uploads/Image%20COEUR-JOIE/FENOU%20HEVIEE-sm.jpg 500w, uploads/Image%20COEUR-JOIE/FENOU%20HEVIEE.jpg 900w" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24vw" alt="Villa Fenou F4" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
+    <img width="900" height="1200" decoding="async" src="uploads/Image COEUR-JOIE/KAFUI NUIT.jpg" srcset="uploads/Image%20COEUR-JOIE/KAFUI%20NUIT-sm.jpg 500w, uploads/Image%20COEUR-JOIE/KAFUI%20NUIT.jpg 900w" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24vw" alt="Villa Kafui de nuit" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
   </div>
 </section>
 
@@ -93,7 +401,7 @@ a:hover{color:#d21f2d}
 <section id="cite" data-screen-label="03 Projection" data-reveal-key="projection" style="padding:100px 48px;{{ revealStyle('projection') }}">
   <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center">
     <div style="border-radius:18px;overflow:hidden;height:460px">
-      <img src="uploads/Image COEUR-JOIE/FENOU-SEJOUR.jpg" alt="Séjour villa Fenou F4 à Cœur Joie" style="width:100%;height:100%;object-fit:cover;filter:saturate(0.92) contrast(0.97)">
+      <img width="1200" height="800" loading="lazy" decoding="async" src="uploads/Image COEUR-JOIE/FENOU-SEJOUR.jpg" srcset="uploads/Image%20COEUR-JOIE/FENOU-SEJOUR-sm.jpg 780w, uploads/Image%20COEUR-JOIE/FENOU-SEJOUR.jpg 1200w" sizes="(max-width: 1024px) 100vw, 45vw" alt="Séjour villa Fenou F4 à Cœur Joie" style="width:100%;height:100%;object-fit:cover;filter:saturate(0.92) contrast(0.97)">
     </div>
     <div>
       <div style="color:#d21f2d;font-weight:700;font-size:13.5px;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px">Plus qu'une maison, un héritage</div>
@@ -129,7 +437,7 @@ a:hover{color:#d21f2d}
       <sc-for list="{{ coeurJoieVillas }}" as="v" hint-placeholder-count="2">
         <div style="background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 4px 22px rgba(18,48,92,0.08)">
           <div style="position:relative;height:280px">
-            <img src="{{ v.image }}" alt="{{ v.name }}" style="width:100%;height:100%;object-fit:cover">
+            <img width="1220" height="681" loading="lazy" decoding="async" src="{{ v.image }}" srcset="{{ v.imageSrcset }}" sizes="(max-width: 1024px) 100vw, 45vw" alt="{{ v.name }}" style="width:100%;height:100%;object-fit:cover">
             <div style="position:absolute;top:16px;left:16px;background:#12305c;color:#fff;font-weight:700;font-size:13px;padding:7px 14px;border-radius:999px">{{ v.tag }}</div>
           </div>
           <div style="padding:28px 30px 30px">
@@ -170,7 +478,7 @@ a:hover{color:#d21f2d}
       <sc-for list="{{ bethelVillas }}" as="v" hint-placeholder-count="2">
         <div style="background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 4px 22px rgba(18,48,92,0.08)">
           <div style="position:relative;height:280px">
-            <img src="{{ v.image }}" alt="{{ v.name }}" style="width:100%;height:100%;object-fit:cover">
+            <img width="1220" height="681" loading="lazy" decoding="async" src="{{ v.image }}" srcset="{{ v.imageSrcset }}" sizes="(max-width: 1024px) 100vw, 45vw" alt="{{ v.name }}" style="width:100%;height:100%;object-fit:cover">
             <div style="position:absolute;top:16px;left:16px;background:#12305c;color:#fff;font-weight:700;font-size:13px;padding:7px 14px;border-radius:999px">{{ v.tag }}</div>
           </div>
           <div style="padding:28px 30px 30px">
@@ -252,7 +560,7 @@ a:hover{color:#d21f2d}
       <sc-for list="{{ journeySteps }}" as="j" hint-placeholder-count="7">
         <div style="position:relative;display:flex;flex-direction:column;align-items:center;text-align:center">
           <div style="width:46px;height:46px;border-radius:50%;background:#12305c;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;z-index:1;margin-bottom:16px">{{ j.n }}</div>
-          <h4 style="font-size:14.5px;font-weight:700;color:#12305c;margin:0 0 6px">{{ j.title }}</h4>
+          <h3 style="font-size:14.5px;font-weight:700;color:#12305c;margin:0 0 6px">{{ j.title }}</h3>
           <p style="font-size:12.5px;line-height:1.5;color:#5b6472;margin:0">{{ j.text }}</p>
         </div>
       </sc-for>
@@ -270,14 +578,14 @@ a:hover{color:#d21f2d}
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin:44px 0 40px">
       <sc-for list="{{ testimonialSlots }}" as="s" hint-placeholder-count="3">
-        <div style="border:1.5px dashed #c7cede;border-radius:14px;background:#f8f9fb;height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#8792a3">
+        <div style="border:1.5px dashed #c7cede;border-radius:14px;background:#f8f9fb;height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#5b6472">
           <span>{{ playIcon }}</span>
           <span style="font-size:13px;font-weight:600">{{ s }}</span>
         </div>
       </sc-for>
     </div>
     <div style="border-radius:16px;overflow:hidden;height:280px">
-      <img src="uploads/Image COEUR-JOIE/GCITT.jpg" alt="Équipe GCITT sur le chantier" style="width:100%;height:100%;object-fit:cover;object-position:center 30%">
+      <img width="1920" height="1272" loading="lazy" decoding="async" src="uploads/Image COEUR-JOIE/GCITT.jpg" srcset="uploads/Image%20COEUR-JOIE/GCITT-sm.jpg 800w, uploads/Image%20COEUR-JOIE/GCITT.jpg 1920w" sizes="100vw" alt="Équipe GCITT sur le chantier" style="width:100%;height:100%;object-fit:cover;object-position:center 30%">
     </div>
   </div>
 </section>
@@ -304,9 +612,9 @@ a:hover{color:#d21f2d}
     <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px dashed #c7cede;border-radius:14px;padding:22px 26px">
       <div>
         <div style="font-weight:700;color:#12305c;font-size:15px;margin-bottom:4px">Guide gratuit pour construire au Bénin depuis la diaspora</div>
-        <div style="font-size:13px;color:#8792a3">Bientôt disponible en téléchargement</div>
+        <div style="font-size:13px;color:#5b6472">Bientôt disponible en téléchargement</div>
       </div>
-      <span style="background:#eef1f5;color:#8792a3;font-weight:700;font-size:13px;padding:9px 16px;border-radius:8px">Bientôt</span>
+      <span style="background:#eef1f5;color:#5b6472;font-weight:700;font-size:13px;padding:9px 16px;border-radius:8px">Bientôt</span>
     </div>
   </div>
 </section>
@@ -332,7 +640,7 @@ a:hover{color:#d21f2d}
           <p style="font-size:14.5px;color:#5b6472;margin:0 0 30px;line-height:1.6">Votre demande a bien été reçue. Un conseiller GCITT prendra contact avec vous dans les meilleurs délais.</p>
           <div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">
             <button sc-camel-on-click="{{ downloadIcs }}" style="background:#12305c;color:#fff;font-weight:700;font-size:14.5px;padding:14px 20px;border:none;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;font-family:inherit">📅 Ajouter un rendez-vous</button>
-            <a href="{{ waContinueHref }}" target="_blank" rel="noopener" sc-camel-on-click="{{ trackWaContinue }}" style="background:#1fa855;color:#fff;font-weight:700;font-size:14.5px;padding:14px 20px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:9px">💬 Continuer sur WhatsApp</a>
+            <a href="{{ waContinueHref }}" target="_blank" rel="noopener" sc-camel-on-click="{{ trackWaContinue }}" style="background:#178541;color:#fff;font-weight:700;font-size:14.5px;padding:14px 20px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:9px">💬 Continuer sur WhatsApp</a>
           </div>
         </div>
       </sc-if>
@@ -341,22 +649,22 @@ a:hover{color:#d21f2d}
         <div style="font-weight:800;font-size:15px;color:#12305c;margin-bottom:20px">Demandez votre rendez-vous</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
-            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Nom complet</label>
-            <input required="" name="name" autocomplete="name" value="{{ form.name }}" sc-camel-on-change="{{ nameHandler }}" style="{{ nameErrorStyle }}">
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-name">Nom complet</label>
+            <input id="f-name" required="" name="name" autocomplete="name" value="{{ form.name }}" sc-camel-on-change="{{ nameHandler }}" style="{{ nameErrorStyle }}">
           </div>
           <div>
-            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Email</label>
-            <input required="" type="email" name="email" autocomplete="email" value="{{ form.email }}" sc-camel-on-change="{{ emailHandler }}" style="{{ emailErrorStyle }}">
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-email">Email</label>
+            <input id="f-email" required="" type="email" name="email" autocomplete="email" value="{{ form.email }}" sc-camel-on-change="{{ emailHandler }}" style="{{ emailErrorStyle }}">
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
-            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Numéro WhatsApp</label>
-            <input required="" type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+229 01 67 21 21 28" value="{{ form.phone }}" sc-camel-on-change="{{ phoneHandler }}" style="{{ phoneErrorStyle }}">
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-phone">Numéro WhatsApp</label>
+            <input id="f-phone" required="" type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+229 01 67 21 21 28" value="{{ form.phone }}" sc-camel-on-change="{{ phoneHandler }}" style="{{ phoneErrorStyle }}">
           </div>
           <div>
-            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Pays de résidence</label>
-            <sc-raw-select value="{{ form.country }}" sc-camel-on-change="{{ countryHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-country">Pays de résidence</label>
+            <sc-raw-select id="f-country" value="{{ form.country }}" sc-camel-on-change="{{ countryHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
               <option value="">Sélectionner</option>
               <option value="France">France</option>
               <option value="Belgique">Belgique</option>
@@ -368,16 +676,16 @@ a:hover{color:#d21f2d}
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
-            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Cité souhaitée</label>
-            <sc-raw-select value="{{ form.cite }}" sc-camel-on-change="{{ citeHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-cite">Cité souhaitée</label>
+            <sc-raw-select id="f-cite" value="{{ form.cite }}" sc-camel-on-change="{{ citeHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
               <option value="">Sélectionner</option>
               <option value="Cœur Joie">Cité Cœur Joie</option>
               <option value="Bethel">Cité Bethel</option>
             </sc-raw-select>
           </div>
           <div>
-            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Type de villa</label>
-            <sc-raw-select value="{{ form.villaType }}" sc-camel-on-change="{{ villaTypeHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-villaType">Type de villa</label>
+            <sc-raw-select id="f-villaType" value="{{ form.villaType }}" sc-camel-on-change="{{ villaTypeHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
               <option value="">Sélectionner</option>
               <option value="F4">F4</option>
               <option value="Duplex">Duplex</option>
@@ -387,8 +695,8 @@ a:hover{color:#d21f2d}
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
-            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Villa souhaitée</label>
-            <sc-raw-select value="{{ form.villa }}" sc-camel-on-change="{{ villaHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-villa">Villa souhaitée</label>
+            <sc-raw-select id="f-villa" value="{{ form.villa }}" sc-camel-on-change="{{ villaHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
               <option value="">Sélectionner</option>
               <option value="Villa Fenou (F4)">Villa Fenou (F4)</option>
               <option value="Villa Kafui (Duplex)">Villa Kafui (Duplex)</option>
@@ -398,8 +706,8 @@ a:hover{color:#d21f2d}
             </sc-raw-select>
           </div>
           <div>
-            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Délai du projet</label>
-            <sc-raw-select value="{{ form.delai }}" sc-camel-on-change="{{ delaiHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-delai">Délai du projet</label>
+            <sc-raw-select id="f-delai" value="{{ form.delai }}" sc-camel-on-change="{{ delaiHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
               <option value="">Sélectionner</option>
               <option value="Dès que possible">Dès que possible</option>
               <option value="Dans 3 à 6 mois">Dans 3 à 6 mois</option>
@@ -410,8 +718,8 @@ a:hover{color:#d21f2d}
           </div>
         </div>
         <div style="margin-bottom:14px">
-          <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Budget estimatif (optionnel)</label>
-          <sc-raw-select value="{{ form.budget }}" sc-camel-on-change="{{ budgetHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
+          <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-budget">Budget estimatif (optionnel)</label>
+          <sc-raw-select id="f-budget" value="{{ form.budget }}" sc-camel-on-change="{{ budgetHandler }}" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff">
             <option value="">Sélectionner</option>
             <option value="Moins de 40M FCFA">Moins de 40M FCFA</option>
             <option value="Entre 40M et 60M FCFA">Entre 40M et 60M FCFA</option>
@@ -421,8 +729,8 @@ a:hover{color:#d21f2d}
           </sc-raw-select>
         </div>
         <div style="margin-bottom:20px">
-          <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px">Votre message (optionnel)</label>
-          <textarea value="{{ form.message }}" sc-camel-on-change="{{ messageHandler }}" rows="3" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;resize:vertical"></textarea>
+          <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-message">Votre message (optionnel)</label>
+          <textarea id="f-message" value="{{ form.message }}" sc-camel-on-change="{{ messageHandler }}" rows="3" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:8px;font-size:14px;font-family:inherit;resize:vertical"></textarea>
         </div>
 
         <!-- Honeypot. Hidden from people and from screen readers; bots fill it
@@ -436,7 +744,7 @@ a:hover{color:#d21f2d}
         </sc-if>
 
         <button type="submit" disabled="{{ submitDisabled }}" style="{{ submitStyle }}">{{ submitLabel }} {{ arrowIcon }}</button>
-        <div style="text-align:center;font-size:12.5px;color:#8792a3;margin-top:14px">Réponse sous 24h · Confidentialité garantie</div>
+        <div style="text-align:center;font-size:12.5px;color:#5b6472;margin-top:14px">Réponse sous 24h · Confidentialité garantie</div>
       </form>
       </sc-if>
     </div>
@@ -445,24 +753,26 @@ a:hover{color:#d21f2d}
 
 <!-- 10 CLOSING -->
 <section data-screen-label="10 Closing" data-reveal-key="closing" style="position:relative;height:480px;{{ revealStyle('closing') }}">
-  <img src="uploads/Image COEUR-JOIE/FENOU NUIT (2).jpg" alt="Villa Cœur Joie illuminée le soir" style="width:100%;height:100%;object-fit:cover;object-position:center 40%;position:absolute;inset:0">
+  <img width="1280" height="720" loading="lazy" decoding="async" src="uploads/Image COEUR-JOIE/FENOU NUIT (2).jpg" srcset="uploads/Image%20COEUR-JOIE/FENOU%20NUIT%20(2)-sm.jpg 800w, uploads/Image%20COEUR-JOIE/FENOU%20NUIT%20(2).jpg 1280w" sizes="100vw" alt="Villa Cœur Joie illuminée le soir" style="width:100%;height:100%;object-fit:cover;object-position:center 40%;position:absolute;inset:0">
   <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,25,45,0.4),rgba(12,20,38,0.68))"></div>
   <div style="position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 24px;gap:26px">
     <p style="font-family:'Newsreader',serif;font-style:italic;font-size:28px;color:#fff;max-width:680px;line-height:1.4;margin:0">Chaque maison que nous construisons est le début d'une nouvelle histoire. Peut-être bientôt la vôtre.</p>
-    <img src="uploads/logo_PDF_page-0001-removebg-preview (1).png" alt="GCITT" style="height:52px;filter:brightness(0) invert(1);opacity:0.92">
+    <img width="480" height="305" loading="lazy" decoding="async" src="uploads/logo_PDF_page-0001-removebg-preview (1).png" alt="GCITT" style="height:52px;width:auto;filter:brightness(0) invert(1);opacity:0.92">
   </div>
 </section>
+
+</main>
 
 <!-- 11 FOOTER -->
 <footer style="background:#0d2447;padding:64px 48px 28px">
   <div style="max-width:1280px;margin:0 auto">
     <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:40px;padding-bottom:44px;border-bottom:1px solid rgba(255,255,255,0.1)">
       <div>
-        <img src="uploads/logo_PDF_page-0001-removebg-preview (1).png" alt="GCITT" style="height:46px;filter:brightness(0) invert(1);margin-bottom:16px">
+        <img width="480" height="305" loading="lazy" decoding="async" src="uploads/logo_PDF_page-0001-removebg-preview (1).png" alt="GCITT" style="height:46px;width:auto;filter:brightness(0) invert(1);margin-bottom:16px">
         <p style="font-size:13.5px;line-height:1.7;color:#a9b8d0;max-width:280px;margin:0 0 18px">Générale du Commerce, de l'Industrie, du Transport et des Travaux (GCITT BENIN SA). Construction et promotion immobilière au service de la diaspora.</p>
         <div style="display:flex;gap:12px">
           <sc-for list="{{ socials }}" as="soc" hint-placeholder-count="4">
-            <a href="{{ soc.href }}" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;color:#fff">{{ soc.icon }}</a>
+            <a href="{{ soc.href }}" aria-label="{{ soc.label }}" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;color:#fff">{{ soc.icon }}</a>
           </sc-for>
         </div>
       </div>
@@ -495,7 +805,7 @@ a:hover{color:#d21f2d}
           <span>contact@gcitt.com</span>
           <span>www.gcitt.com</span>
         </div>
-        <a href="{{ waFloatingHref }}" target="_blank" rel="noopener" sc-camel-on-click="{{ trackWaFooter }}" style="display:inline-flex;align-items:center;gap:8px;background:#1fa855;color:#fff;font-weight:700;font-size:13.5px;padding:11px 18px;border-radius:8px;margin-top:16px">{{ whatsappIcon }}Nous écrire sur WhatsApp</a>
+        <a href="{{ waFloatingHref }}" target="_blank" rel="noopener" sc-camel-on-click="{{ trackWaFooter }}" style="display:inline-flex;align-items:center;gap:8px;background:#178541;color:#fff;font-weight:700;font-size:13.5px;padding:11px 18px;border-radius:8px;margin-top:16px">{{ whatsappIcon }}Nous écrire sur WhatsApp</a>
       </div>
     </div>
     <div style="display:flex;justify-content:space-between;padding-top:24px;font-size:12.5px;color:#7c8bab;flex-wrap:wrap;gap:12px">
@@ -505,7 +815,7 @@ a:hover{color:#d21f2d}
   </div>
 </footer>
 
-<a href="{{ waFloatingHref }}" target="_blank" rel="noopener" sc-camel-on-click="{{ trackWaFloating }}" aria-label="Discuter sur WhatsApp" style="position:fixed;bottom:26px;right:26px;width:60px;height:60px;border-radius:50%;background:#1fa855;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 28px rgba(31,168,85,0.45);z-index:60">{{ whatsappFloatIcon }}</a>
+<a href="{{ waFloatingHref }}" target="_blank" rel="noopener" sc-camel-on-click="{{ trackWaFloating }}" aria-label="Discuter sur WhatsApp" style="position:fixed;bottom:26px;right:26px;width:60px;height:60px;border-radius:50%;background:#178541;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 28px rgba(23,133,65,0.45);z-index:60">{{ whatsappFloatIcon }}</a>
 
 </div>
 
@@ -668,6 +978,7 @@ class Component extends DCLogic {
   buildNotificationPayload = () => {
     const f = this.state.form;
     const attribution = window.gcittAttribution || {};
+    const utm = attribution.utm || {};
     return {
       name: f.name,
       email: f.email,
@@ -682,6 +993,14 @@ class Component extends DCLogic {
       // Acquisition channel, resolved from UTM tags, ad click IDs or referrer.
       source: attribution.source || 'Direct',
       sourceDetail: attribution.detail || '',
+      // Raw campaign parameters, kept alongside the resolved label so the ad
+      // platforms can be reconciled exactly.
+      utmSource: utm.utmSource || '',
+      utmMedium: utm.utmMedium || '',
+      utmCampaign: utm.utmCampaign || '',
+      utmContent: utm.utmContent || '',
+      utmTerm: utm.utmTerm || '',
+      clickId: utm.clickId || '',
       pageUrl: window.location.href,
       // Anti-spam. The server re-derives the submission time itself; this only
       // says how long the form was open.
@@ -818,10 +1137,19 @@ class Component extends DCLogic {
       ]
     };
 
+    // Small variants for phone-sized viewports; `sizes` on the tag picks one.
+    const srcsetFor = (path) => {
+      if (!path || path.indexOf('.') === -1) return '';
+      const dot = path.lastIndexOf('.');
+      const small = path.slice(0, dot) + '-sm' + path.slice(dot);
+      return encodeURI(small) + ' 500w, ' + encodeURI(path) + ' 1220w';
+    };
+
     const coeurJoieVillas = [
       {
         name: 'Villa Fenou F4', tag: 'Villa F4', price: '49 000 000 FCFA',
         image: (window.__resources && window.__resources.villaFenouImg) || "uploads/Image COEUR-JOIE/FENOU HEVIEE.jpg",
+        imageSrcset: srcsetFor((window.__resources && window.__resources.villaFenouImg) || "uploads/Image COEUR-JOIE/FENOU HEVIEE.jpg"),
         desc: "Une villa moderne et chaleureuse, idéale pour les familles à la recherche de confort et de fonctionnalité.",
         chips: ['3 chambres', 'Séjour', 'Cuisine', 'Jardin', '2 garages'],
         expanded: s.expandedVilla === 'fenou',
@@ -833,6 +1161,7 @@ class Component extends DCLogic {
       {
         name: 'Villa Kafui Duplex', tag: 'Villa Duplex', price: '80 000 000 FCFA',
         image: (window.__resources && window.__resources.villaKafuiImg) || "uploads/Image COEUR-JOIE/DUPLEX CJ .jpg",
+        imageSrcset: srcsetFor((window.__resources && window.__resources.villaKafuiImg) || "uploads/Image COEUR-JOIE/DUPLEX CJ .jpg"),
         desc: "Un duplex spacieux et élégant, pensé pour offrir espace, intimité et prestige à toute la famille.",
         chips: ['4 chambres', '2 séjours', '2 balcons', 'Terrasses', 'Garage'],
         expanded: s.expandedVilla === 'kafui',
@@ -847,6 +1176,7 @@ class Component extends DCLogic {
       {
         name: 'Villa Bethel F4', tag: 'Villa F4', price: '39 000 000 FCFA',
         image: (window.__resources && window.__resources.villaBethelF4Img) || "uploads/bethel-f4.png",
+        imageSrcset: srcsetFor((window.__resources && window.__resources.villaBethelF4Img) || "uploads/bethel-f4.png"),
         desc: "Une villa familiale chaleureuse au sein de la Cité Bethel, déjà plus de 600 fois livrée et habitée.",
         chips: ['3 chambres', 'Séjour', 'Cuisine', 'Garage 2 voitures', 'Dépendance'],
         expanded: s.expandedVilla === 'bethelF4',
@@ -858,6 +1188,7 @@ class Component extends DCLogic {
       {
         name: 'Villa Bethel Duplex', tag: 'Villa Duplex', price: '72 000 000 FCFA',
         image: (window.__resources && window.__resources.villaBethelDuplexImg) || "uploads/bethel-duplex.png",
+        imageSrcset: srcsetFor((window.__resources && window.__resources.villaBethelDuplexImg) || "uploads/bethel-duplex.png"),
         desc: "Un duplex généreux à Bethel, avec dressing, balcons et double terrasse pour toute la famille.",
         chips: ['4 chambres', 'Dressing', '2 balcons', 'Terrasses', 'Garage'],
         expanded: s.expandedVilla === 'bethelDuplex',
@@ -987,10 +1318,10 @@ class Component extends DCLogic {
       faqItems: faqData,
       rdvTrust: ['Conseil personnalisé et gratuit', 'Étude de faisabilité de votre projet', 'Confidentialité garantie'],
       socials: [
-        { icon: this.icon('facebook'), href: '#' },
-        { icon: this.icon('instagram'), href: '#' },
-        { icon: this.icon('tiktok'), href: '#' },
-        { icon: this.icon('linkedin'), href: '#' }
+        { icon: this.icon('facebook'), href: '#', label: 'GCITT BENIN sur Facebook' },
+        { icon: this.icon('instagram'), href: '#', label: 'GCITT BENIN sur Instagram' },
+        { icon: this.icon('tiktok'), href: '#', label: 'GCITT BENIN sur TikTok' },
+        { icon: this.icon('linkedin'), href: '#', label: 'GCITT BENIN sur LinkedIn' }
       ]
     };
   }

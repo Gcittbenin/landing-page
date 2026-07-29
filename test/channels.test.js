@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { sendWhatsAppAlert } from '../lib/whatsapp.js';
-import { sendLeadEmail } from '../lib/email.js';
+import { sendLeadEmail, sendProspectConfirmation } from '../lib/email.js';
 import { forwardToCrm } from '../lib/crm.js';
 import { loadConfig } from '../lib/config.js';
 
@@ -214,4 +214,92 @@ test('CRM: posts the lead with a bearer token when set', async () => {
   assert.equal(call.options.headers.Authorization, 'Bearer secret');
   assert.equal(call.body.source, 'landing-page-gcitt');
   assert.equal(call.body.lead.name, 'Awa Diallo');
+});
+
+// ── Prospect confirmation ───────────────────────────────────────────────────
+
+const contact = {
+  whatsapp: '+229 01 67 21 21 28',
+  phone: '+229 01 64 61 61 56',
+  email: 'contact@gcitt.com',
+  website: 'www.gcitt.com',
+  address: 'C/875 Aïdjèdo 1, Cotonou, Bénin',
+  siteUrl: 'https://nos-villas.gcitt.com',
+};
+
+test('confirmation: goes to the prospect, not the sales inbox', async () => {
+  const fetchImpl = stubFetch({ body: { id: 'c1' } });
+  const res = await sendProspectConfirmation(lead, emailConfig(), contact, { fetchImpl });
+
+  assert.equal(res.ok, true);
+  const call = fetchImpl.calls[0];
+  assert.deepEqual(call.body.to, ['awa@example.com']);
+  assert.equal(call.body.subject, 'Votre demande a bien été reçue — GCITT BENIN');
+  // A prospect who replies must reach a human, not a no-reply box.
+  assert.equal(call.body.reply_to, 'commercial@gcitt.com');
+});
+
+test('confirmation: greets by first name and names the project', async () => {
+  const fetchImpl = stubFetch({ body: { id: 'c' } });
+  await sendProspectConfirmation(lead, emailConfig(), contact, { fetchImpl });
+
+  const { html, text } = fetchImpl.calls[0].body;
+  assert.ok(html.includes('Merci pour votre confiance, Awa.'), 'no first-name greeting');
+  assert.ok(html.includes('Villa Kafui (Duplex), Cité Cœur Joie'));
+  assert.ok(text.includes('Bonjour Awa,'));
+  assert.ok(text.includes('Villa Kafui (Duplex), Cité Cœur Joie'));
+});
+
+test('confirmation: carries the GCITT contact details', async () => {
+  const fetchImpl = stubFetch({ body: { id: 'c' } });
+  await sendProspectConfirmation(lead, emailConfig(), contact, { fetchImpl });
+
+  const { html } = fetchImpl.calls[0].body;
+  for (const expected of [
+    '+229 01 67 21 21 28',
+    '+229 01 64 61 61 56',
+    'contact@gcitt.com',
+    'www.gcitt.com',
+    'C/875 Aïdjèdo 1, Cotonou, Bénin',
+    'https://wa.me/2290167212128',
+  ]) {
+    assert.ok(html.includes(expected), `confirmation is missing ${expected}`);
+  }
+});
+
+test('confirmation: is responsive and renders in HTML-hostile clients', async () => {
+  const fetchImpl = stubFetch({ body: { id: 'c' } });
+  await sendProspectConfirmation(lead, emailConfig(), contact, { fetchImpl });
+  const { html, text } = fetchImpl.calls[0].body;
+
+  assert.ok(html.includes('@media only screen and (max-width:600px)'), 'no mobile breakpoint');
+  assert.ok(html.includes('role="presentation"'), 'layout should be table-based for Outlook');
+  assert.ok(html.includes('name="viewport"'));
+  // A plain-text alternative for clients that strip HTML entirely.
+  assert.ok(text.length > 200 && !text.includes('<'));
+});
+
+test('confirmation: escapes a hostile name', async () => {
+  const fetchImpl = stubFetch({ body: { id: 'c' } });
+  await sendProspectConfirmation(
+    { ...lead, name: '<script>alert(1)</script> Diallo' }, emailConfig(), contact, { fetchImpl });
+  const { html } = fetchImpl.calls[0].body;
+  assert.ok(!html.includes('<script>alert(1)</script>'));
+  assert.ok(html.includes('&lt;script&gt;'));
+});
+
+test('confirmation: can be turned off', async () => {
+  const fetchImpl = stubFetch({ body: {} });
+  const res = await sendProspectConfirmation(
+    lead, emailConfig({ EMAIL_CONFIRMATION_ENABLED: 'false' }), contact, { fetchImpl });
+  assert.equal(res.ok, false);
+  assert.match(res.skipped, /EMAIL_CONFIRMATION_ENABLED/);
+  assert.equal(fetchImpl.calls.length, 0);
+});
+
+test('confirmation: degrades when no villa was chosen', async () => {
+  const fetchImpl = stubFetch({ body: { id: 'c' } });
+  await sendProspectConfirmation(
+    { ...lead, villa: 'Je ne sais pas encore', cite: '' }, emailConfig(), contact, { fetchImpl });
+  assert.ok(fetchImpl.calls[0].body.html.includes('Votre projet de villa'));
 });

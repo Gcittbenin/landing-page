@@ -1,0 +1,15 @@
+{
+  "name": "Villas GCITT BENIN — Cités Cœur Joie & Bethel",
+  "short_name": "GCITT Villas",
+  "description": "Villas F4 et duplex modernes au Bénin, cités Cœur Joie et Bethel à Abomey-Calavi.",
+  "lang": "fr-FR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbfaf7",
+  "theme_color": "#12305c",
+  "icons": [
+    { "src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

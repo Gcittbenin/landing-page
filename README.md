@@ -37,11 +37,15 @@ that endpoint never echoes configuration back.
 | `support.js` | The `dc-runtime` — parses `<x-dc>`, binds `{{ … }}`, mounts with React. |
 | `uploads/` | Photography and the GCITT logo. |
 | `assets/tracking-config.js` | GA4 / GTM / Meta Pixel IDs. **Edit this to switch tracking on.** |
-| `assets/tracking.js` | Loads the configured tags, exposes `gcittTrack()`, resolves acquisition source. |
+| `assets/tracking.js` | Loads the configured tags, exposes `gcittTrack()`, resolves acquisition source, tracks scroll depth. |
+| `assets/responsive.css` | Phone and tablet layout. The design was authored desktop-only. |
+| `assets/fonts.css`, `assets/fonts/` | Self-hosted Newsreader and Plus Jakarta Sans. |
+| `vendor/` | Self-hosted React 18.3.1 UMD builds. |
+| `robots.txt`, `sitemap.xml`, `site.webmanifest`, `favicon.ico` | Crawler and installability files. |
 | `api/lead.js` | Vercel serverless adapter. |
 | `server.js` | Local dev / self-hosted server: static files + `/api/lead`. |
 | `lib/` | The backend proper — see below. |
-| `test/` | 73 tests, no dependencies (`node:test`). |
+| `test/` | 106 tests, no dependencies (`node:test`). |
 | `docs/WHATSAPP.md` | Meta credentials, the template to submit, error codes. |
 | `docs/DEPLOIEMENT.md` | Vercel and standalone deployment, production checklist. |
 
@@ -68,10 +72,10 @@ npm test
 ```
 
 The page must be served over HTTP — opening the `.dc.html` from `file://` will
-not work, because `support.js` needs a real origin. `support.js` loads React
-18.3.1 from unpkg and the page loads Newsreader / Plus Jakarta Sans from Google
-Fonts, so the first render needs network access to `unpkg.com` and
-`fonts.googleapis.com`.
+not work, because `support.js` needs a real origin. Everything else is
+self-hosted, so the page has no third-party runtime dependency: React is
+served from `/vendor` (via the `window.__resources` override `support.js`
+honours) and the fonts from `/assets/fonts`.
 
 ---
 
@@ -86,10 +90,13 @@ Two fields are filled in without the prospect touching them:
 - **Submission date** — set server-side. A client-supplied timestamp is not
   evidence, so it is ignored.
 - **Acquisition source** — resolved by `assets/tracking.js` from UTM tags, then
-  ad click IDs (`gclid`, `fbclid`, `ttclid`), then the referrer host: Google,
-  Facebook, Instagram, TikTok, YouTube, LinkedIn, WhatsApp, or Direct. Kept in
-  `sessionStorage`, so a prospect who arrives from TikTok and later reloads the
-  page directly is still attributed to TikTok.
+  ad click IDs (`gclid`, `gbraid`, `wbraid`, `fbclid`, `ttclid`, `li_fat_id`,
+  `msclkid`), then the referrer host: Google, Facebook, Instagram, TikTok,
+  YouTube, LinkedIn, WhatsApp, or Direct. Kept in `sessionStorage`, so a
+  prospect who arrives from TikTok and later reloads the page directly is still
+  attributed to TikTok. The raw `utm_source/medium/campaign/content/term` and
+  the click ID travel with the lead too, so campaign reporting can join on the
+  exact values the ad platform sent.
 
 Choosing a villa — on a card or in the form — fills in its cité and type
 automatically. The server re-derives both from the villa catalogue rather than
@@ -107,6 +114,12 @@ a business-initiated alert is normally outside of — so **production needs an
 approved template**. Set `META_WHATSAPP_TEMPLATE_NAME` and the code sends the
 template; leave it empty and it sends free-form text, which is fine for
 testing. `docs/WHATSAPP.md` has the exact template body to submit.
+
+The **prospect** also receives a branded acknowledgement (`EMAIL_CONFIRMATION_ENABLED`,
+on by default) naming them, their villa and their cité, with the GCITT contact
+details and a WhatsApp button. It is deliberately excluded from the 502 check:
+if it bounces, the sales team has still been alerted and the lead is safe, so
+showing the prospect an error would be wrong.
 
 **Email** carries the full lead summary, subject `Nouveau prospect - Demande
 villa GCITT — <project>`, with the project appended so the inbox is triageable
@@ -173,6 +186,7 @@ Events reaching GA4, the `dataLayer` and the Meta Pixel:
 | `form_submit` | submit pressed, request sent | custom |
 | `generate_lead` | **the API confirmed the lead** | `Lead` |
 | `select_item` | "Choisir cette villa" on a card | custom |
+| `scroll` | 25 / 50 / 75 / 90 % depth reached | not sent |
 
 `generate_lead` is the conversion to optimise campaigns against — it fires only
 on a confirmed server response, not on click, so it does not count failed
@@ -189,10 +203,46 @@ the markup. The villa catalogue is mirrored in `lib/validate.js`
 
 ---
 
+## SEO
+
+All SEO tags live in the **static** `<head>`, not in the `<helmet>` block
+inside `<x-dc>`. Helmet content is injected only once React has mounted, and
+the crawlers for Facebook, LinkedIn, WhatsApp and X do not run JavaScript —
+anything they must read has to be in the served HTML.
+
+Covered: title, meta description, canonical, robots, `lang="fr"`, Open Graph,
+Twitter Cards, favicons, web manifest, `robots.txt`, `sitemap.xml`, and JSON-LD
+for Organization, RealEstateAgent (with the four villa offers), WebSite,
+WebPage, BreadcrumbList and FAQPage. The prices in the structured data are
+asserted against the prices visible on the page, since Google penalises
+markup that contradicts the rendered content.
+
+## Performance
+
+Measured with Lighthouse against `node server.js`:
+
+| | Performance | Accessibility | Best practices | SEO |
+| --- | --- | --- | --- | --- |
+| Desktop | 98 | 100 | 100 | 100 |
+| Mobile | 72 | 100 | 100 | 100 |
+
+Desktop: FCP 0.6 s, LCP 1.0 s, TBT 0 ms, CLS 0.
+
+The mobile figure is Lighthouse's simulated slow 4G with a 4x CPU slowdown.
+It is bounded by the page being **client-rendered**: nothing paints until
+`support.js` plus React (~197 KB) have downloaded and hydrated. Pre-rendering
+the HTML at build time is the only way past that ceiling — see
+`docs/DEPLOIEMENT.md`.
+
 ## Known limitations
 
-- **The page has no `<title>`.** It comes from the design that way. Worth
-  adding before launch for SEO and browser tabs.
-- **A `404` for `{{ v.image }}` appears once in the console.** Chromium's
-  preload scanner requests the literal template attribute before the runtime
-  hydrates. Cosmetic, and inherent to how `dc-runtime` pages boot.
+- **Mobile Lighthouse performance is capped around 72** by client-side
+  rendering, as above. Every other lever has been pulled: images optimised and
+  served with `srcset`, fonts and React self-hosted, LCP image preloaded,
+  below-the-fold images lazy-loaded.
+- **`support.js` and `tracking.js` are not minified.** They are served
+  compressed, which recovers most of the difference; Lighthouse estimates the
+  remaining saving at ~150 ms on mobile. Minifying would mean adding a build
+  step to what is currently a zero-dependency static deploy.
+- **The rate limiter is in-memory**, so on serverless it applies per warm
+  instance rather than globally.
