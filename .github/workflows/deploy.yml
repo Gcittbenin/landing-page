@@ -3,8 +3,8 @@ name: Deploy to LWS
 on:
   push:
     branches:
-      - main
-      - master
+      - claude/gcitt-cite-coeur-joie-urttai
+  workflow_dispatch:
 
 jobs:
   deploy:
