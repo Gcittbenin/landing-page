@@ -28,9 +28,15 @@ import { createHash } from 'node:crypto';
 
 import { handleLead } from './lib/handler.js';
 import { clientIp } from './lib/ratelimit.js';
+import { logStartup, environmentSummary, describeStartupError, STARTUP_LOG_PATH } from './lib/startup.js';
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
 const INDEX = 'GCITT - Cite Coeur Joie.dc.html';
+
+// First thing after the imports resolve. If this line never appears in
+// logs/startup.log, the failure is in the module graph, not in this file —
+// app.js will have recorded which import failed.
+logStartup('server.js: modules chargés');
 
 /**
  * Load a .env file when one is present.
@@ -42,10 +48,16 @@ const INDEX = 'GCITT - Cite Coeur Joie.dc.html';
 if (existsSync(join(ROOT, '.env')) && typeof process.loadEnvFile === 'function') {
   try {
     process.loadEnvFile(join(ROOT, '.env'));
+    logStartup('.env chargé depuis la racine de l\'application');
   } catch (err) {
-    console.warn('[server] .env present but unreadable:', err.message);
+    logStartup(`.env présent mais illisible (ignoré) : ${err.message}`);
   }
+} else {
+  logStartup('pas de .env — les variables viennent de l\'environnement du processus');
 }
+
+// What is and is not configured. Booleans only, never values.
+logStartup('environnement', environmentSummary());
 
 /**
  * Passenger and most panels pass a TCP port, but some pass a Unix socket path.
@@ -194,29 +206,89 @@ function readBody(req, limitBytes = 16 * 1024) {
   });
 }
 
-/** Resolve a URL path to a file inside ROOT, or null if it escapes ROOT. */
+/**
+ * What may be served over HTTP.
+ *
+ * An allow-list, not a deny-list. The application root sits inside the web
+ * root on cPanel and Passenger routes *every* request to this process, so
+ * without this the server would happily hand out lib/handler.js — which would
+ * tell a spammer the honeypot field name and the anti-spam thresholds. No
+ * credentials live in the source, but there is no reason to publish it either.
+ *
+ * Adding a public file means adding it here.
+ */
+const PUBLIC_DIRS = ['assets', 'uploads', 'vendor'];
+const PUBLIC_FILES = new Set([
+  INDEX,
+  'support.js',
+  'favicon.ico',
+  'robots.txt',
+  'sitemap.xml',
+  'site.webmanifest',
+]);
+
+function isPublic(rel) {
+  const parts = rel.split(sep);
+  if (parts.length === 1) return PUBLIC_FILES.has(parts[0]);
+  return PUBLIC_DIRS.includes(parts[0]);
+}
+
+/**
+ * Resolve a URL path to a servable file inside ROOT.
+ *
+ * @returns {{path: string} | {reject: number}} the file, or the status to send
+ */
 function resolveStatic(urlPath) {
   let decoded;
   try {
     decoded = decodeURIComponent(urlPath);
   } catch {
-    return null; // malformed percent-encoding
+    return { reject: 403 }; // malformed percent-encoding
   }
-  if (decoded.includes('\0')) return null;
+  if (decoded.includes('\0')) return { reject: 403 };
 
   const rel = normalize(decoded === '/' ? INDEX : decoded.replace(/^\/+/, ''));
-  if (rel.startsWith('..') || rel.startsWith(sep) || rel.split(sep).includes('..')) return null;
 
-  // .env, .git and friends must never be served, whatever the host config.
-  if (rel.split(sep).some((part) => part.startsWith('.'))) return null;
+  // Escaping the root is hostile; say so.
+  if (rel.startsWith('..') || rel.startsWith(sep) || rel.split(sep).includes('..')) {
+    return { reject: 403 };
+  }
+  // Dotfiles (.env, .git, .htaccess) are never public.
+  if (rel.split(sep).some((part) => part.startsWith('.'))) return { reject: 403 };
 
-  return join(ROOT, rel);
+  // Anything outside the allow-list is reported as absent rather than
+  // forbidden: a 403 would confirm the file exists.
+  if (!isPublic(rel)) return { reject: 404 };
+
+  return { path: join(ROOT, rel) };
 }
+
+const STARTED_AT = Date.now();
 
 const server = createServer(async (req, res) => {
   const urlPath = (req.url ?? '/').split('?')[0];
 
   try {
+    // ── Health check ─────────────────────────────────────────────────────
+    // Lets the host, and you, confirm the process is alive without loading
+    // the page. Carries no configuration and no secrets.
+    if (urlPath === '/healthz') {
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        ...SECURITY_HEADERS,
+      });
+      res.end(
+        JSON.stringify({
+          ok: true,
+          node: process.version,
+          env: process.env.NODE_ENV || 'development',
+          uptimeSeconds: Math.round((Date.now() - STARTED_AT) / 1000),
+        }),
+      );
+      return;
+    }
+
     // ── Lead endpoint ────────────────────────────────────────────────────
     if (urlPath === '/api/lead') {
       let body = '';
@@ -266,12 +338,16 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    const filePath = resolveStatic(urlPath);
-    if (!filePath) {
-      res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8', ...SECURITY_HEADERS });
-      res.end('Forbidden');
+    const resolved = resolveStatic(urlPath);
+    if (resolved.reject) {
+      res.writeHead(resolved.reject, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        ...SECURITY_HEADERS,
+      });
+      res.end(resolved.reject === 403 ? 'Forbidden' : 'Not found');
       return;
     }
+    const filePath = resolved.path;
 
     const info = await stat(filePath).catch(() => null);
     if (!info?.isFile()) {
@@ -322,15 +398,40 @@ process.on('unhandledRejection', (err) => console.error('[server] unhandledRejec
 // Passenger and most process managers stop the app with SIGTERM.
 for (const signal of ['SIGTERM', 'SIGINT']) {
   process.on(signal, () => {
-    console.log(`[server] ${signal} — arrêt en cours`);
+    logStartup(`${signal} reçu — arrêt en cours`);
     server.close(() => process.exit(0));
     // Do not hang forever on a stuck keep-alive connection.
     setTimeout(() => process.exit(0), 5000).unref();
   });
 }
 
+/**
+ * A failure to bind is the most common way this app dies on shared hosting,
+ * and the least self-explanatory. Name the cause instead of dumping a stack.
+ */
+server.on('error', (err) => {
+  logStartup(`ÉCHEC de l'écoute sur ${typeof PORT === 'number' ? `le port ${PORT}` : PORT}`);
+  logStartup(describeStartupError(err));
+
+  if (err.code === 'EADDRINUSE') {
+    logStartup(
+      "le port est déjà pris. Sous Passenger l'application est démarrée " +
+        'automatiquement : ne la lancez pas une seconde fois à la main.',
+    );
+  }
+  if (err.code === 'EACCES') {
+    logStartup(
+      "l'hébergement refuse ce port. Ne définissez pas PORT vous-même : " +
+        'laissez Passenger fournir le sien.',
+    );
+  }
+  process.exitCode = 1;
+});
+
 server.listen(PORT, HOST, () => {
   const where = typeof PORT === 'number' ? `port ${PORT}` : `socket ${PORT}`;
-  console.log(`[server] GCITT landing page — ${where} (${process.env.NODE_ENV || 'development'})`);
-  console.log(`[server] proxy de confiance : ${TRUST_PROXY ? 'oui' : 'non'}`);
+  logStartup(`en écoute sur ${where} (${process.env.NODE_ENV || 'development'})`);
+  logStartup(`proxy de confiance : ${TRUST_PROXY ? 'oui' : 'non'}`);
+  logStartup(`journal de démarrage : ${STARTUP_LOG_PATH}`);
+  logStartup('PRÊT — l\'application répond');
 });

@@ -9,6 +9,81 @@ dépendance npm** à installer.
 
 ---
 
+## 0. « Erreur » sans log au démarrage — à lire en premier
+
+Si le panneau affiche seulement « Erreur » quand vous lancez le script `start`,
+la cause la plus probable n'est pas un bug de l'application.
+
+### Passenger démarre l'application tout seul
+
+Sur un hébergement cPanel/Passenger, **on ne lance pas l'application avec
+`npm start`**. Passenger la démarre lui-même, à la première requête HTTP, en
+chargeant le fichier de démarrage indiqué dans le panneau.
+
+Le bouton « Exécuter un script NPM » du panneau est fait pour des commandes qui
+**se terminent** : `npm install`, `npm run build`, `npm test`. Un serveur HTTP,
+par définition, ne se termine jamais : le lanceur attend sa fin, ne la voit pas
+venir, et signale « Erreur » alors que l'application tourne peut-être très bien.
+
+**Ce qu'il faut faire :**
+
+1. Vérifiez que le fichier de démarrage du panneau est `app.js` (ou
+   `server.js`). Enregistrez.
+2. Cliquez sur **Redémarrer** l'application — pas sur « Exécuter le script
+   start ».
+3. Ouvrez `https://nos-villas.gcitt.com/healthz`. Une réponse comme
+   `{"ok":true,"node":"v22.22.3",...}` signifie que tout fonctionne.
+
+Un second cas classique : lancer `npm start` **à la main** alors que Passenger a
+déjà démarré l'application. Le second processus tente d'ouvrir le même port et
+meurt sur `EADDRINUSE`. Le message est maintenant explicite dans le journal.
+
+### Où lire l'erreur réelle
+
+L'application écrit désormais chaque étape de son démarrage dans un fichier, que
+le panneau affiche quelque chose d'utile ou non :
+
+```sh
+cat ~/public_html/nos-villas/logs/startup.log
+```
+
+Un démarrage réussi ressemble à ceci :
+
+```
+[…] [app.js] démarrage — node v22.22.3, cwd /home/c2362524c/public_html/nos-villas
+[…] [app.js] racine application /home/c2362524c/public_html/nos-villas
+[…] [app.js] PORT = 41234
+[…] server.js: modules chargés
+[…] pas de .env — les variables viennent de l'environnement du processus
+[…] environnement {"node":"v22.22.3","nodeEnv":"production",…,"whatsapp":false,"email":false}
+[…] [app.js] server.js chargé
+[…] en écoute sur port 41234 (production)
+[…] PRÊT — l'application répond
+```
+
+Si la ligne `modules chargés` manque, le problème est un fichier absent ou un
+import cassé — `app.js` aura noté lequel, avec son code d'erreur et sa pile.
+Si `PRÊT` manque mais que `modules chargés` est là, c'est l'ouverture du port
+qui a échoué, et la cause est nommée en clair.
+
+Le journal ne contient **aucun secret** : uniquement des booléens indiquant si
+telle intégration est configurée.
+
+### Vérifier à la main, en SSH
+
+```sh
+cd ~/public_html/nos-villas
+node app.js          # doit afficher les lignes ci-dessus puis rester actif
+# dans un autre terminal :
+curl -s http://127.0.0.1:3000/healthz
+```
+
+Si cela fonctionne en SSH mais pas via le panneau, le problème est la
+configuration du panneau (fichier de démarrage, ou version de Node), pas le
+code.
+
+---
+
 ## 1. Résumé de la configuration
 
 | Paramètre du panneau | Valeur |
@@ -16,12 +91,20 @@ dépendance npm** à installer.
 | **Version de Node.js** | 22.x (testé sur 22 ; minimum requis **20.12**) |
 | **Racine de l'application** | le dossier où le dépôt est déposé, ex. `nos-villas` ou `~/apps/nos-villas` |
 | **URL de l'application** | `nos-villas.gcitt.com` (racine `/`, pas de sous-chemin) |
-| **Fichier de démarrage** | `server.js` |
+| **Fichier de démarrage** | `app.js` (ou `server.js` — voir §1.1) |
 | **Mode** | `production` |
-| **Commande de démarrage** | `npm start` (équivaut à `node server.js`) |
+| **Commande de démarrage** | aucune — Passenger lance le fichier de démarrage lui-même (voir §0) |
 
-> Le champ « fichier de démarrage » propose souvent `app.js` par défaut :
-> **remplacez-le par `server.js`**, le champ est modifiable.
+### 1.1 Quel fichier de démarrage ?
+
+| Fichier | Quand l'utiliser |
+| --- | --- |
+| **`app.js`** | **Par défaut.** Enveloppe `server.js` et journalise chaque étape du démarrage, ce qui rend un échec lisible même quand le panneau n'affiche que « Erreur ». |
+| `app.cjs` | Si Passenger ne sait pas charger un module ES et rapporte `ERR_REQUIRE_ESM`. Même comportement, syntaxe CommonJS. |
+| `server.js` | Fonctionne aussi (Node 22 sait charger l'ESM via `require`), mais sans le journal de démarrage. |
+
+Les trois ont été testés dans les deux modes de chargement (`node <fichier>` et
+`require(<fichier>)`, comme le fait Passenger).
 
 Le minimum de 20.12 vient de `process.loadEnvFile()`, utilisé pour lire un
 `.env` local. Sur LWS les variables viennent du panneau, donc cette fonction
@@ -44,7 +127,9 @@ l'arborescence :
 
 ```
 racine de l'application/
-├── server.js                      ← fichier de démarrage
+├── app.js                         ← fichier de démarrage (recommandé)
+├── app.cjs                        ← variante CommonJS, si ERR_REQUIRE_ESM
+├── server.js                      ← le serveur lui-même
 ├── package.json
 ├── GCITT - Cite Coeur Joie.dc.html
 ├── support.js
@@ -65,6 +150,17 @@ Points d'attention :
 - **Ne déposez pas de fichier `.env`.** Les variables se saisissent dans le
   panneau. Le serveur refuse d'ailleurs de servir tout fichier commençant par
   un point (`403`), `.env` et `.git` compris.
+- **Ne créez pas de `.htaccess` à la racine de l'application.** cPanel en génère
+  un avec les directives Passenger ; l'écraser casse l'application.
+- **Le code serveur n'est pas téléchargeable.** La racine se trouvant sous
+  `public_html` et Passenger routant *toutes* les requêtes vers Node, c'est
+  `server.js` qui protège ses propres sources : il ne sert qu'une liste blanche
+  (`assets/`, `uploads/`, `vendor/`, plus quelques fichiers racine) et répond
+  `404` pour tout le reste — `lib/`, `api/`, `test/`, `package.json`,
+  `server.js` lui-même. Des `.htaccess` restrictifs dans `lib/`, `api/`,
+  `test/` et `docs/` ajoutent une seconde barrière si Passenger est arrêté et
+  qu'Apache sert les dossiers directement.
+- Le dossier `logs/` est créé automatiquement au premier démarrage.
 - Les dossiers `uploads/` et `assets/` doivent conserver leurs **noms de
   fichiers exacts**, espaces compris (`HEVIE CJ .jpg`). Les chemins sont
   encodés dans le HTML ; un renommage casse les images.
@@ -153,9 +249,19 @@ forger l'en-tête pour contourner la limite.
 Depuis le terminal SSH de LWS, ou via les boutons du panneau :
 
 ```sh
-cd ~/nos-villas          # la racine de l'application
+cd ~/public_html/nos-villas
 npm install --omit=dev   # ne télécharge rien : le projet n'a aucune dépendance
-npm start                # ou le bouton « Démarrer » du panneau
+```
+
+Puis, **dans le panneau**, cliquez sur **Redémarrer** l'application. Passenger
+la lance lui-même à la première requête ; il n'y a pas de `npm start` à
+déclencher. Voir §0 si le panneau affiche « Erreur ».
+
+`npm start` reste utile **en SSH** pour un test manuel :
+
+```sh
+npm start                # écoute sur 3000 si PORT n'est pas défini
+curl -s http://127.0.0.1:3000/healthz
 ```
 
 `npm install` est **sans effet mais sans risque** : `dependencies` est vide, le
@@ -203,8 +309,10 @@ Sur Vercel, `vercel.json` s'occupait des en-têtes. Ici Node est l'origine :
   connus ; `no-store` sur `/api/lead` ;
 - **les requêtes conditionnelles** : `ETag` et réponses `304` ;
 - **les en-têtes de sécurité** ci-dessus ;
-- **le refus** des fichiers cachés (`.env`, `.git`), des remontées de chemin et
-  des URL mal encodées.
+- **le refus** des fichiers cachés (`.env`, `.git`), des remontées de chemin,
+  des URL mal encodées, et de tout ce qui ne figure pas dans la liste blanche
+  des chemins publics ;
+- **`/healthz`**, une sonde de vivacité qui ne divulgue aucune configuration.
 
 Si Apache ajoute lui aussi de la compression, il n'y a pas de double
 compression : voyant `Content-Encoding` déjà posé, il laisse la réponse
@@ -215,6 +323,9 @@ inchangée.
 ## 8. Vérification après mise en ligne
 
 ```sh
+# L'application est vivante (le test le plus rapide)
+curl -s https://nos-villas.gcitt.com/healthz
+
 # La page répond et est compressée
 curl -sI -H 'Accept-Encoding: br' https://nos-villas.gcitt.com/ | grep -i 'content-encoding\|cache-control'
 
@@ -254,10 +365,11 @@ confirmation au prospect.
 
 ## 9. En cas de problème
 
-**L'application ne démarre pas.** Vérifiez que le fichier de démarrage est bien
-`server.js` et non `app.js`, et que la version de Node est ≥ 20.12. Les logs du
-panneau affichent la ligne `[server] GCITT landing page — port … (production)`
-au démarrage réussi.
+**L'application ne démarre pas.** Commencez par §0 : dans neuf cas sur dix le
+panneau signale « Erreur » simplement parce qu'on lui a demandé d'exécuter
+`npm start`, ce qui n'est pas la façon de démarrer une application Passenger.
+Puis lisez `logs/startup.log`, qui nomme l'étape et la cause exactes. Vérifiez
+enfin que le fichier de démarrage est `app.js` et que Node est ≥ 20.12.
 
 **La page s'affiche mais reste vide.** `support.js` ou `/vendor/react*.js` ne
 sont pas servis. Testez-les avec `curl` ; s'ils renvoient 404, l'arborescence

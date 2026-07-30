@@ -37,11 +37,13 @@ test.before(async () => {
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 
-  // Wait for the listening banner rather than a fixed sleep.
+  // Wait for the readiness marker rather than a fixed sleep.
   const started = new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('server did not start in time')), 15_000);
+    let seen = '';
     child.stdout.on('data', (chunk) => {
-      if (String(chunk).includes('GCITT landing page')) {
+      seen += String(chunk);
+      if (seen.includes('PRÊT')) {
         clearTimeout(timer);
         resolve();
       }
@@ -284,4 +286,117 @@ test('visitors behind the same proxy are rate-limited independently', async () =
 test('the leftmost X-Forwarded-For entry identifies the client', async () => {
   const res = await postLead(lead(), { 'X-Forwarded-For': '198.51.100.20, 10.0.0.1, 127.0.0.1' });
   assert.equal(res.status, 200);
+});
+
+// ── Health check ────────────────────────────────────────────────────────────
+
+test('/healthz reports liveness without leaking configuration', async () => {
+  const res = await get('/healthz');
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('cache-control'), 'no-store');
+
+  const body = await res.json();
+  assert.equal(body.ok, true);
+  assert.match(body.node, /^v\d+/);
+  assert.equal(typeof body.uptimeSeconds, 'number');
+
+  // It must not become an inventory of the host's secrets.
+  const serialised = JSON.stringify(body).toLowerCase();
+  for (const forbidden of ['token', 'key', 'secret', 'whatsapp', 'email', 'password']) {
+    assert.ok(!serialised.includes(forbidden), `/healthz mentions "${forbidden}"`);
+  }
+});
+
+// ── Passenger entry points ──────────────────────────────────────────────────
+//
+// cPanel/Passenger loads the startup file with require(). These guard the two
+// shims that make a failed boot legible, since the panel itself shows only
+// "Erreur".
+
+test('the startup log records a successful boot', async () => {
+  const log = readFileSync(root + 'logs/startup.log', 'utf8');
+  assert.match(log, /modules chargés/);
+  assert.match(log, /en écoute sur/);
+  assert.match(log, /PRÊT/);
+  // Booleans only — never a value.
+  assert.doesNotMatch(log, /META_WHATSAPP_TOKEN=\S/);
+  assert.doesNotMatch(log, /EMAIL_API_KEY=\S/);
+});
+
+test('app.js and app.cjs exist and carry no external dependency', () => {
+  for (const file of ['app.js', 'app.cjs']) {
+    const src = readFileSync(root + file, 'utf8');
+    const imports = [...src.matchAll(/from\s+['"]([^'"]+)['"]/g)].map((m) => m[1]);
+    const requires = [...src.matchAll(/require\(\s*['"]([^'"]+)['"]\s*\)/g)].map((m) => m[1]);
+    for (const spec of [...imports, ...requires]) {
+      assert.ok(
+        spec.startsWith('node:') || spec.startsWith('.'),
+        `${file} pulls in an external module: ${spec}`,
+      );
+    }
+    // A static import of a project file would be hoisted above the crash
+    // handlers, which is exactly what these shims exist to avoid.
+    assert.doesNotMatch(src, /^\s*import\s+[^(]*from\s+['"]\.\/(server|lib)/m,
+      `${file} statically imports project code`);
+  }
+});
+
+test('package.json declares what the host needs', () => {
+  const pkg = JSON.parse(readFileSync(root + 'package.json', 'utf8'));
+  assert.equal(pkg.scripts.start, 'node server.js');
+  assert.equal(pkg.main, 'server.js');
+  assert.ok(pkg.engines.node);
+  // Zero dependencies is the property that makes npm install unable to fail.
+  assert.deepEqual(pkg.dependencies, {});
+});
+
+test('source directories are protected from direct HTTP access', () => {
+  for (const dir of ['lib', 'api', 'test', 'docs']) {
+    const ht = readFileSync(`${root}${dir}/.htaccess`, 'utf8');
+    assert.match(ht, /Require all denied/);
+    assert.match(ht, /Deny from all/);
+  }
+});
+
+// ── Public allow-list ───────────────────────────────────────────────────────
+//
+// The application root sits inside public_html on cPanel and Passenger routes
+// every request to this process, so the server is the only thing standing
+// between the internet and its own source.
+
+test('server-side source is not downloadable', async () => {
+  const hidden = [
+    '/lib/config.js', '/lib/handler.js', '/lib/whatsapp.js', '/lib/email.js',
+    '/lib/validate.js', '/lib/startup.js', '/api/lead.js', '/test/server.test.js',
+    '/package.json', '/package-lock.json', '/server.js', '/app.js', '/app.cjs',
+    '/vercel.json', '/README.md', '/DEPLOIEMENT_LWS.md', '/docs/WHATSAPP.md',
+  ];
+  for (const path of hidden) {
+    const res = await get(path);
+    // 404 rather than 403: a 403 would confirm the file is there.
+    assert.equal(res.status, 404, `${path} is reachable (${res.status})`);
+  }
+});
+
+test('leaking lib/ would hand a spammer the anti-spam design', async () => {
+  // Regression guard with the reason attached: lib/validate.js names the
+  // honeypot field, so serving it defeats the honeypot.
+  const res = await get('/lib/validate.js');
+  assert.equal(res.status, 404);
+  const body = await res.text();
+  assert.ok(!body.includes('website'), 'the honeypot field name leaked');
+  assert.ok(!body.includes('isHoneypotTripped'));
+});
+
+test('everything the page actually needs is still public', async () => {
+  const required = [
+    '/', '/support.js', '/favicon.ico', '/robots.txt', '/sitemap.xml',
+    '/site.webmanifest', '/assets/fonts.css', '/assets/responsive.css',
+    '/assets/tracking.js', '/assets/tracking-config.js', '/assets/og-image.jpg',
+    '/vendor/react.production.min.js', '/vendor/react-dom.production.min.js',
+    '/uploads/bethel-f4.png',
+  ];
+  for (const path of required) {
+    assert.equal((await get(path)).status, 200, `${path} should be public`);
+  }
 });

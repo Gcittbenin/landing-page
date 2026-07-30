@@ -43,9 +43,11 @@ that endpoint never echoes configuration back.
 | `vendor/` | Self-hosted React 18.3.1 UMD builds. |
 | `robots.txt`, `sitemap.xml`, `site.webmanifest`, `favicon.ico` | Crawler and installability files. |
 | `api/lead.js` | Vercel serverless adapter (inert on LWS). |
-| `server.js` | The server: static files + `/api/lead`, with compression, caching and security headers. |
+| `app.js`, `app.cjs` | Passenger / cPanel entry points. Wrap `server.js` and log every boot step to `logs/startup.log`, so a failed start is legible even when the panel shows only "Erreur". |
+| `server.js` | The server: static files + `/api/lead` + `/healthz`, with compression, caching and security headers. |
+| `lib/startup.js` | Boot diagnostics. Logs what is configured as booleans — never a value. |
 | `lib/` | The backend proper — see below. |
-| `test/` | 124 tests, no dependencies (`node:test`). |
+| `test/` | 129 tests, no dependencies (`node:test`). |
 | `docs/WHATSAPP.md` | Meta credentials, the template to submit, error codes. |
 | `docs/DEPLOIEMENT.md` | Vercel and standalone deployment, production checklist. |
 | `DEPLOIEMENT_LWS.md` | **LWS deployment**: Node version, startup file, panel variables, verification. |
@@ -76,6 +78,9 @@ reported as *skipped*, not *failed*, so the form submits and confirms normally.
 ```sh
 npm test
 ```
+
+`GET /healthz` returns `{"ok":true,…}` — the quickest way to confirm the process
+is alive on a host whose panel hides the logs.
 
 The page must be served over HTTP — opening the `.dc.html` from `file://` will
 not work, because `support.js` needs a real origin. Everything else is
