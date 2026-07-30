@@ -1,0 +1,10 @@
+Passenger restart trigger.
+
+Passenger watches this file's modification time. Touching it makes Passenger
+retire the running process and start a fresh one on the next request, which is
+how new code is picked up — copying files over FTP alone does NOT do it, the
+running process keeps the old code in memory.
+
+  touch ~/public_html/nos-villas/tmp/restart.txt
+
+Clicking "Redémarrer" in the LWS panel has the same effect.

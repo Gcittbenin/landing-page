@@ -10,3 +10,6 @@ node_modules/
 
 # Written at boot by lib/startup.js
 logs/
+
+# The FTP deploy action's sync state, created on the server
+.ftp-deploy-sync-state.json

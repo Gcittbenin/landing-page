@@ -413,3 +413,67 @@ le sien. Combiné au honeypot et au contrôle de durée de saisie, cela suffit
 largement au spam ordinaire. Pour une limite réellement globale, il faut un
 magasin partagé (Redis) — l'interface à implémenter est décrite dans
 `docs/DEPLOIEMENT.md`.
+
+---
+
+## 11. Déploiement automatique par FTP (GitHub Actions)
+
+Le workflow `.github/workflows/deploy.yml` copie le dépôt vers l'hébergement à
+chaque push. Une chose lui manque, et elle est facile à manquer :
+
+> **Copier les fichiers ne redémarre pas l'application.** Le processus Node
+> déjà lancé garde l'ancien code en mémoire. Sans redémarrage, un déploiement
+> ne change rien à ce que voient les visiteurs.
+
+Passenger surveille la date de modification de `tmp/restart.txt` : la toucher
+suffit à lui faire relancer l'application à la requête suivante. Le fichier est
+présent dans le dépôt ; il reste à le toucher après chaque envoi.
+
+### Option A — laisser le workflow s'en charger
+
+Ajoutez cette étape **après** l'étape « Déployer via FTP » :
+
+```yaml
+      - name: Redémarrer l'application Passenger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          local-dir: ./tmp/
+          # Un contenu différent à chaque exécution, pour que le fichier soit
+          # bien réenvoyé : l'action ignore les fichiers inchangés.
+          state-name: .ftp-deploy-restart-state.json
+```
+
+Cette approche a une limite : l'action ne réenvoie que les fichiers dont le
+contenu a changé, et `tmp/restart.txt` est constant. Pour un redémarrage
+garanti, faites-le varier juste avant l'envoi :
+
+```yaml
+      - name: Marquer le redémarrage
+        run: echo "deploy ${{ github.sha }} $(date -u +%FT%TZ)" >> tmp/restart.txt
+```
+
+Placez cette étape **avant** l'étape de déploiement : le fichier part alors avec
+le reste et sa date de modification change côté serveur.
+
+### Option B — redémarrer à la main
+
+Cliquez sur **Redémarrer** dans le panneau LWS après chaque déploiement, ou en
+SSH :
+
+```sh
+touch ~/public_html/nos-villas/tmp/restart.txt
+```
+
+### Vérifier qu'un déploiement a bien pris
+
+```sh
+curl -s https://nos-villas.gcitt.com/healthz
+```
+
+`uptimeSeconds` doit être retombé à une petite valeur. S'il continue de croître,
+l'ancien processus tourne toujours et le redémarrage n'a pas eu lieu.
