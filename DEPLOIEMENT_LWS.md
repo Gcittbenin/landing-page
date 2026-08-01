@@ -354,7 +354,14 @@ Sur Vercel, `vercel.json` s'occupait des en-têtes. Ici Node est l'origine :
 - **`/healthz`**, une sonde de vivacité qui ne divulgue aucune configuration ;
 - **`/admin`**, l'espace prospects : session signée, cookie `HttpOnly ;
   SameSite=Strict ; Secure`, `no-store` sur chaque réponse, et 404 partout
-  tant qu'`ADMIN_PASSWORD` n'est pas défini.
+  tant qu'`ADMIN_PASSWORD` n'est pas défini ;
+- **`/api/event`**, le collecteur d'audience maison. GA4 et le Pixel Meta sont
+  bloqués par les bloqueurs de publicité et demandent un compte Google ou Meta
+  pour être lus : cette copie sur notre propre serveur est ce qui permet au
+  tableau de bord d'afficher un taux de conversion. Il répond **toujours 204**,
+  n'enregistre **ni adresse IP ni chaîne User-Agent** — seuls l'appareil et le
+  navigateur agrégés — ignore les robots, et n'accepte que les noms
+  d'événements de sa liste blanche.
 
 Si Apache ajoute lui aussi de la compression, il n'y a pas de double
 compression : voyant `Content-Encoding` déjà posé, il laisse la réponse
@@ -377,6 +384,10 @@ curl -s -o /dev/null -w '%{http_code}\n' https://nos-villas.gcitt.com/assets/fon
 # L'espace prospects : 404 tant qu'ADMIN_PASSWORD n'est pas défini,
 # 200 (page de connexion) une fois la variable posée et l'application relancée
 curl -s -o /dev/null -w '%{http_code}\n' https://nos-villas.gcitt.com/admin
+
+# Le collecteur d'audience répond 204
+curl -s -o /dev/null -w '%{http_code}\n' -X POST https://nos-villas.gcitt.com/api/event \
+  -H 'Content-Type: application/json' -d '{"name":"page_view","sid":"test"}'
 curl -s -o /dev/null -w '%{http_code}\n' https://nos-villas.gcitt.com/vendor/react.production.min.js
 curl -s -o /dev/null -w '%{http_code}\n' "https://nos-villas.gcitt.com/uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20.jpg"
 

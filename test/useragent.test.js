@@ -29,6 +29,9 @@ const UA = {
   headless:
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/131.0.0.0 Safari/537.36',
   googlebot: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+  // No "/bot.html" to fall back on: the name itself has to be enough.
+  bareBot: 'Googlebot/2.1',
+  bingbot: 'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)',
 };
 
 test('identifies the desktop browsers', () => {
@@ -77,12 +80,15 @@ test('reads the mobile operating systems', () => {
 });
 
 test('flags crawlers so they never look like prospects', () => {
-  for (const ua of [UA.facebookCrawler, UA.googlebot, UA.headless]) {
+  for (const ua of [UA.facebookCrawler, UA.googlebot, UA.bareBot, UA.bingbot, UA.headless]) {
     const parsed = parseUserAgent(ua);
     assert.equal(parsed.bot, true, ua);
     assert.equal(parsed.device, 'Robot');
   }
   assert.equal(parseUserAgent(UA.chromeMac).bot, false);
+  // "bot" needs a boundary after it, so a real browser is not swept up.
+  assert.equal(parseUserAgent(UA.safariIphone).bot, false);
+  assert.equal(parseUserAgent(UA.samsung).bot, false);
 });
 
 test('a headless browser is named, not mistaken for Safari', () => {

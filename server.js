@@ -28,6 +28,7 @@ import { createHash } from 'node:crypto';
 
 import { handleLead, getStore } from './lib/handler.js';
 import { handleAdmin } from './lib/admin.js';
+import { handleEvent } from './lib/events.js';
 import { loadConfig } from './lib/config.js';
 import { clientIp } from './lib/ratelimit.js';
 import { logStartup, environmentSummary, describeStartupError, STARTUP_LOG_PATH } from './lib/startup.js';
@@ -337,6 +338,34 @@ const server = createServer(async (req, res) => {
         'Cache-Control': 'no-store',
       });
       res.end(JSON.stringify(result.body));
+      return;
+    }
+
+    // ── Analytics beacon ─────────────────────────────────────────────────
+    // Answers 204 whatever happens: a page must never show an error because
+    // its analytics call failed. Reads at most 4 KB.
+    if (urlPath === '/api/event') {
+      let body = '';
+      try {
+        body = await readBody(req, 4 * 1024);
+      } catch (err) {
+        if (err.code !== 'TOO_LARGE') throw err;
+        req.destroy();
+        return;
+      }
+
+      const result = await handleEvent(
+        {
+          method: req.method,
+          headers: req.headers,
+          body,
+          ip: TRUST_PROXY ? clientIp(req.headers, req.socket.remoteAddress) : req.socket.remoteAddress,
+        },
+        { store: getStore(loadConfig(process.env)) },
+      );
+
+      res.writeHead(result.status, { ...result.headers, ...SECURITY_HEADERS });
+      res.end();
       return;
     }
 

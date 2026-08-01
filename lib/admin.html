@@ -245,6 +245,20 @@
       <button class="btn btn--quiet" id="next" type="button">Suivant</button>
     </div>
   </section>
+  <section class="panel">
+    <h2>Journal des événements</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Heure</th><th>Événement</th><th>Détail</th><th>Appareil</th><th>Session</th></tr>
+        </thead>
+        <tbody id="events"></tbody>
+      </table>
+      <div class="empty" id="events-empty" hidden>
+        Aucun événement enregistré pour l'instant.
+      </div>
+    </div>
+  </section>
 </main>
 
 <div class="overlay" id="overlay"></div>
@@ -349,7 +363,9 @@
       ['Nouveaux à traiter', stats.byStatus['Nouveau'] || 0, 'statut « Nouveau »'],
       ['Convertis', converted, ''],
       ['Taux de conversion', stats.conversionRate === null ? '—' : stats.conversionRate + ' %',
-        stats.conversionRate === null ? 'aucune visite enregistrée' : stats.pageViews + ' visites']
+        stats.conversionRate === null
+          ? 'aucune visite enregistrée'
+          : stats.sessions + ' sessions · ' + stats.pageViews + ' pages vues']
     ];
     $('kpis').innerHTML = '';
     cards.forEach(function (card) {
@@ -589,6 +605,70 @@
     });
   }
 
+  // ── event log ────────────────────────────────────────────────────────────
+
+  var EVENT_LABELS = {
+    page_view: 'Page vue',
+    cta_click: 'Clic sur un CTA',
+    select_item: 'Villa choisie',
+    form_start: 'Formulaire commencé',
+    form_submit: 'Formulaire envoyé',
+    generate_lead: 'Prospect confirmé',
+    whatsapp_click: 'Ouverture WhatsApp',
+    hero_slide_view: 'Slide du hero vue',
+    scroll: 'Défilement'
+  };
+
+  // The page identifies WhatsApp buttons by position; spell them out here.
+  var LOCATIONS = {
+    section_rdv: 'Section rendez-vous',
+    footer: 'Pied de page',
+    bouton_flottant: 'Bouton flottant',
+    confirmation: 'Écran de confirmation'
+  };
+
+  /** The one parameter worth showing per event type. */
+  function eventDetail(event) {
+    if (event.percent_scrolled) return event.percent_scrolled + ' %';
+    if (event.item_name) return event.item_name;
+    if (event.villa) return event.villa + (event.cite ? ' · ' + event.cite : '');
+    if (event.location) return LOCATIONS[event.location] || event.location;
+    if (event.slide_index) return 'slide ' + event.slide_index;
+    if (event.source) return event.source;
+    return event.path || '—';
+  }
+
+  function loadEvents() {
+    return api('/admin/api/events?limit=200').then(function (data) {
+      if (!data.ok) return;
+      var body = $('events');
+      body.innerHTML = '';
+
+      data.events.forEach(function (event) {
+        var row = document.createElement('tr');
+        row.style.cursor = 'default';
+        var cells = [
+          [formatDate(event.at), 'dim'],
+          [EVENT_LABELS[event.name] || event.name, ''],
+          [eventDetail(event), 'dim'],
+          [event.device || '—', 'dim'],
+          // Only the first characters: enough to follow one visit through the
+          // log, not enough to be a durable identifier.
+          [(event.sid || '').slice(0, 8) || '—', 'dim']
+        ];
+        cells.forEach(function (cell) {
+          var td = document.createElement('td');
+          if (cell[1]) td.className = cell[1];
+          text(td, cell[0]);
+          row.appendChild(td);
+        });
+        body.appendChild(row);
+      });
+
+      $('events-empty').hidden = data.events.length > 0;
+    });
+  }
+
   // ── wiring ───────────────────────────────────────────────────────────────
 
   var debounce;
@@ -632,6 +712,7 @@
 
   loadStats();
   loadLeads();
+  loadEvents();
 })();
 </script>
 </body>

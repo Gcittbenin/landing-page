@@ -406,6 +406,37 @@ test('leaking lib/ would hand a spammer the anti-spam design', async () => {
   assert.ok(!body.includes('isHoneypotTripped'));
 });
 
+// ── The analytics beacon ────────────────────────────────────────────────────
+
+test('POST /api/event accepts a beacon and answers 204 with no body', async () => {
+  const res = await fetch(`${BASE}/api/event`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    },
+    body: JSON.stringify({ name: 'page_view', sid: 'test-session', path: '/' }),
+  });
+  assert.equal(res.status, 204);
+  assert.equal((await res.arrayBuffer()).byteLength, 0);
+  assert.equal(res.headers.get('cache-control'), 'no-store');
+});
+
+test('an unknown event name is still a 204, so nothing is probeable', async () => {
+  const res = await fetch(`${BASE}/api/event`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'admin_login' }),
+  });
+  assert.equal(res.status, 204);
+});
+
+test('GET /api/event is refused', async () => {
+  const res = await get('/api/event');
+  assert.equal(res.status, 405);
+});
+
 // ── The admin area ──────────────────────────────────────────────────────────
 
 test('/admin does not exist when no admin password is configured', async () => {

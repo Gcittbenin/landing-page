@@ -176,14 +176,28 @@ test('stats tally the dimensions the dashboard shows', async () => {
   });
 });
 
-test('the conversion rate is computed only from recorded page views', async () => {
+test('the conversion rate is computed only from recorded sessions', async () => {
   await withStore(async (store) => {
-    for (let i = 0; i < 4; i++) await store.addEvent({ name: 'page_view' });
+    for (const sid of ['a', 'b', 'c', 'd']) await store.addEvent({ name: 'page_view', sid });
     await store.addLead(lead());
 
     const stats = await store.stats();
     assert.equal(stats.pageViews, 4);
+    assert.equal(stats.sessions, 4);
     assert.equal(stats.conversionRate, 25);
+  });
+});
+
+test('page views without a session id count as views but not as sessions', async () => {
+  // Private browsing blocks sessionStorage, so the beacon sends no sid. The
+  // visit is still a page view; it just cannot be de-duplicated.
+  await withStore(async (store) => {
+    await store.addEvent({ name: 'page_view' });
+    await store.addEvent({ name: 'page_view', sid: 'a' });
+
+    const stats = await store.stats();
+    assert.equal(stats.pageViews, 2);
+    assert.equal(stats.sessions, 1);
   });
 });
 

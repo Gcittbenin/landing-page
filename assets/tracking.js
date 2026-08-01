@@ -12,6 +12,10 @@
  *   form_start       first keystroke in the form    { }
  *   form_submit      submit pressed, request sent   { villa, cite, source }
  *   generate_lead    the API confirmed the lead     { villa, cite, source, value }
+ *   scroll           25/50/75/90 % reached          { percent_scrolled }
+ *
+ * Every event is also POSTed to /api/event, our own collector, which is what
+ * feeds the conversion rate on the /admin dashboard. See sendBeacon below.
  *
  * `generate_lead` is the conversion to optimise campaigns against. It is the
  * GA4 recommended name, and it maps to the Meta Pixel standard event `Lead`.
@@ -89,6 +93,58 @@
   // volume without signal for ad optimisation, and they burn Pixel event quota.
   var GA_ONLY = { scroll: true };
 
+  // ── First-party copy ──────────────────────────────────────────────────────
+  //
+  // GA4 and the Pixel are both blocked by ad blockers and both need a Google
+  // or Meta account to read. A copy on our own server is what lets the /admin
+  // dashboard state a conversion rate at all — and it is the only one that
+  // survives a prospect who blocks third-party tags.
+  //
+  // The endpoint answers 204 whatever happens, so nothing here can surface as
+  // an error on the page. Parameters the server does not recognise are
+  // dropped there, not here: the allow-list lives in one place.
+
+  var BEACON_URL = '/api/event';
+  var SESSION_KEY = 'gcitt_sid';
+
+  /** A random id kept for one browser session. Never sent anywhere else. */
+  function sessionId() {
+    try {
+      var existing = window.sessionStorage.getItem(SESSION_KEY);
+      if (existing) return existing;
+      var fresh =
+        window.crypto && window.crypto.randomUUID
+          ? window.crypto.randomUUID()
+          : String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+      window.sessionStorage.setItem(SESSION_KEY, fresh);
+      return fresh;
+    } catch (e) {
+      // Private browsing: the visit is still counted, just not de-duplicated.
+      return '';
+    }
+  }
+
+  function sendBeacon(name, data) {
+    var payload = JSON.stringify(
+      Object.assign({ name: name, sid: sessionId(), path: window.location.pathname }, data),
+    );
+    try {
+      // sendBeacon survives the page being closed, which fetch() does not.
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(BEACON_URL, new Blob([payload], { type: 'application/json' }));
+        return;
+      }
+      fetch(BEACON_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true,
+      }).catch(function () {});
+    } catch (e) {
+      /* analytics must never break the page */
+    }
+  }
+
   /**
    * Send one event to every configured destination.
    *
@@ -120,7 +176,15 @@
       if (standard) window.fbq('track', standard, data);
       else window.fbq('trackCustom', name, data);
     }
+
+    sendBeacon(name, data);
   };
+
+  // One page_view per load, so the conversion rate has a denominator even for
+  // a visitor who reads the page and leaves. Sent to our own endpoint only:
+  // GA4's own config call already counts the page view, and routing it through
+  // gcittTrack would have GA4 count it twice.
+  sendBeacon('page_view', {});
 
   /**
    * Where the visitor came from, for the "source d'acquisition" field.
