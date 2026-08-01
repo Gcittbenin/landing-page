@@ -7,6 +7,8 @@ import { forwardToCrm } from '../lib/crm.js';
 import { loadConfig } from '../lib/config.js';
 
 const lead = {
+  firstName: 'Awa',
+  lastName: 'Diallo',
   name: 'Awa Diallo',
   email: 'awa@example.com',
   phone: '+33612345678',
@@ -160,8 +162,10 @@ test('email: builds the Resend payload with the required subject', async () => {
   assert.ok(call.body.subject.startsWith('Nouveau prospect - Demande villa GCITT'));
   assert.deepEqual(call.body.to, ['commercial@gcitt.com']);
   assert.equal(call.body.reply_to, 'awa@example.com', 'replying should reach the prospect');
-  assert.ok(call.body.html.includes('Awa Diallo'));
-  assert.ok(call.body.text.includes('Awa Diallo'));
+  // Prénom and Nom are separate rows in the alert, as they are in the form.
+  assert.ok(call.body.html.includes('Awa') && call.body.html.includes('Diallo'));
+  assert.ok(call.body.text.includes('Prénom : Awa'));
+  assert.ok(call.body.text.includes('Nom : Diallo'));
 });
 
 test('email: supports several comma-separated recipients', async () => {
@@ -282,7 +286,7 @@ test('confirmation: is responsive and renders in HTML-hostile clients', async ()
 test('confirmation: escapes a hostile name', async () => {
   const fetchImpl = stubFetch({ body: { id: 'c' } });
   await sendProspectConfirmation(
-    { ...lead, name: '<script>alert(1)</script> Diallo' }, emailConfig(), contact, { fetchImpl });
+    { ...lead, firstName: '<script>alert(1)</script>' }, emailConfig(), contact, { fetchImpl });
   const { html } = fetchImpl.calls[0].body;
   assert.ok(!html.includes('<script>alert(1)</script>'));
   assert.ok(html.includes('&lt;script&gt;'));

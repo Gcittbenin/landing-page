@@ -11,5 +11,9 @@ node_modules/
 # Written at boot by lib/startup.js
 logs/
 
+# Prospect records (lib/store.js). Personal data — never in the repository,
+# and never overwritten by a deploy: see the excludes in deploy.yml.
+data/
+
 # The FTP deploy action's sync state, created on the server
 .ftp-deploy-sync-state.json

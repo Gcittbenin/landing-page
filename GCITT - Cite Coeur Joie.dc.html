@@ -783,7 +783,7 @@ a:hover{color:#d21f2d}
       <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
         <div style="text-align:center;padding:44px 10px 10px">
           <div style="color:#1f4e96;margin-bottom:16px">{{ checkCircleBig }}</div>
-          <h3 style="font-family:'Newsreader',serif;font-size:24px;color:#12305c;margin:0 0 10px">Merci pour votre confiance, {{ form.name }}.</h3>
+          <h3 style="font-family:'Newsreader',serif;font-size:24px;color:#12305c;margin:0 0 10px">Merci pour votre confiance, {{ form.firstName }}.</h3>
           <p style="font-size:14.5px;color:#5b6472;margin:0 0 30px;line-height:1.6">Votre demande a bien été reçue. Un conseiller GCITT prendra contact avec vous dans les meilleurs délais.</p>
           <div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">
             <button sc-camel-on-click="{{ downloadIcs }}" class="gc-btn" style="background:#12305c;color:#fff;font-size:14.5px;padding:15px 22px;border:none">📅 Ajouter un rendez-vous</button>
@@ -796,15 +796,19 @@ a:hover{color:#d21f2d}
         <div style="font-weight:800;font-size:15px;color:#12305c;margin-bottom:20px">Demandez votre rendez-vous</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
-            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-name">Nom complet</label>
-            <input id="f-name" required="" name="name" autocomplete="name" value="{{ form.name }}" sc-camel-on-change="{{ nameHandler }}" style="{{ nameErrorStyle }}">
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-firstName">Prénom</label>
+            <input id="f-firstName" required="" name="firstName" autocomplete="given-name" value="{{ form.firstName }}" sc-camel-on-change="{{ firstNameHandler }}" style="{{ firstNameErrorStyle }}">
           </div>
+          <div>
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-lastName">Nom</label>
+            <input id="f-lastName" required="" name="lastName" autocomplete="family-name" value="{{ form.lastName }}" sc-camel-on-change="{{ lastNameHandler }}" style="{{ lastNameErrorStyle }}">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-email">Email</label>
             <input id="f-email" required="" type="email" name="email" autocomplete="email" value="{{ form.email }}" sc-camel-on-change="{{ emailHandler }}" style="{{ emailErrorStyle }}">
           </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-phone">Numéro WhatsApp</label>
             <input id="f-phone" required="" type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+229 01 67 21 21 28" value="{{ form.phone }}" sc-camel-on-change="{{ phoneHandler }}" style="{{ phoneErrorStyle }}">
@@ -1075,7 +1079,7 @@ class Component extends DCLogic {
     // `website` is a honeypot: hidden from people, irresistible to bots. Any
     // value in it means the submission is discarded server-side.
     form: {
-      name: '', email: '', phone: '', country: '', cite: '', villa: '', villaType: '',
+      firstName: '', lastName: '', email: '', phone: '', country: '', cite: '', villa: '', villaType: '',
       delai: '', budget: '', message: '', website: ''
     }
   };
@@ -1249,7 +1253,8 @@ class Component extends DCLogic {
     const attribution = window.gcittAttribution || {};
     const utm = attribution.utm || {};
     return {
-      name: f.name,
+      firstName: f.firstName,
+      lastName: f.lastName,
       email: f.email,
       phone: f.phone,
       country: f.country,
@@ -1271,6 +1276,9 @@ class Component extends DCLogic {
       utmTerm: utm.utmTerm || '',
       clickId: utm.clickId || '',
       pageUrl: window.location.href,
+      screen: (window.screen ? window.screen.width + 'x' + window.screen.height : ''),
+      timezone: (Intl.DateTimeFormat().resolvedOptions().timeZone || ''),
+      language: navigator.language || '',
       // Anti-spam. The server re-derives the submission time itself; this only
       // says how long the form was open.
       formOpenedAt: this.formOpenedAt,
@@ -1559,7 +1567,8 @@ class Component extends DCLogic {
       notSubmitted: !s.submitted,
       form: s.form,
       downloadIcs: this.downloadIcs,
-      nameHandler: this.fieldHandler('name'),
+      firstNameHandler: this.fieldHandler('firstName'),
+      lastNameHandler: this.fieldHandler('lastName'),
       emailHandler: this.fieldHandler('email'),
       phoneHandler: this.fieldHandler('phone'),
       countryHandler: this.fieldHandler('country'),
@@ -1583,7 +1592,8 @@ class Component extends DCLogic {
       },
       formError: s.formError,
       hasFormError: !!s.formError,
-      nameErrorStyle: this.fieldStyle('name'),
+      firstNameErrorStyle: this.fieldStyle('firstName'),
+      lastNameErrorStyle: this.fieldStyle('lastName'),
       emailErrorStyle: this.fieldStyle('email'),
       phoneErrorStyle: this.fieldStyle('phone'),
 
@@ -1596,7 +1606,7 @@ class Component extends DCLogic {
       // enquiry wording; the other two are contextual.
       waFloatingHref: 'https://wa.me/2290167212128?text=' + encodeURIComponent("Bonjour GCITT, je souhaite obtenir des informations sur vos villas disponibles."),
       waConsultHref: 'https://wa.me/2290167212128?text=' + encodeURIComponent("Bonjour, je souhaite parler à un conseiller GCITT au sujet d’un projet de construction."),
-      waContinueHref: 'https://wa.me/2290167212128?text=' + encodeURIComponent('Bonjour, je viens de faire une demande de rendez-vous sur le site GCITT' + (s.form.name ? ' (' + s.form.name + ')' : '') + (s.form.villa ? ' pour la ' + s.form.villa : '') + '. Merci de me recontacter.'),
+      waContinueHref: 'https://wa.me/2290167212128?text=' + encodeURIComponent('Bonjour, je viens de faire une demande de rendez-vous sur le site GCITT' + (s.form.firstName ? ' (' + s.form.firstName + ' ' + s.form.lastName + ')' : '') + (s.form.villa ? ' pour la ' + s.form.villa : '') + '. Merci de me recontacter.'),
 
       problemCards: [
         { icon: this.icon('shield'), title: 'Sécurité de l’investissement', text: 'Votre argent est précieux. Nous sécurisons chaque étape de votre projet.' },

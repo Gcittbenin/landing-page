@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import { validateLead, normalisePhone, isHoneypotTripped } from '../lib/validate.js';
 
 const base = {
-  name: 'Awa Diallo',
+  firstName: 'Awa',
+  lastName: 'Diallo',
   email: 'awa@example.com',
   phone: '+33612345678',
 };
@@ -12,7 +13,9 @@ const base = {
 test('accepts a well-formed submission', () => {
   const r = validateLead(base);
   assert.equal(r.ok, true);
-  assert.equal(r.lead.name, 'Awa Diallo');
+  assert.equal(r.lead.firstName, 'Awa');
+  assert.equal(r.lead.lastName, 'Diallo');
+  assert.equal(r.lead.name, 'Awa Diallo', 'the display name is composed server-side');
   assert.equal(r.lead.email, 'awa@example.com');
   assert.equal(r.lead.phone, '+33612345678');
   assert.equal(r.lead.source, 'Direct', 'source defaults to Direct');
@@ -25,9 +28,14 @@ test('lower-cases and trims the email', () => {
 });
 
 test('rejects a missing name, bad email and short phone together', () => {
-  const r = validateLead({ name: 'A', email: 'not-an-email', phone: '12' });
+  const r = validateLead({ firstName: 'A', lastName: '', email: 'not-an-email', phone: '12' });
   assert.equal(r.ok, false);
-  assert.deepEqual(Object.keys(r.errors).sort(), ['email', 'name', 'phone']);
+  assert.deepEqual(Object.keys(r.errors).sort(), ['email', 'firstName', 'lastName', 'phone']);
+});
+
+test('a client-supplied name field cannot override the composed one', () => {
+  const r = validateLead({ ...base, name: 'Administrateur' });
+  assert.equal(r.lead.name, 'Awa Diallo');
 });
 
 test('rejects an email with no dot in the domain', () => {
@@ -61,8 +69,8 @@ test('drops values outside the allow-lists', () => {
 });
 
 test('strips control characters and caps field length', () => {
-  const r = validateLead({ ...base, name: 'Awa\u0000\u0007 \t Diallo', message: 'x'.repeat(5000) });
-  assert.equal(r.lead.name, 'Awa Diallo');
+  const r = validateLead({ ...base, lastName: 'Dia\u0000\u0007 \t llo', message: 'x'.repeat(5000) });
+  assert.equal(r.lead.lastName, 'Dia llo');
   assert.equal(r.lead.message.length, 2000);
 });
 

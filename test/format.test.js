@@ -13,6 +13,8 @@ import {
 } from '../lib/format.js';
 
 const lead = {
+  firstName: 'Awa',
+  lastName: 'Diallo',
   name: 'Awa Diallo',
   email: 'awa@example.com',
   phone: '+33612345678',
@@ -103,7 +105,7 @@ test('escapeHtml neutralises markup', () => {
 });
 
 test('the HTML email escapes hostile lead values', () => {
-  const html = emailHtml({ ...lead, name: '<script>alert(1)</script>', message: '<b>hi</b>' });
+  const html = emailHtml({ ...lead, lastName: '<script>alert(1)</script>', message: '<b>hi</b>' });
   assert.ok(!html.includes('<script>'), 'raw script tag must not survive');
   assert.ok(html.includes('&lt;script&gt;'));
   assert.ok(html.includes('&lt;b&gt;hi&lt;/b&gt;'));
@@ -121,7 +123,8 @@ test('the HTML email offers a WhatsApp reply link to the prospect', () => {
 test('the text email lists every captured field', () => {
   const text = emailText(lead);
   for (const expected of [
-    'Awa Diallo',
+    'Prénom : Awa',
+    'Nom : Diallo',
     '+33612345678',
     'awa@example.com',
     'France',
@@ -138,7 +141,7 @@ test('the text email lists every captured field', () => {
 });
 
 test('empty optional fields render as a dash, not "undefined"', () => {
-  const text = emailText({ name: 'X', email: 'x@y.co', phone: '+229', submittedAt: lead.submittedAt });
+  const text = emailText({ firstName: 'X', email: 'x@y.co', phone: '+229', submittedAt: lead.submittedAt });
   assert.ok(!text.includes('undefined'));
   assert.ok(text.includes('—'));
 });

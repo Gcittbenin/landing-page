@@ -9,13 +9,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { once } from 'node:events';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const PORT = 39_517;
 const BASE = `http://127.0.0.1:${PORT}`;
+
+// The spawned server writes real prospect records; keep them out of the repo.
+const DATA_DIR = mkdtempSync(join(tmpdir(), 'gcitt-server-'));
 
 let child;
 
@@ -33,6 +38,8 @@ test.before(async () => {
       // endpoint answers 200 without making a single outbound call.
       META_WHATSAPP_TOKEN: '',
       EMAIL_API_KEY: '',
+      DATA_DIR,
+      ADMIN_PASSWORD: '',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -55,9 +62,14 @@ test.before(async () => {
 });
 
 test.after(async () => {
-  if (!child || child.exitCode !== null) return;
-  child.kill('SIGTERM');
-  await once(child, 'exit');
+  try {
+    if (child && child.exitCode === null) {
+      child.kill('SIGTERM');
+      await once(child, 'exit');
+    }
+  } finally {
+    rmSync(DATA_DIR, { recursive: true, force: true });
+  }
 });
 
 const get = (path, headers = {}) => fetch(BASE + path, { headers, redirect: 'manual' });
@@ -215,7 +227,8 @@ test('HEAD returns the headers without a body', async () => {
 // ── The lead endpoint, end to end through the real server ───────────────────
 
 const lead = (extra = {}) => ({
-  name: 'Awa Diallo',
+  firstName: 'Awa',
+  lastName: 'Diallo',
   email: 'awa@example.com',
   phone: '0167212128',
   villa: 'Villa Fenou (F4)',
@@ -235,7 +248,11 @@ test('POST /api/lead accepts a valid submission', async () => {
   const json = await res.json();
   assert.equal(json.ok, true);
   // Nothing is configured in this test process, so every channel is skipped.
-  assert.deepEqual(Object.keys(json.delivered).sort(), ['confirmation', 'crm', 'email', 'whatsapp']);
+  assert.deepEqual(
+    Object.keys(json.delivered).sort(),
+    ['confirmation', 'crm', 'email', 'stored', 'whatsapp'],
+  );
+  assert.equal(json.delivered.stored, true, 'the lead reaches the local store');
 });
 
 test('GET /api/lead is rejected', async () => {

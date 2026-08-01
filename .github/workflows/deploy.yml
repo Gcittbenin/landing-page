@@ -42,11 +42,15 @@ jobs:
           # exclusion, ce fichier écrase à chaque déploiement le journal de
           # démarrage de la production — précisément la trace dont on a besoin
           # quand l'application ne démarre pas.
+          #
+          # data/ pour la même raison, en plus grave : c'est la base des
+          # prospects. Un déploiement ne doit jamais la remplacer ni la vider.
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             logs/**
+            data/**
             test/**
             docs/**
             *.md
