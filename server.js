@@ -135,21 +135,25 @@ const SECURITY_HEADERS = {
  * Compressed and hashed file cache.
  *
  * The site is a few dozen small files, so holding the encoded bytes in memory
- * avoids re-reading and re-compressing on every request. Entries are keyed by
- * path and never invalidated: a restart picks up any change, which is what a
- * deploy does anyway.
+ * avoids re-reading and re-compressing on every request.
+ *
+ * Entries are invalidated when the file's mtime or size changes. That matters:
+ * the FTP deploy overwrites files under a long-running process, and a cache
+ * that only cleared on restart would keep serving the previous version until
+ * someone remembered to restart Passenger.
  */
 const fileCache = new Map();
 
-async function loadFile(filePath) {
+async function loadFile(filePath, stamp) {
   const cached = fileCache.get(filePath);
-  if (cached) return cached;
+  if (cached && cached.stamp === stamp) return cached;
 
   const raw = await readFile(filePath);
   const type = MIME[extname(filePath).toLowerCase()] || 'application/octet-stream';
   const entry = {
     raw,
     type,
+    stamp,
     etag: `"${createHash('sha1').update(raw).digest('base64url').slice(0, 20)}"`,
     gzip: null,
     br: null,
@@ -356,7 +360,8 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    const entry = await loadFile(filePath);
+    // mtime + size identifies the version on disk; a deploy changes both.
+    const entry = await loadFile(filePath, `${info.mtimeMs}:${info.size}`);
 
     // Conditional request: nothing to send if the client already has it.
     if (req.headers['if-none-match'] === entry.etag) {

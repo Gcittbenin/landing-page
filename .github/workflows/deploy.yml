@@ -14,6 +14,17 @@ jobs:
       - name: Récupérer le dépôt
         uses: actions/checkout@v4
 
+      - name: Vérifier le projet avant envoi
+        run: npm test
+
+      # Passenger surveille la date de modification de tmp/restart.txt et
+      # relance l'application quand elle change. Sans cela, le processus Node
+      # déjà lancé garderait l'ancien code en mémoire et le déploiement
+      # n'aurait aucun effet visible. Le contenu doit varier à chaque
+      # exécution : l'action FTP ignore les fichiers inchangés.
+      - name: Préparer le redémarrage Passenger
+        run: echo "deploy ${{ github.sha }} $(date -u +%FT%TZ)" >> tmp/restart.txt
+
       - name: Déployer via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -23,3 +34,14 @@ jobs:
           port: ${{ secrets.FTP_PORT }}
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           dangerous-clean-slate: false
+          # Rien de tout cela n'a sa place sur le serveur : le code de test, la
+          # documentation et la configuration Vercel ne servent pas la page.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            test/**
+            docs/**
+            *.md
+            vercel.json
+            .env.example

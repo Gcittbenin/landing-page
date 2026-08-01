@@ -1,0 +1,656 @@
+/* GCITT landing page — design system.
+ *
+ * The page was authored with every rule in an inline style attribute, which
+ * cannot express :hover, :focus-visible, transitions or keyframes, and which
+ * had drifted: nine different border radii, six ad-hoc shadows, font sizes on
+ * no scale (13.8 / 14.5 / 15.5 / 16.5px), three section paddings.
+ *
+ * This file supplies the missing layer. Elements carry `gc-*` classes and the
+ * rules below own the interaction states and the normalised tokens. Inline
+ * styles still hold the layout, so !important appears only where a token is
+ * deliberately replacing an inline value.
+ *
+ * Load order: fonts.css → design-system.css → responsive.css.
+ * responsive.css must stay last so its breakpoints win.
+ */
+
+:root {
+  /* Brand */
+  --gc-navy: #12305c;
+  --gc-navy-deep: #0d2447;
+  --gc-navy-soft: #1f4e96;
+  --gc-red: #d21f2d;
+  --gc-red-dark: #b5121f;
+  --gc-green: #178541;
+  --gc-green-dark: #126a34;
+
+  /* Ink */
+  --gc-ink: #1c2430;
+  --gc-ink-2: #4c5566;
+  --gc-ink-3: #5b6472;
+
+  /* Surfaces */
+  --gc-bg: #fbfaf7;
+  --gc-surface: #ffffff;
+  --gc-surface-2: #f3f4f6;
+  --gc-surface-3: #f8f9fb;
+  --gc-border: #e2e6ee;
+
+  /* Radii — one scale, replacing 8/9/10/12/14/16/18 */
+  --gc-r-sm: 10px;
+  --gc-r-md: 14px;
+  --gc-r-lg: 18px;
+  --gc-r-pill: 999px;
+
+  /* Elevation — one ramp, replacing six one-off shadows */
+  --gc-shadow-1: 0 1px 2px rgba(18, 48, 92, 0.04), 0 2px 8px rgba(18, 48, 92, 0.05);
+  --gc-shadow-2: 0 2px 4px rgba(18, 48, 92, 0.05), 0 8px 24px rgba(18, 48, 92, 0.08);
+  --gc-shadow-3: 0 4px 8px rgba(18, 48, 92, 0.06), 0 18px 44px rgba(18, 48, 92, 0.13);
+  --gc-shadow-red: 0 4px 10px rgba(210, 31, 45, 0.22), 0 12px 28px rgba(210, 31, 45, 0.24);
+  --gc-shadow-red-hover: 0 6px 14px rgba(210, 31, 45, 0.26), 0 18px 40px rgba(210, 31, 45, 0.3);
+  --gc-shadow-green: 0 4px 10px rgba(23, 133, 65, 0.24), 0 12px 28px rgba(23, 133, 65, 0.28);
+
+  /* Motion — one easing, three durations */
+  --gc-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --gc-fast: 140ms;
+  --gc-base: 240ms;
+  --gc-slow: 620ms;
+}
+
+/* ── Focus ────────────────────────────────────────────────────────────────
+ * A single visible focus ring on every interactive element. :focus-visible so
+ * it appears for keyboard users without ringing every mouse click.           */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid rgba(31, 78, 150, 0.55);
+  outline-offset: 3px;
+  border-radius: var(--gc-r-sm);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────
+ * One geometry for every call to action: same optical padding, same radius,
+ * same transition. Only the skin changes.                                    */
+.gc-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: var(--gc-r-sm) !important;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform var(--gc-base) var(--gc-ease),
+    box-shadow var(--gc-base) var(--gc-ease),
+    background-color var(--gc-fast) var(--gc-ease),
+    border-color var(--gc-fast) var(--gc-ease),
+    color var(--gc-fast) var(--gc-ease);
+}
+
+/* The arrow glyph leads the eye forward on hover. */
+.gc-btn svg {
+  transition: transform var(--gc-base) var(--gc-ease);
+}
+.gc-btn:hover svg {
+  transform: translateX(3px);
+}
+
+.gc-btn:active {
+  transform: translateY(0) scale(0.985);
+  transition-duration: var(--gc-fast);
+}
+
+/* Primary — the one action the page is built around. */
+.gc-btn--primary {
+  background: linear-gradient(180deg, #e02634 0%, var(--gc-red) 55%, #c31b28 100%) !important;
+  color: #fff !important;
+  border: none;
+  box-shadow: var(--gc-shadow-red) !important;
+}
+.gc-btn--primary:hover {
+  background: linear-gradient(180deg, #e8303e 0%, #cd1c2a 55%, #b5121f 100%) !important;
+  box-shadow: var(--gc-shadow-red-hover) !important;
+  transform: translateY(-2px);
+  color: #fff !important;
+}
+
+/* Secondary — present, never competing with the primary. */
+.gc-btn--secondary {
+  background: var(--gc-surface) !important;
+  color: var(--gc-navy) !important;
+  border: 1.5px solid rgba(18, 48, 92, 0.35) !important;
+  box-shadow: var(--gc-shadow-1) !important;
+}
+.gc-btn--secondary:hover {
+  border-color: var(--gc-navy) !important;
+  background: #f7f9fc !important;
+  box-shadow: var(--gc-shadow-2) !important;
+  transform: translateY(-2px);
+  color: var(--gc-navy) !important;
+}
+
+/* Ghost — for the navy panel, where a white button would shout. */
+.gc-btn--ghost {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  color: #fff !important;
+}
+.gc-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  transform: translateY(-2px);
+  color: #fff !important;
+}
+
+.gc-btn--whatsapp {
+  background: var(--gc-green) !important;
+  color: #fff !important;
+  box-shadow: var(--gc-shadow-green) !important;
+}
+.gc-btn--whatsapp:hover {
+  background: var(--gc-green-dark) !important;
+  transform: translateY(-2px);
+  color: #fff !important;
+}
+
+.gc-btn[disabled] {
+  cursor: progress;
+  transform: none !important;
+  box-shadow: none !important;
+}
+/* The submitting state used to come from an inline grey background, which the
+ * primary gradient above now wins against. State it here instead, so "Envoi en
+ * cours…" is unmistakably inactive rather than a still-red button. */
+.gc-btn--primary[disabled],
+.gc-btn--primary[disabled]:hover {
+  background: linear-gradient(180deg, #a9b2c0 0%, #98a2b2 100%) !important;
+  color: #fff !important;
+  transform: none !important;
+}
+
+/* Nav call to action: slightly tighter than the hero pair. */
+.gc-btn--nav {
+  padding: 12px 22px !important;
+  font-size: 14.5px !important;
+}
+
+/* ── Navigation ───────────────────────────────────────────────────────────*/
+.gc-nav {
+  box-shadow: 0 1px 0 rgba(18, 48, 92, 0.07);
+  transition: box-shadow var(--gc-base) var(--gc-ease), background-color var(--gc-base) var(--gc-ease);
+}
+.gc-nav__link {
+  position: relative;
+  padding: 6px 2px;
+  transition: color var(--gc-fast) var(--gc-ease);
+}
+/* Underline grows from the centre — a small signal that the link is live. */
+.gc-nav__link::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  right: 50%;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--gc-red);
+  transition: left var(--gc-base) var(--gc-ease), right var(--gc-base) var(--gc-ease);
+}
+.gc-nav__link:hover::after {
+  left: 0;
+  right: 0;
+}
+.gc-nav__link:hover {
+  color: var(--gc-red) !important;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────────*/
+.gc-hero {
+  position: relative;
+  isolation: isolate;
+  /* The wash below is a pseudo-element, so it does not show up in a scan of
+   * over-wide *elements* — but it still widens the document. Negative
+   * horizontal insets here cost exactly their percentage in page overflow, so
+   * the wash stays inside the box and `clip` guarantees it. */
+  overflow: clip;
+}
+/* A very quiet warm wash behind the headline, so the hero reads as a
+ * composed surface rather than an empty page. */
+.gc-hero::before {
+  content: '';
+  position: absolute;
+  inset: -10% 0 auto 0;
+  height: 130%;
+  z-index: -1;
+  background:
+    radial-gradient(58% 62% at 22% 32%, rgba(31, 78, 150, 0.09) 0%, rgba(31, 78, 150, 0) 70%),
+    radial-gradient(45% 55% at 78% 18%, rgba(210, 31, 45, 0.055) 0%, rgba(210, 31, 45, 0) 72%);
+  pointer-events: none;
+}
+
+.gc-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 15px 7px 11px;
+  border-radius: var(--gc-r-pill);
+  background: rgba(31, 78, 150, 0.08);
+  border: 1px solid rgba(31, 78, 150, 0.16);
+  color: var(--gc-navy-soft);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.gc-eyebrow__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gc-green);
+  box-shadow: 0 0 0 3px rgba(23, 133, 65, 0.18);
+}
+
+/* Hero collage: a shared radius and one shadow instead of three flat tiles. */
+.gc-hero__grid img {
+  border-radius: var(--gc-r-md) !important;
+  box-shadow: var(--gc-shadow-2);
+  transition: transform var(--gc-slow) var(--gc-ease), box-shadow var(--gc-slow) var(--gc-ease);
+}
+.gc-hero__grid img:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--gc-shadow-3);
+}
+
+/* Trust row under the CTAs. */
+.gc-trust {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.gc-trust svg {
+  flex: none;
+}
+
+/* ── Entrance animation ───────────────────────────────────────────────────
+ * The component sets opacity/transform inline via revealStyle(); this only
+ * adds the staggered delay so a section resolves as a sequence rather than
+ * all at once.                                                              */
+[data-reveal-key] > * {
+  transition: inherit;
+}
+.gc-stagger > * {
+  animation: gc-rise var(--gc-slow) var(--gc-ease) both;
+}
+.gc-stagger > *:nth-child(1) { animation-delay: 40ms; }
+.gc-stagger > *:nth-child(2) { animation-delay: 110ms; }
+.gc-stagger > *:nth-child(3) { animation-delay: 180ms; }
+.gc-stagger > *:nth-child(4) { animation-delay: 250ms; }
+.gc-stagger > *:nth-child(5) { animation-delay: 320ms; }
+.gc-stagger > *:nth-child(6) { animation-delay: 390ms; }
+
+@keyframes gc-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Cards ────────────────────────────────────────────────────────────────*/
+.gc-card {
+  border-radius: var(--gc-r-md) !important;
+  box-shadow: var(--gc-shadow-1) !important;
+  border: 1px solid var(--gc-border);
+  transition:
+    transform var(--gc-base) var(--gc-ease),
+    box-shadow var(--gc-base) var(--gc-ease),
+    border-color var(--gc-base) var(--gc-ease);
+}
+.gc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--gc-shadow-2) !important;
+  border-color: rgba(31, 78, 150, 0.24);
+}
+.gc-card__icon {
+  transition: transform var(--gc-base) var(--gc-ease), background-color var(--gc-base) var(--gc-ease);
+}
+.gc-card:hover .gc-card__icon {
+  transform: scale(1.06);
+  background: #dfe9fb !important;
+}
+
+/* ── Villa cards ──────────────────────────────────────────────────────────*/
+.gc-villa {
+  border-radius: var(--gc-r-lg) !important;
+  box-shadow: var(--gc-shadow-2) !important;
+  border: 1px solid var(--gc-border);
+  overflow: hidden;
+  transition:
+    transform var(--gc-base) var(--gc-ease),
+    box-shadow var(--gc-base) var(--gc-ease),
+    border-color var(--gc-base) var(--gc-ease);
+}
+.gc-villa:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--gc-shadow-3) !important;
+  border-color: rgba(31, 78, 150, 0.2);
+}
+.gc-villa__media {
+  position: relative;
+  overflow: hidden;
+}
+.gc-villa__media img {
+  transition: transform 900ms var(--gc-ease);
+}
+.gc-villa:hover .gc-villa__media img {
+  transform: scale(1.05);
+}
+/* Keeps the white tag legible whatever the photo behind it. */
+.gc-villa__media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(12, 22, 42, 0.34) 0%, rgba(12, 22, 42, 0) 38%);
+  pointer-events: none;
+}
+.gc-villa__tag {
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  z-index: 1;
+}
+.gc-villa__price {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.gc-chip {
+  border-radius: var(--gc-r-pill) !important;
+  border: 1px solid rgba(18, 48, 92, 0.09);
+  transition: background-color var(--gc-fast) var(--gc-ease), border-color var(--gc-fast) var(--gc-ease);
+}
+.gc-villa:hover .gc-chip {
+  background: #eef1f7 !important;
+  border-color: rgba(18, 48, 92, 0.14);
+}
+/* Specs revealed by "Voir les détails". */
+.gc-villa__specs {
+  animation: gc-expand var(--gc-base) var(--gc-ease) both;
+}
+@keyframes gc-expand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+.gc-link-btn {
+  position: relative;
+  transition: color var(--gc-fast) var(--gc-ease);
+}
+.gc-link-btn::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: 2px;
+  height: 1.5px;
+  background: currentColor;
+  transition: right var(--gc-base) var(--gc-ease);
+}
+.gc-link-btn:hover::after {
+  right: 0;
+}
+
+/* ── Journey timeline ─────────────────────────────────────────────────────*/
+.gc-step__num {
+  position: relative;
+  transition: transform var(--gc-base) var(--gc-ease), box-shadow var(--gc-base) var(--gc-ease);
+  box-shadow: 0 0 0 6px var(--gc-surface-2), var(--gc-shadow-1);
+}
+.gc-step:hover .gc-step__num {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 6px var(--gc-surface-2), var(--gc-shadow-2);
+}
+.gc-step {
+  transition: transform var(--gc-base) var(--gc-ease);
+}
+.gc-step:hover {
+  transform: translateY(-3px);
+}
+/* The rail behind the steps: a gradient reads as progress, a flat line does
+ * not, and it fades at both ends instead of stopping dead. */
+.gc-timeline__rail {
+  background: linear-gradient(
+    90deg,
+    rgba(18, 48, 92, 0) 0%,
+    rgba(18, 48, 92, 0.28) 12%,
+    rgba(18, 48, 92, 0.28) 88%,
+    rgba(18, 48, 92, 0) 100%
+  ) !important;
+}
+
+/* ── Process strip on the navy panel ──────────────────────────────────────*/
+.gc-process__icon {
+  transition: transform var(--gc-base) var(--gc-ease), background-color var(--gc-base) var(--gc-ease);
+}
+.gc-process__item:hover .gc-process__icon {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* ── Site progress gallery ────────────────────────────────────────────────*/
+.gc-gallery__item {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--gc-r-md);
+  box-shadow: var(--gc-shadow-2);
+  transition: transform var(--gc-base) var(--gc-ease), box-shadow var(--gc-base) var(--gc-ease);
+}
+.gc-gallery__item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--gc-shadow-3);
+}
+.gc-gallery__item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 900ms var(--gc-ease);
+}
+.gc-gallery__item:hover img {
+  transform: scale(1.06);
+}
+.gc-gallery__caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 34px 18px 16px;
+  background: linear-gradient(180deg, rgba(10, 20, 38, 0) 0%, rgba(10, 20, 38, 0.82) 100%);
+  color: #fff;
+  pointer-events: none;
+}
+.gc-gallery__label {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.gc-gallery__meta {
+  display: block;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.78);
+  margin-top: 3px;
+}
+.gc-slot {
+  border: 1.5px dashed #c7cede;
+  border-radius: var(--gc-r-md);
+  background: var(--gc-surface-3);
+  transition: border-color var(--gc-base) var(--gc-ease), background-color var(--gc-base) var(--gc-ease);
+}
+.gc-slot:hover {
+  border-color: var(--gc-navy-soft);
+  background: #f2f5fb;
+}
+
+/* ── FAQ ──────────────────────────────────────────────────────────────────*/
+.gc-faq {
+  border-radius: var(--gc-r-md) !important;
+  border: 1px solid var(--gc-border);
+  box-shadow: var(--gc-shadow-1) !important;
+  overflow: hidden;
+  transition: box-shadow var(--gc-base) var(--gc-ease), border-color var(--gc-base) var(--gc-ease);
+}
+.gc-faq:hover {
+  border-color: rgba(31, 78, 150, 0.24);
+  box-shadow: var(--gc-shadow-2) !important;
+}
+.gc-faq__q {
+  width: 100%;
+  transition: background-color var(--gc-fast) var(--gc-ease), color var(--gc-fast) var(--gc-ease);
+  /* Room for the chevron, so long questions never collide with it. */
+  gap: 18px;
+}
+.gc-faq__q:hover {
+  background: var(--gc-surface-3) !important;
+  color: var(--gc-navy-soft) !important;
+}
+.gc-faq__a {
+  animation: gc-expand var(--gc-base) var(--gc-ease) both;
+}
+
+/* ── Form ─────────────────────────────────────────────────────────────────*/
+.gc-field {
+  transition: border-color var(--gc-fast) var(--gc-ease), box-shadow var(--gc-fast) var(--gc-ease);
+}
+.gc-field:hover {
+  border-color: #c3cbd8 !important;
+}
+.gc-field:focus {
+  outline: none;
+  border-color: var(--gc-navy-soft) !important;
+  box-shadow: 0 0 0 3px rgba(31, 78, 150, 0.14);
+}
+.gc-form-panel {
+  border-radius: var(--gc-r-lg) !important;
+  box-shadow: var(--gc-shadow-3) !important;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────*/
+.gc-footer__link {
+  transition: color var(--gc-fast) var(--gc-ease), transform var(--gc-fast) var(--gc-ease);
+  display: inline-block;
+}
+.gc-footer__link:hover {
+  color: #fff !important;
+  transform: translateX(3px);
+}
+.gc-social {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background-color var(--gc-base) var(--gc-ease), transform var(--gc-base) var(--gc-ease);
+}
+.gc-social:hover {
+  background: var(--gc-red);
+  transform: translateY(-3px);
+}
+.gc-social svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+/* ── Floating WhatsApp ────────────────────────────────────────────────────*/
+.gc-fab {
+  transition: transform var(--gc-base) var(--gc-ease), box-shadow var(--gc-base) var(--gc-ease);
+}
+.gc-fab:hover {
+  transform: scale(1.07) translateY(-2px);
+  box-shadow: 0 16px 36px rgba(23, 133, 65, 0.5);
+}
+
+/* ── Section furniture ────────────────────────────────────────────────────*/
+.gc-kicker {
+  display: inline-block;
+  color: var(--gc-red);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* Optical balance for the serif headings: the default tracking is loose at
+ * display sizes. */
+.gc-h2 {
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────
+ * Everything above is decorative. Honour the preference completely.         */
+@media (prefers-reduced-motion: reduce) {
+  .gc-btn,
+  .gc-card,
+  .gc-villa,
+  .gc-step,
+  .gc-gallery__item,
+  .gc-faq,
+  .gc-social,
+  .gc-fab {
+    transition: none !important;
+  }
+  .gc-btn:hover,
+  .gc-card:hover,
+  .gc-villa:hover,
+  .gc-step:hover,
+  .gc-gallery__item:hover,
+  .gc-social:hover,
+  .gc-fab:hover {
+    transform: none !important;
+  }
+  .gc-stagger > *,
+  .gc-faq__a,
+  .gc-villa__specs {
+    animation: none !important;
+  }
+}
+
+/* ── Site progress mosaic: desktop spans ──────────────────────────────────
+ * A 4-column grid: the team shot anchors the block at 2x2, the row of
+ * finished villas runs along the top, and the two details sit beneath it.
+ * responsive.css unwinds all of it below 1024px.                            */
+.gc-gallery__item--hero {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+.gc-gallery__item--wide {
+  grid-column: span 2;
+}
+
+/* ── Anchor navigation ────────────────────────────────────────────────────
+ * The nav is sticky and 73px tall, so every in-page link was landing with the
+ * section heading hidden underneath it — including "Choisir cette villa",
+ * which jumps to the form. scroll-margin-top parks each target below the bar. */
+html {
+  scroll-behavior: smooth;
+}
+main > section,
+#coeur-joie,
+#bethel {
+  scroll-margin-top: 96px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+@media (max-width: 640px) {
+  main > section,
+  #coeur-joie,
+  #bethel {
+    scroll-margin-top: 74px;
+  }
+}

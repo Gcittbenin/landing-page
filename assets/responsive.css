@@ -156,3 +156,70 @@
   }
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ── Site progress mosaic ─────────────────────────────────────────────────
+ * The desktop mosaic is a 4-column grid with 2x2 and 1x2 spans. The generic
+ * grid collapse above sets one column, so the spans have to be unwound too or
+ * the items would keep reserving two tracks that no longer exist.            */
+@media (max-width: 1024px) {
+  #confiance .gc-gallery {
+    grid-template-columns: 1fr 1fr !important;
+    grid-auto-rows: 190px !important;
+  }
+  .gc-gallery__item--hero {
+    grid-column: span 2 !important;
+    grid-row: span 1 !important;
+  }
+  .gc-gallery__item--wide {
+    grid-column: span 2 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #confiance .gc-gallery {
+    grid-template-columns: 1fr !important;
+    grid-auto-rows: 200px !important;
+  }
+  .gc-gallery__item--hero,
+  .gc-gallery__item--wide {
+    grid-column: span 1 !important;
+  }
+  .gc-gallery__caption {
+    padding: 28px 14px 13px !important;
+  }
+}
+
+/* ── Villa cards on small screens ─────────────────────────────────────────
+ * The title and price share a row via space-between. In a 340px column that
+ * squeezes "Villa Fenou F4" onto two lines beside the price, and pushes
+ * "Voir les détails" into a second line next to the primary button. Stack
+ * them instead — there is no width to negotiate over. */
+@media (max-width: 640px) {
+  .gc-villa [style*="justify-content:space-between"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  .gc-villa h3 {
+    font-size: 22px !important;
+    line-height: 1.25 !important;
+  }
+  .gc-villa .gc-villa__price {
+    font-size: 20px !important;
+  }
+  /* Action row: primary full width, the toggle beneath it. */
+  .gc-villa [style*="display:flex;gap:12px"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+  }
+  .gc-villa .gc-link-btn {
+    text-align: center;
+    padding: 10px 2px !important;
+  }
+}
+
+/* Tablet: two-up villa cards would be too narrow, keep them full width. */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .gc-villa h3 { font-size: 23px !important; }
+}
