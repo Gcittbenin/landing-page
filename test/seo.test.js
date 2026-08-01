@@ -126,8 +126,8 @@ test('JSON-LD prices match the prices shown on the page', () => {
   // Google penalises structured data that contradicts the visible page.
   assert.equal(byName['Villa Fenou (F4) — Cité Cœur Joie'], '49000000');
   assert.equal(byName['Villa Kafui (Duplex) — Cité Cœur Joie'], '80000000');
-  assert.equal(byName['Villa Bethel (F4) — Cité Bethel'], '39000000');
-  assert.equal(byName['Villa Bethel (Duplex) — Cité Bethel'], '72000000');
+  assert.equal(byName['Villa Bethel (F4) — Cité Béthel'], '39000000');
+  assert.equal(byName['Villa Bethel (Duplex) — Cité Béthel'], '72000000');
 
   for (const price of ['49 000 000 FCFA', '80 000 000 FCFA', '39 000 000 FCFA', '72 000 000 FCFA']) {
     assert.ok(html.includes(price), `price ${price} not visible on the page`);
@@ -164,14 +164,23 @@ test('the manifest is valid JSON with icons that exist', () => {
 
 test('below-the-fold images are lazy and above-the-fold ones are not', () => {
   const imgs = html.match(/<img [^>]*>/g) ?? [];
-  assert.equal(imgs.length, 11);
+  assert.ok(imgs.length >= 11, `only ${imgs.length} images`);
 
-  const hero = imgs.find((t) => t.includes('HEVIE CJ .jpg'));
-  assert.ok(hero.includes('fetchpriority="high"'), 'the LCP image must not be deprioritised');
-  assert.ok(!hero.includes('loading="lazy"'), 'the LCP image must not be lazy-loaded');
+  // The hero is now a slider: its imagery is data-driven, and the priority /
+  // loading hints are decided per slide in renderVals. The template tag must
+  // therefore bind them rather than hard-code them.
+  const heroTag = imgs.find((t) => t.includes('{{ img.src }}'));
+  assert.ok(heroTag, 'hero slider image tag missing');
+  assert.match(heroTag, /fetchpriority="\{\{ img\.priority \}\}"/);
+  assert.match(heroTag, /loading="\{\{ img\.loading \}\}"/);
 
   const closing = imgs.find((t) => t.includes('FENOU NUIT (2).jpg'));
   assert.ok(closing.includes('loading="lazy"'));
+
+  // The nav logo is the only eager static image; everything else defers.
+  const statics = imgs.filter((t) => !t.includes('{{'));
+  const eager = statics.filter((t) => !t.includes('loading="lazy"'));
+  assert.equal(eager.length, 1, 'only the nav logo should load eagerly');
 
   // Intrinsic dimensions on every image, so nothing reflows as it loads.
   for (const tag of imgs) {

@@ -269,6 +269,9 @@ function resolveStatic(urlPath) {
 
 const STARTED_AT = Date.now();
 
+/** 1x1 transparent GIF, for the placeholder response above. */
+const PIXEL = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+
 const server = createServer(async (req, res) => {
   const urlPath = (req.url ?? '/').split('?')[0];
 
@@ -332,6 +335,24 @@ const server = createServer(async (req, res) => {
         'Cache-Control': 'no-store',
       });
       res.end(JSON.stringify(result.body));
+      return;
+    }
+
+    // ── Unhydrated template placeholders ─────────────────────────────────
+    // Chromium's preload scanner reads the raw HTML before the runtime binds
+    // anything, so it queues the literal `{{ img.src }}` as a URL — at high
+    // priority for the hero, since that tag carries fetchpriority. Answering
+    // with a 1x1 transparent GIF costs 43 bytes, keeps the console clean and
+    // stops the browser racing a request that can never succeed. The runtime
+    // overwrites the src a moment later.
+    if (urlPath.includes('{{') || urlPath.includes('%7B%7B')) {
+      res.writeHead(200, {
+        'Content-Type': 'image/gif',
+        'Content-Length': PIXEL.length,
+        'Cache-Control': 'public, max-age=86400',
+        ...SECURITY_HEADERS,
+      });
+      res.end(req.method === 'HEAD' ? undefined : PIXEL);
       return;
     }
 

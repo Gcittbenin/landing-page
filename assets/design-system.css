@@ -654,3 +654,391 @@ main > section,
     scroll-margin-top: 74px;
   }
 }
+
+/* ── Hero slider ──────────────────────────────────────────────────────────
+ * One cité per slide. Every slide stays in the DOM — crawlers read both, and
+ * the idle one is already painted so switching never flashes — but only the
+ * active slide is visible, focusable and exposed to assistive tech.
+ */
+.gc-slider {
+  position: relative;
+  display: grid;
+}
+.gc-slide {
+  grid-area: 1 / 1;
+  transition:
+    opacity 620ms var(--gc-ease),
+    transform 620ms var(--gc-ease),
+    visibility 0s linear 620ms;
+}
+.gc-slide--idle {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(28px) scale(0.995);
+  pointer-events: none;
+}
+.gc-slide--active {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+/* An off-screen slide must not be reachable by tab. */
+.gc-slide--idle a,
+.gc-slide--idle button {
+  visibility: hidden;
+}
+
+/* Copy enters just behind the slide itself, so the eye lands on the headline. */
+.gc-slide--active .gc-slide__copy > * {
+  animation: gc-rise 560ms var(--gc-ease) both;
+}
+.gc-slide--active .gc-slide__copy > *:nth-child(1) { animation-delay: 60ms; }
+.gc-slide--active .gc-slide__copy > *:nth-child(2) { animation-delay: 130ms; }
+.gc-slide--active .gc-slide__copy > *:nth-child(3) { animation-delay: 200ms; }
+.gc-slide--active .gc-slide__copy > *:nth-child(4) { animation-delay: 270ms; }
+.gc-slide--active .gc-slide__copy > *:nth-child(5) { animation-delay: 340ms; }
+.gc-slide--active .gc-slide__copy > *:nth-child(6) { animation-delay: 410ms; }
+
+/* Media collage. Two images or three, the first always leads. */
+.gc-slide__media {
+  display: grid;
+  grid-template-columns: 1.32fr 1fr;
+  grid-auto-rows: 262px;
+  gap: 14px;
+}
+.gc-slide__tile {
+  overflow: hidden;
+  border-radius: var(--gc-r-md);
+  box-shadow: var(--gc-shadow-2);
+  transition: transform var(--gc-slow) var(--gc-ease), box-shadow var(--gc-slow) var(--gc-ease);
+}
+.gc-slide__tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.gc-slide__tile--main {
+  grid-row: span 2;
+}
+/* Béthel ships two visuals rather than three; the second fills the column. */
+.gc-slide__tile--tall {
+  grid-row: span 2;
+}
+.gc-slide__tile:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--gc-shadow-3);
+}
+
+/* Key figures under the paragraph — the fastest way to convey scale. */
+.gc-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 14px;
+  border-left: 2px solid var(--gc-red);
+}
+.gc-fact__value {
+  font-family: 'Newsreader', serif;
+  font-size: 25px;
+  font-weight: 600;
+  color: var(--gc-navy);
+  line-height: 1.1;
+}
+.gc-fact__label {
+  font-size: 12.5px;
+  color: var(--gc-ink-3);
+  font-weight: 600;
+}
+
+/* ── Slider controls ──────────────────────────────────────────────────────*/
+.gc-slider__controls {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 34px;
+}
+.gc-slider__arrow {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(18, 48, 92, 0.2);
+  background: var(--gc-surface);
+  color: var(--gc-navy);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--gc-shadow-1);
+  transition: transform var(--gc-base) var(--gc-ease), border-color var(--gc-base) var(--gc-ease),
+    background-color var(--gc-base) var(--gc-ease), box-shadow var(--gc-base) var(--gc-ease);
+}
+.gc-slider__arrow:hover {
+  border-color: var(--gc-navy);
+  background: #f7f9fc;
+  transform: translateY(-2px);
+  box-shadow: var(--gc-shadow-2);
+}
+.gc-slider__dots {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+/* Named tabs rather than anonymous dots: the visitor can see there are two
+ * cités and pick the one they came for. */
+.gc-slider__dot {
+  position: relative;
+  flex: 0 1 210px;
+  padding: 11px 16px;
+  border: 1px solid rgba(18, 48, 92, 0.14);
+  border-radius: var(--gc-r-pill);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--gc-ink-3);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: color var(--gc-base) var(--gc-ease), border-color var(--gc-base) var(--gc-ease),
+    background-color var(--gc-base) var(--gc-ease);
+}
+.gc-slider__dot-text {
+  position: relative;
+  z-index: 1;
+}
+/* The fill doubles as a 7s progress bar, so the autoplay is legible instead
+ * of surprising. */
+.gc-slider__dot-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: rgba(31, 78, 150, 0.12);
+}
+.gc-slider__dot--active {
+  color: var(--gc-navy);
+  border-color: rgba(31, 78, 150, 0.4);
+  background: #fff;
+}
+.gc-slider__dot--active .gc-slider__dot-fill {
+  animation: gc-slider-progress 7000ms linear both;
+}
+@keyframes gc-slider-progress {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+.gc-slider__dot:hover {
+  color: var(--gc-navy);
+  border-color: rgba(31, 78, 150, 0.34);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gc-slide,
+  .gc-slide--active .gc-slide__copy > * {
+    transition: none !important;
+    animation: none !important;
+  }
+  .gc-slider__dot--active .gc-slider__dot-fill { animation: none !important; }
+}
+
+/* ── "15 années d'expérience" ─────────────────────────────────────────────
+ * Reproduces the reference composition: an overlapping two-photo collage on
+ * the left with the GCITT red accents, headline and stats on the right.      */
+.gc-exp {
+  background: linear-gradient(180deg, #ffffff 0%, var(--gc-bg) 100%);
+}
+.gc-exp__collage {
+  position: relative;
+  min-height: 460px;
+}
+.gc-exp__shot {
+  position: absolute;
+  overflow: hidden;
+  border-radius: var(--gc-r-md);
+  box-shadow: var(--gc-shadow-3);
+}
+.gc-exp__shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* The team shot leads; the site view sits behind and to the right, the way a
+ * printed brochure would stack them. */
+.gc-exp__shot--team {
+  left: 0;
+  top: 28px;
+  width: 62%;
+  height: 400px;
+  z-index: 2;
+}
+.gc-exp__shot--site {
+  right: 0;
+  top: 0;
+  width: 48%;
+  height: 330px;
+  z-index: 1;
+}
+/* Red accents, straight from the reference. */
+.gc-exp__accent--block {
+  position: absolute;
+  left: 52%;
+  bottom: 24px;
+  width: 74px;
+  height: 74px;
+  background: var(--gc-red);
+  border-radius: 4px;
+  z-index: 0;
+}
+.gc-exp__accent--bars {
+  position: absolute;
+  right: 6%;
+  bottom: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  z-index: 3;
+}
+.gc-exp__accent--bars i {
+  display: block;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--gc-red);
+  transform: skewX(-22deg);
+}
+.gc-exp__accent--bars i:nth-child(1) { width: 74px; }
+.gc-exp__accent--bars i:nth-child(2) { width: 52px; margin-left: 12px; }
+.gc-exp__accent--bars i:nth-child(3) { width: 32px; margin-left: 24px; }
+
+.gc-exp__brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.gc-exp__brand-icon {
+  color: var(--gc-red);
+  display: flex;
+}
+.gc-exp__brand-name {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: var(--gc-ink-2);
+  text-transform: uppercase;
+}
+.gc-exp__title {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 52px !important;
+  font-weight: 800 !important;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--gc-navy);
+}
+.gc-exp__title-accent {
+  color: var(--gc-red);
+}
+.gc-exp__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 34px;
+  padding-top: 26px;
+  border-top: 1px solid rgba(18, 48, 92, 0.12);
+}
+.gc-exp__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.gc-exp__stat-value {
+  font-family: 'Newsreader', serif;
+  font-size: 34px;
+  font-weight: 600;
+  color: var(--gc-navy);
+  line-height: 1;
+}
+.gc-exp__stat-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--gc-ink-3);
+}
+
+/* ── Testimonials ─────────────────────────────────────────────────────────*/
+.gc-testi__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+.gc-testi {
+  display: flex;
+  flex-direction: column;
+  background: var(--gc-surface);
+  border: 1px solid var(--gc-border);
+  border-radius: var(--gc-r-md);
+  overflow: hidden;
+  box-shadow: var(--gc-shadow-1);
+  transition: transform var(--gc-base) var(--gc-ease), box-shadow var(--gc-base) var(--gc-ease);
+}
+.gc-testi:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--gc-shadow-2);
+}
+.gc-testi__media {
+  height: 210px;
+  overflow: hidden;
+}
+.gc-testi__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 900ms var(--gc-ease);
+}
+.gc-testi:hover .gc-testi__media img {
+  transform: scale(1.05);
+}
+.gc-testi__body {
+  position: relative;
+  margin: 0;
+  padding: 30px 22px 22px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+/* The quote mark straddles the photo edge, as in the reference. */
+.gc-testi__mark {
+  position: absolute;
+  top: -14px;
+  left: 20px;
+  font-family: 'Newsreader', serif;
+  font-size: 62px;
+  line-height: 1;
+  color: var(--gc-red);
+}
+.gc-testi__quote {
+  margin: 0 0 18px;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--gc-ink);
+  flex: 1;
+}
+.gc-testi__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gc-red);
+}
+.gc-testi__pin { display: flex; }
+.gc-testi__place {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gc-testi, .gc-testi__media img { transition: none !important; }
+  .gc-testi:hover { transform: none !important; }
+}

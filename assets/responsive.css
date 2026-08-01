@@ -223,3 +223,71 @@
 @media (min-width: 641px) and (max-width: 1024px) {
   .gc-villa h3 { font-size: 23px !important; }
 }
+
+/* ── Hero slider ──────────────────────────────────────────────────────────*/
+@media (max-width: 1024px) {
+  .gc-slide {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+  .gc-slide__media {
+    grid-template-columns: 1fr 1fr !important;
+    grid-auto-rows: 190px !important;
+  }
+  .gc-slide__tile--main,
+  .gc-slide__tile--tall {
+    grid-column: 1 / -1 !important;
+    grid-row: span 1 !important;
+    height: 230px;
+  }
+  .gc-slider__dot { flex: 1 1 auto !important; }
+}
+
+@media (max-width: 640px) {
+  .gc-slide__media {
+    grid-template-columns: 1fr !important;
+    grid-auto-rows: 200px !important;
+  }
+  .gc-slide__tile--main,
+  .gc-slide__tile--tall { height: auto; }
+  .gc-slide h1 { font-size: 30px !important; }
+
+  /* Arrows are redundant once swiping is available, and they crowd the row. */
+  .gc-slider__arrow { display: none !important; }
+  .gc-slider__controls { gap: 10px !important; margin-top: 26px !important; }
+  .gc-slider__dot {
+    padding: 10px 12px !important;
+    font-size: 12.5px !important;
+    text-align: center;
+  }
+  .gc-fact__value { font-size: 21px !important; }
+  .gc-hero__trust { gap: 14px !important; }
+}
+
+/* ── Experience + testimonials ────────────────────────────────────────────*/
+@media (max-width: 1024px) {
+  /* The collage is absolutely positioned for the desktop overlap; stack it. */
+  .gc-exp__collage {
+    min-height: 0 !important;
+    display: grid;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 14px;
+  }
+  .gc-exp__shot { position: static !important; width: auto !important; }
+  .gc-exp__shot--team { height: 260px !important; }
+  .gc-exp__shot--site { height: 260px !important; }
+  .gc-exp__accent { display: none !important; }
+  .gc-exp__title { font-size: 36px !important; }
+  .gc-exp__stat-value { font-size: 28px !important; }
+
+  .gc-testi__grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 640px) {
+  .gc-exp__collage { grid-template-columns: 1fr !important; }
+  .gc-exp__shot--team, .gc-exp__shot--site { height: 220px !important; }
+  .gc-exp__title { font-size: 30px !important; }
+  .gc-exp__stats { gap: 20px !important; }
+  .gc-testi__grid { grid-template-columns: 1fr !important; }
+  .gc-testi__media { height: 190px !important; }
+}

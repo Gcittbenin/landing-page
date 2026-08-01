@@ -193,7 +193,7 @@
         },
         {
           "@type": "Offer",
-          "name": "Villa Bethel (F4) — Cité Bethel",
+          "name": "Villa Bethel (F4) — Cité Béthel",
           "price": "39000000",
           "priceCurrency": "XOF",
           "availability": "https://schema.org/InStock",
@@ -210,7 +210,7 @@
         },
         {
           "@type": "Offer",
-          "name": "Villa Bethel (Duplex) — Cité Bethel",
+          "name": "Villa Bethel (Duplex) — Cité Béthel",
           "price": "72000000",
           "priceCurrency": "XOF",
           "availability": "https://schema.org/InStock",
@@ -257,7 +257,7 @@
         { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://nos-villas.gcitt.com/" },
         { "@type": "ListItem", "position": 2, "name": "Nos villas", "item": "https://nos-villas.gcitt.com/#villas" },
         { "@type": "ListItem", "position": 3, "name": "Cité Cœur Joie", "item": "https://nos-villas.gcitt.com/#coeur-joie" },
-        { "@type": "ListItem", "position": 4, "name": "Cité Bethel", "item": "https://nos-villas.gcitt.com/#bethel" }
+        { "@type": "ListItem", "position": 4, "name": "Cité Béthel", "item": "https://nos-villas.gcitt.com/#bethel" }
       ]
     },
     {
@@ -357,27 +357,75 @@ a:hover{color:#d21f2d}
 
 <main>
 
-<!-- 01 HERO -->
-<section id="hero" class="gc-hero" data-screen-label="01 Hero" style="padding:72px 48px 96px;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;max-width:1440px;margin:0 auto">
-  <div data-reveal-key="hero" class="gc-stagger" style="{{ revealStyle('hero') }}">
-    <div class="gc-eyebrow" style="margin-bottom:20px"><span class="gc-eyebrow__dot"></span>Cités Cœur Joie &amp; Bethel · Abomey-Calavi</div>
-    <h1 style="font-family:'Newsreader',serif;font-weight:600;font-size:54px;line-height:1.08;letter-spacing:-0.022em;color:#12305c;margin:0 0 24px;text-wrap:balance">Devenez propriétaire au Bénin, sans les contraintes de la distance.</h1>
-    <p style="font-size:17.5px;line-height:1.7;color:#4c5566;max-width:540px;margin:0 0 36px">Deux cités sécurisées à Abomey-Calavi : Cœur Joie (Ouèdo Zoungou), à 25 minutes de la plage de Togbin, et Bethel (Quèdo), à 5 minutes de Cœur Joie. GCITT vous accompagne de A à Z pour construire sereinement la maison de vos rêves.</p>
-    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px">
-      <a href="#rdv" class="gc-btn gc-btn--primary" style="font-size:16px;padding:17px 30px">Prendre rendez-vous {{ arrowIcon }}</a>
-      <a href="#villas" class="gc-btn gc-btn--secondary" style="font-size:16px;padding:17px 28px">Découvrir les villas</a>
-    </div>
-    <div style="font-size:13.5px;color:#5b6472;margin-bottom:34px">Réponse sous 24 h · Conseil gratuit et sans engagement</div>
-    <div style="display:flex;gap:28px;flex-wrap:wrap;padding-top:24px;border-top:1px solid rgba(18,48,92,0.1)">
-      <div class="gc-trust"><span style="color:#1f4e96">{{ shieldIcon }}</span><span style="font-size:13.5px;font-weight:600;color:#334055">Certifié ISO 9001:2015</span></div>
-      <div class="gc-trust"><span style="color:#1f4e96">{{ usersIcon }}</span><span style="font-size:13.5px;font-weight:600;color:#334055">+600 villas construites</span></div>
-      <div class="gc-trust"><span style="color:#1f4e96">{{ keyIcon }}</span><span style="font-size:13.5px;font-weight:600;color:#334055">Accompagnement diaspora de A à Z</span></div>
-    </div>
+<!-- 01 HERO — slider, une cité par slide -->
+<section id="hero" class="gc-hero" data-screen-label="01 Hero"
+         sc-camel-on-touch-start="{{ heroTouchStart }}"
+         sc-camel-on-touch-end="{{ heroTouchEnd }}"
+         sc-camel-on-mouse-enter="{{ heroPause }}"
+         sc-camel-on-mouse-leave="{{ heroResume }}"
+         style="padding:64px 48px 84px;max-width:1440px;margin:0 auto">
+
+  <div class="gc-slider" role="region" aria-roledescription="carrousel" aria-label="Nos cités">
+    <sc-for list="{{ heroSlides }}" as="slide" hint-placeholder-count="2">
+      <div class="gc-slide {{ slide.stateClass }}" role="group" aria-roledescription="diapositive"
+           aria-label="{{ slide.ariaLabel }}" aria-hidden="{{ slide.hidden }}"
+           style="display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center">
+
+        <div class="gc-slide__copy">
+          <div class="gc-eyebrow" style="margin-bottom:20px"><span class="gc-eyebrow__dot"></span>{{ slide.eyebrow }}</div>
+          <h1 style="font-family:'Newsreader',serif;font-weight:600;font-size:52px;line-height:1.09;letter-spacing:-0.022em;color:#12305c;margin:0 0 22px;text-wrap:balance">{{ slide.title }}</h1>
+          <p style="font-size:17px;line-height:1.72;color:#4c5566;max-width:560px;margin:0 0 18px">{{ slide.text }}</p>
+
+          <div style="display:flex;gap:22px;flex-wrap:wrap;margin-bottom:30px">
+            <sc-for list="{{ slide.facts }}" as="fact" hint-placeholder-count="3">
+              <div class="gc-fact">
+                <span class="gc-fact__value">{{ fact.value }}</span>
+                <span class="gc-fact__label">{{ fact.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px">
+            <a href="#rdv" class="gc-btn gc-btn--primary" style="font-size:16px;padding:17px 30px">Prendre rendez-vous {{ arrowIcon }}</a>
+            <a href="{{ slide.villasHref }}" class="gc-btn gc-btn--secondary" style="font-size:16px;padding:17px 28px">Découvrir les villas</a>
+          </div>
+          <div style="font-size:13.5px;color:#5b6472">Réponse sous 24 h · Conseil gratuit et sans engagement</div>
+        </div>
+
+        <div class="gc-slide__media">
+          <sc-for list="{{ slide.images }}" as="img" hint-placeholder-count="3">
+            <figure class="gc-slide__tile {{ img.tileClass }}" style="margin:0">
+              <img src="{{ img.src }}" srcset="{{ img.srcset }}" sizes="{{ img.sizes }}"
+                   width="1400" height="678" alt="{{ img.alt }}"
+                   fetchpriority="{{ img.priority }}" loading="{{ img.loading }}" decoding="async">
+            </figure>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
   </div>
-  <div data-reveal-key="heroimg" class="gc-hero__grid" style="display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr;gap:14px;height:536px;{{ revealStyle('heroimg') }}">
-    <img width="1400" height="678" fetchpriority="high" decoding="async" src="uploads/Image COEUR-JOIE/HEVIE CJ .jpg" srcset="uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20-sm.jpg 780w, uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20.jpg 1400w" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw" alt="Rangée de villas à la Cité Cœur Joie" style="grid-row:1/3;width:100%;height:100%;object-fit:cover;border-radius:14px">
-    <img width="900" height="675" decoding="async" src="uploads/Image COEUR-JOIE/FENOU HEVIEE.jpg" srcset="uploads/Image%20COEUR-JOIE/FENOU%20HEVIEE-sm.jpg 500w, uploads/Image%20COEUR-JOIE/FENOU%20HEVIEE.jpg 900w" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24vw" alt="Villa Fenou F4" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
-    <img width="900" height="1200" decoding="async" src="uploads/Image COEUR-JOIE/KAFUI NUIT.jpg" srcset="uploads/Image%20COEUR-JOIE/KAFUI%20NUIT-sm.jpg 500w, uploads/Image%20COEUR-JOIE/KAFUI%20NUIT.jpg 900w" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24vw" alt="Villa Kafui de nuit" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
+
+  <!-- Contrôles -->
+  <div class="gc-slider__controls">
+    <button type="button" class="gc-slider__arrow" aria-label="Cité précédente" sc-camel-on-click="{{ heroPrev }}">{{ chevLeftIcon }}</button>
+    <div class="gc-slider__dots" role="tablist" aria-label="Choisir une cité">
+      <sc-for list="{{ heroDots }}" as="dot" hint-placeholder-count="2">
+        <button type="button" role="tab" class="gc-slider__dot {{ dot.stateClass }}"
+                aria-label="{{ dot.label }}" aria-selected="{{ dot.selected }}"
+                sc-camel-on-click="{{ dot.go }}">
+          <span class="gc-slider__dot-fill"></span>
+          <span class="gc-slider__dot-text">{{ dot.short }}</span>
+        </button>
+      </sc-for>
+    </div>
+    <button type="button" class="gc-slider__arrow" aria-label="Cité suivante" sc-camel-on-click="{{ heroNext }}">{{ chevRightIcon }}</button>
+  </div>
+
+  <!-- Bandeau de confiance, commun aux deux cités -->
+  <div class="gc-hero__trust" style="display:flex;gap:30px;flex-wrap:wrap;margin-top:36px;padding-top:26px;border-top:1px solid rgba(18,48,92,0.1)">
+    <div class="gc-trust"><span style="color:#1f4e96">{{ shieldIcon }}</span><span style="font-size:13.5px;font-weight:600;color:#334055">Certifié ISO 9001:2015</span></div>
+    <div class="gc-trust"><span style="color:#1f4e96">{{ usersIcon }}</span><span style="font-size:13.5px;font-weight:600;color:#334055">+600 villas construites</span></div>
+    <div class="gc-trust"><span style="color:#1f4e96">{{ keyIcon }}</span><span style="font-size:13.5px;font-weight:600;color:#334055">Accompagnement diaspora de A à Z</span></div>
   </div>
 </section>
 
@@ -422,6 +470,55 @@ a:hover{color:#d21f2d}
   </div>
 </section>
 
+<!-- 03b EXPERIENCE -->
+<section id="experience" class="gc-exp" data-screen-label="03b Experience" data-reveal-key="experience" style="padding:104px 48px;{{ revealStyle('experience') }}">
+  <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1.02fr 1fr;gap:72px;align-items:center">
+
+    <!-- Collage : équipe au premier plan, cité en arrière-plan, accents GCITT -->
+    <div class="gc-exp__collage">
+      <span class="gc-exp__accent gc-exp__accent--block" aria-hidden="true"></span>
+      <figure class="gc-exp__shot gc-exp__shot--team" style="margin:0">
+        <img width="1920" height="1272" loading="lazy" decoding="async"
+             src="uploads/Image COEUR-JOIE/GCITT.jpg"
+             srcset="uploads/Image%20COEUR-JOIE/GCITT-sm.jpg 800w, uploads/Image%20COEUR-JOIE/GCITT.jpg 1920w"
+             sizes="(max-width: 1024px) 100vw, 32vw"
+             alt="Équipe GCITT en réunion de chantier">
+      </figure>
+      <figure class="gc-exp__shot gc-exp__shot--site" style="margin:0">
+        <img width="1400" height="678" loading="lazy" decoding="async"
+             src="uploads/Image COEUR-JOIE/HEVIE CJ .jpg"
+             srcset="uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20-sm.jpg 780w, uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20.jpg 1400w"
+             sizes="(max-width: 1024px) 100vw, 22vw"
+             alt="Vue d’ensemble des villas construites par GCITT">
+      </figure>
+      <span class="gc-exp__accent gc-exp__accent--bars" aria-hidden="true"><i></i><i></i><i></i></span>
+    </div>
+
+    <div class="gc-exp__body">
+      <div class="gc-exp__brand">
+        <span class="gc-exp__brand-icon" aria-hidden="true">{{ buildingIcon }}</span>
+        <span class="gc-exp__brand-name">GCITT BENIN S.A</span>
+      </div>
+
+      <h2 class="gc-h2 gc-exp__title" style="margin:0 0 26px">
+        <span class="gc-exp__title-accent">15 années</span><br>d’expérience professionnelle
+      </h2>
+
+      <p style="font-size:16px;line-height:1.75;color:#4c5566;margin:0 0 18px">Forte de 15 années d’expérience, GCITT BENIN S.A s’impose comme un acteur majeur du secteur de la construction au Bénin.</p>
+      <p style="font-size:16px;line-height:1.75;color:#4c5566;margin:0 0 28px">Plus de 600 villas construites et plus de 400 familles accompagnées témoignent de notre engagement, de notre expertise et de la confiance que nous accordent nos clients.</p>
+
+      <div class="gc-exp__stats">
+        <sc-for list="{{ experienceStats }}" as="stat" hint-placeholder-count="3">
+          <div class="gc-exp__stat">
+            <span class="gc-exp__stat-value">{{ stat.value }}</span>
+            <span class="gc-exp__stat-label">{{ stat.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 04 VILLAS -->
 <section id="villas" data-screen-label="04 Villas" data-reveal-key="villas" style="background:#f3f4f6;padding:104px 48px;{{ revealStyle('villas') }}">
   <div style="max-width:1280px;margin:0 auto">
@@ -432,9 +529,9 @@ a:hover{color:#d21f2d}
     <div id="coeur-joie" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:26px;padding-bottom:18px;border-bottom:2px solid rgba(18,48,92,0.1)">
       <div>
         <h3 style="font-family:'Newsreader',serif;font-weight:600;font-size:26px;color:#12305c;margin:0 0 6px">Cité Cœur Joie</h3>
-        <p style="font-size:14px;color:#5b6472;margin:0">Ouèdo Zoungou (Kossidénou), commune d’Abomey-Calavi. À 5 min de la Cité Bethel et 25 min de la plage de Togbin.</p>
+        <p style="font-size:14px;color:#5b6472;margin:0">Hêvié Zoungo (Kossidénou), commune d’Abomey-Calavi. 70 villas sur un domaine de 4 hectares, à 25 min de la plage de Togbin.</p>
       </div>
-      <span style="background:#eaf0fb;color:#1f4e96;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;white-space:nowrap">65 villas construites</span>
+      <span style="background:#eaf0fb;color:#1f4e96;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;white-space:nowrap">70 villas · 4 hectares</span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:64px">
       <sc-for list="{{ coeurJoieVillas }}" as="v" hint-placeholder-count="2">
@@ -472,8 +569,8 @@ a:hover{color:#d21f2d}
 
     <div id="bethel" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:26px;padding-bottom:18px;border-bottom:2px solid rgba(18,48,92,0.1)">
       <div>
-        <h3 style="font-family:'Newsreader',serif;font-weight:600;font-size:26px;color:#12305c;margin:0 0 6px">Cité Bethel</h3>
-        <p style="font-size:14px;color:#5b6472;margin:0">Quèdo, arrondissement d’Abomey-Calavi, près de Cotonou. Une cité de 24 hectares.</p>
+        <h3 style="font-family:'Newsreader',serif;font-weight:600;font-size:26px;color:#12305c;margin:0 0 6px">Cité Béthel</h3>
+        <p style="font-size:14px;color:#5b6472;margin:0">Ouèdo Somè, commune d’Abomey-Calavi, à 6 km du carrefour Calavi-Kpota. Un domaine de 30 hectares.</p>
       </div>
       <span style="background:#eaf0fb;color:#1f4e96;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;white-space:nowrap">+600 villas livrées et habitées</span>
     </div>
@@ -598,20 +695,44 @@ a:hover{color:#d21f2d}
       Photos et vidéos transmises à chaque étape clé, du terrassement à la remise des clés.
     </div>
 
-    <!-- Témoignages vidéo, à venir -->
-    <div style="border-top:1px solid rgba(18,48,92,0.1);padding-top:34px">
-      <div style="text-align:center;margin-bottom:22px">
-        <h3 style="font-family:'Newsreader',serif;font-weight:600;font-size:23px;color:#12305c;margin:0 0 8px">Les témoignages de nos clients arrivent</h3>
-        <p style="font-size:14px;color:#5b6472;margin:0">Nous filmons actuellement les familles déjà installées. Leurs histoires prendront place ici.</p>
+    <!-- Témoignages clients -->
+    <div id="temoignages" style="border-top:1px solid rgba(18,48,92,0.1);padding-top:44px;margin-top:8px">
+      <div style="text-align:center;margin-bottom:30px">
+        <h3 class="gc-testi__heading" style="font-family:'Newsreader',serif;font-weight:600;font-size:30px;color:#12305c;margin:0 0 8px">Ils nous font <span style="color:#d21f2d">confiance</span></h3>
+        <p style="font-size:14.5px;color:#5b6472;margin:0">{{ testimonialsSubtitle }}</p>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
-        <sc-for list="{{ testimonialSlots }}" as="s" hint-placeholder-count="3">
-          <div class="gc-slot" style="height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#5b6472">
-            <span style="opacity:0.6">{{ playIcon }}</span>
-            <span style="font-size:13px;font-weight:600">{{ s }}</span>
-          </div>
-        </sc-for>
-      </div>
+
+      <sc-if value="{{ hasTestimonials }}" hint-placeholder-val="{{ true }}">
+        <div class="gc-testi__grid">
+          <sc-for list="{{ testimonials }}" as="t" hint-placeholder-count="4">
+            <figure class="gc-testi" style="margin:0">
+              <div class="gc-testi__media">
+                <img src="{{ t.image }}" srcset="{{ t.srcset }}" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24vw"
+                     width="1200" height="800" loading="lazy" decoding="async" alt="{{ t.alt }}">
+              </div>
+              <blockquote class="gc-testi__body">
+                <span class="gc-testi__mark" aria-hidden="true">&rdquo;</span>
+                <p class="gc-testi__quote">{{ t.quote }}</p>
+                <figcaption class="gc-testi__meta">
+                  <span class="gc-testi__pin" aria-hidden="true">{{ pinIcon }}</span>
+                  <span class="gc-testi__place">{{ t.place }}</span>
+                </figcaption>
+              </blockquote>
+            </figure>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ noTestimonials }}" hint-placeholder-val="{{ false }}">
+        <div class="gc-testi__grid">
+          <sc-for list="{{ testimonialSlots }}" as="s" hint-placeholder-count="4">
+            <div class="gc-slot" style="height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#5b6472;text-align:center;padding:0 16px">
+              <span style="opacity:0.55">{{ playIcon }}</span>
+              <span style="font-size:13px;font-weight:600">{{ s }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
     </div>
   </div>
 </section>
@@ -706,7 +827,7 @@ a:hover{color:#d21f2d}
             <sc-raw-select id="f-cite" value="{{ form.cite }}" sc-camel-on-change="{{ citeHandler }}" class="gc-field" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:10px;font-size:14px;font-family:inherit;background:#fff">
               <option value="">Sélectionner</option>
               <option value="Cœur Joie">Cité Cœur Joie</option>
-              <option value="Bethel">Cité Bethel</option>
+              <option value="Bethel">Cité Béthel</option>
             </sc-raw-select>
           </div>
           <div>
@@ -850,6 +971,7 @@ a:hover{color:#d21f2d}
 const ICONS = {
   arrow: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
   shield: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/></svg>',
+  building: '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="7" height="14"/><rect x="14" y="3" width="7" height="18"/><path d="M5.5 10.5h2M5.5 14h2M5.5 17.5h2M16.5 6.5h2M16.5 10h2M16.5 13.5h2M16.5 17h2"/></svg>',
   hardhat: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18v-2a8 8 0 0 1 16 0v2"/><path d="M2 18h20"/><path d="M12 4v4"/></svg>',
   handshake: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12l3 3 6-6"/><path d="M2 12h4l3-3 3 3 3-3 3 3h4"/></svg>',
   clock: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>',
@@ -867,6 +989,9 @@ const ICONS = {
   checkCircle: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>',
   checkCircleBig: '<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>',
   chevron: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+  chevLeft: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
+  chevRight: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+  pin: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>',
   play: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16" fill="currentColor" stroke="none"/></svg>',
   facebook: '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12z"/></svg>',
   instagram: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>',
@@ -876,9 +1001,70 @@ const ICONS = {
   whatsappLg: '<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18.2a8.1 8.1 0 0 1-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1s-.7.8-.9 1c-.2.2-.3.2-.6.1a6.7 6.7 0 0 1-2-1.2 7.4 7.4 0 0 1-1.4-1.7c-.1-.2 0-.4.1-.5l.4-.5c.1-.1.2-.3.2-.4a.5.5 0 0 0 0-.5c-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.6 1.1 2.8.1.2 2 3 4.7 4.2a15 15 0 0 0 1.6.6c.7.2 1.3.2 1.8.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.2-.5-.3z"/></svg>'
 };
 
+// ── Contenu du hero ─────────────────────────────────────────────────────────
+// Une cité par slide, jamais mélangées : chaque slide ne référence que ses
+// propres photos. Les chiffres viennent des fiches officielles GCITT.
+const enc = (p) => encodeURI(p);
+const CJ = 'uploads/Image COEUR-JOIE/';
+
+const HERO_SLIDES = [
+  {
+    id: 'coeur-joie',
+    eyebrow: 'Cité Cœur Joie · Hêvié Zoungo, Abomey-Calavi',
+    ariaLabel: 'Cité Cœur Joie',
+    short: 'Cœur Joie',
+    title: 'Construisez votre villa dans un cadre pensé pour votre tranquillité.',
+    text: "La Cité Cœur Joie est un ensemble résidentiel composé de 70 villas implantées sur un domaine de 4 hectares à Hêvié Zoungo (Kossidénou), dans la commune d’Abomey-Calavi. Pensée pour les familles recherchant un environnement paisible, sécurisé et moderne, elle offre un cadre de vie où confort et sérénité se rencontrent.",
+    villasHref: '#coeur-joie',
+    facts: [
+      { value: '70', label: 'villas' },
+      { value: '4 ha', label: 'de domaine' },
+      { value: '25 min', label: 'de la plage de Togbin' }
+    ],
+    images: [
+      { src: CJ + 'HEVIE CJ .jpg', srcset: enc(CJ + 'HEVIE CJ -sm.jpg') + ' 780w, ' + enc(CJ + 'HEVIE CJ .jpg') + ' 1400w',
+        sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw',
+        alt: 'Rangée de villas achevées à la Cité Cœur Joie', tileClass: 'gc-slide__tile--main' },
+      { src: CJ + 'FENOU HEVIEE.jpg', srcset: enc(CJ + 'FENOU HEVIEE-sm.jpg') + ' 500w, ' + enc(CJ + 'FENOU HEVIEE.jpg') + ' 900w',
+        sizes: '(max-width: 640px) 100vw, 24vw',
+        alt: 'Villa Fenou F4 à la Cité Cœur Joie', tileClass: '' },
+      { src: CJ + 'DUPLEX CJ .jpg', srcset: enc(CJ + 'DUPLEX CJ -sm.jpg') + ' 780w, ' + enc(CJ + 'DUPLEX CJ .jpg') + ' 1220w',
+        sizes: '(max-width: 640px) 100vw, 24vw',
+        alt: 'Villa Kafui Duplex à la Cité Cœur Joie', tileClass: '' }
+    ]
+  },
+  {
+    id: 'bethel',
+    eyebrow: 'Cité Béthel · Ouèdo Somè, Abomey-Calavi',
+    ariaLabel: 'Cité Béthel',
+    short: 'Béthel',
+    title: 'Un véritable paradis résidentiel aux portes de Cotonou.',
+    text: "Bâtie sur un domaine de 30 hectares à Ouèdo Somè, dans la commune d’Abomey-Calavi, à seulement 6 km du carrefour Calavi-Kpota, la Cité Béthel offre un environnement sécurisé, moderne et harmonieux, idéal pour bâtir un patrimoine durable.",
+    villasHref: '#bethel',
+    facts: [
+      { value: '30 ha', label: 'de domaine' },
+      { value: '+600', label: 'villas livrées' },
+      { value: '6 km', label: 'du carrefour Calavi-Kpota' }
+    ],
+    // Seules les visuels officiels Béthel sont utilisés ici — jamais une photo
+    // de Cœur Joie. Voir la note dans README : ces deux visuels sont des rendus
+    // basse définition, à remplacer par des photos dès qu’elles sont fournies.
+    images: [
+      { src: 'uploads/bethel-f4.png', srcset: enc('uploads/bethel-f4-sm.png') + ' 500w, ' + enc('uploads/bethel-f4.png') + ' 713w',
+        sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 45vw',
+        alt: 'Villa Bethel F4 à la Cité Béthel', tileClass: 'gc-slide__tile--main' },
+      { src: 'uploads/bethel-duplex.png', srcset: enc('uploads/bethel-duplex-sm.png') + ' 500w, ' + enc('uploads/bethel-duplex.png') + ' 706w',
+        sizes: '(max-width: 640px) 100vw, 24vw',
+        alt: 'Villa Bethel Duplex à la Cité Béthel', tileClass: 'gc-slide__tile--tall' }
+    ]
+  }
+];
+
 class Component extends DCLogic {
   state = {
     revealed: {},
+    heroSlide: 0,
+    heroPaused: false,
     expandedVilla: null,
     openFaq: 0,
     submitted: false,
@@ -901,7 +1087,63 @@ class Component extends DCLogic {
 
   icon = (name) => React.createElement('span', { dangerouslySetInnerHTML: { __html: ICONS[name] }, style: { display: 'flex' } });
 
+  // ── Hero slider ──────────────────────────────────────────────────────────
+  // 7s per slide. Pauses on hover and while the tab is hidden, so a visitor
+  // reading one cité is never yanked to the other.
+  HERO_INTERVAL = 7000;
+
+  startHeroTimer = () => {
+    this.stopHeroTimer();
+    this._heroTimer = setInterval(() => {
+      if (this.state.heroPaused || document.hidden) return;
+      this.setState(s => ({ heroSlide: (s.heroSlide + 1) % this.heroSlideCount() }));
+    }, this.HERO_INTERVAL);
+  };
+
+  stopHeroTimer = () => {
+    if (this._heroTimer) clearInterval(this._heroTimer);
+    this._heroTimer = null;
+  };
+
+  heroSlideCount = () => 2;
+
+  goToSlide = (i) => () => {
+    this.setState({ heroSlide: (i + this.heroSlideCount()) % this.heroSlideCount() });
+    // Restart the timer so a manual choice gets a full 7s before moving on.
+    this.startHeroTimer();
+    this.track('hero_slide_view', { slide_index: i, manual: true });
+  };
+
+  heroNext = () => this.goToSlide(this.state.heroSlide + 1)();
+  heroPrev = () => this.goToSlide(this.state.heroSlide - 1)();
+  heroPause = () => this.setState({ heroPaused: true });
+  heroResume = () => this.setState({ heroPaused: false });
+
+  // Swipe. A horizontal move of 45px or more wins; anything more vertical than
+  // horizontal is the visitor scrolling the page, not changing slide.
+  heroTouchStart = (e) => {
+    const t = e.touches && e.touches[0];
+    if (t) this._touch = { x: t.clientX, y: t.clientY };
+  };
+
+  heroTouchEnd = (e) => {
+    const t = e.changedTouches && e.changedTouches[0];
+    if (!t || !this._touch) return;
+    const dx = t.clientX - this._touch.x;
+    const dy = t.clientY - this._touch.y;
+    this._touch = null;
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return;
+    if (dx < 0) this.heroNext(); else this.heroPrev();
+  };
+
   componentDidMount() {
+    this.startHeroTimer();
+    // Preload the second slide's imagery so switching never shows a gap.
+    HERO_SLIDES.forEach((slide, i) => {
+      if (i === 0) return;
+      slide.images.forEach(img => { const p = new Image(); p.src = img.src; });
+    });
+
     const els = document.querySelectorAll('[data-reveal-key]');
     this._observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -917,6 +1159,7 @@ class Component extends DCLogic {
 
   componentWillUnmount() {
     this._observer && this._observer.disconnect();
+    this.stopHeroTimer();
   }
 
   revealStyle = (key) => {
@@ -1203,7 +1446,7 @@ class Component extends DCLogic {
         name: 'Villa Bethel F4', tag: 'Villa F4', price: '39 000 000 FCFA',
         image: (window.__resources && window.__resources.villaBethelF4Img) || "uploads/bethel-f4.png",
         imageSrcset: srcsetFor((window.__resources && window.__resources.villaBethelF4Img) || "uploads/bethel-f4.png"),
-        desc: "Une villa familiale chaleureuse au sein de la Cité Bethel, déjà plus de 600 fois livrée et habitée.",
+        desc: "Une villa familiale chaleureuse au sein de la Cité Béthel, déjà plus de 600 fois livrée et habitée.",
         chips: ['3 chambres', 'Séjour', 'Cuisine', 'Garage 2 voitures', 'Dépendance'],
         expanded: s.expandedVilla === 'bethelF4',
         fullSpecs: villaFull.bethelF4,
@@ -1215,7 +1458,7 @@ class Component extends DCLogic {
         name: 'Villa Bethel Duplex', tag: 'Villa Duplex', price: '72 000 000 FCFA',
         image: (window.__resources && window.__resources.villaBethelDuplexImg) || "uploads/bethel-duplex.png",
         imageSrcset: srcsetFor((window.__resources && window.__resources.villaBethelDuplexImg) || "uploads/bethel-duplex.png"),
-        desc: "Un duplex généreux à Bethel, avec dressing, balcons et double terrasse pour toute la famille.",
+        desc: "Un duplex généreux à Béthel, avec dressing, balcons et double terrasse pour toute la famille.",
         chips: ['4 chambres', 'Dressing', '2 balcons', 'Terrasses', 'Garage'],
         expanded: s.expandedVilla === 'bethelDuplex',
         fullSpecs: villaFull.bethelDuplex,
@@ -1224,6 +1467,27 @@ class Component extends DCLogic {
         chooseHandler: () => this.onChooseVilla('Villa Bethel (Duplex)')
       }
     ];
+
+    // ── Témoignages clients ────────────────────────────────────────────────
+    //
+    // VIDE À DESSEIN. Ces cartes s’affichent dès qu’on ajoute de vraies
+    // citations ; tant que le tableau est vide, la section affiche un état
+    // « recueil en cours » plutôt que des avis inventés.
+    //
+    // Format d’une entrée :
+    //   {
+    //     quote: 'La citation exacte du client, telle qu’il l’a écrite.',
+    //     place: 'CITÉ CŒUR JOIE – VILLA F4',
+    //     image: 'uploads/temoignages/famille-adjovi.jpg',
+    //     srcset: '',                       // facultatif
+    //     alt: 'M. et Mme Adjovi devant leur villa'
+    //   }
+    //
+    // Un témoignage doit être une citation réelle, obtenue avec l’accord écrit
+    // du client, accompagnée de sa propre photo. Publier des avis rédigés pour
+    // l’occasion expose GCITT au titre des pratiques commerciales trompeuses,
+    // et se retourne contre la marque le jour où un prospect le découvre.
+    const testimonials = [];
 
     const faqData = [
       { q: 'Comment suivre mon chantier depuis l’étranger ?', a: 'GCITT met en place un suivi régulier par photos, vidéos et rapports d’avancement, transmis tout au long de la construction pour que vous restiez informé où que vous soyez.' },
@@ -1239,7 +1503,42 @@ class Component extends DCLogic {
       toggleHandler: () => this.toggleFaq(i)
     }));
 
+    // Le slide actif porte gc-slide--active ; les autres restent dans le DOM
+    // (pour le SEO et le préchargement) mais sont retirés de l’ordre de
+    // tabulation et de l’arbre d’accessibilité.
+    const heroSlides = HERO_SLIDES.map((slide, i) => ({
+      ...slide,
+      stateClass: i === s.heroSlide ? 'gc-slide--active' : 'gc-slide--idle',
+      hidden: i === s.heroSlide ? 'false' : 'true',
+      images: slide.images.map((img, j) => ({
+        ...img,
+        // Seule la première image du premier slide est prioritaire : c’est
+        // l’élément LCP. Le reste se charge sans bloquer.
+        priority: i === 0 && j === 0 ? 'high' : 'auto',
+        loading: i === 0 ? 'eager' : 'lazy'
+      }))
+    }));
+
+    const heroDots = HERO_SLIDES.map((slide, i) => ({
+      short: slide.short,
+      label: 'Voir la ' + slide.ariaLabel,
+      selected: i === s.heroSlide ? 'true' : 'false',
+      stateClass: i === s.heroSlide ? 'gc-slider__dot--active' : '',
+      go: this.goToSlide(i)
+    }));
+
     return {
+      heroSlides,
+      heroDots,
+      heroNext: this.heroNext,
+      heroPrev: this.heroPrev,
+      heroPause: this.heroPause,
+      heroResume: this.heroResume,
+      heroTouchStart: this.heroTouchStart,
+      heroTouchEnd: this.heroTouchEnd,
+      chevLeftIcon: this.icon('chevLeft'),
+      chevRightIcon: this.icon('chevRight'),
+
       arrowIcon: this.icon('arrow'),
       shieldIcon: this.icon('shield'),
       usersIcon: this.icon('users'),
@@ -1250,6 +1549,7 @@ class Component extends DCLogic {
       checkCircleBig: this.icon('checkCircleBig'),
       whatsappIcon: this.icon('whatsapp'),
       whatsappFloatIcon: this.icon('whatsappLg'),
+      buildingIcon: this.icon('building'),
 
       revealStyle: this.revealStyle,
       onChooseVilla: this.onChooseVilla,
@@ -1304,6 +1604,11 @@ class Component extends DCLogic {
         { icon: this.icon('handshake'), title: 'Confiance', text: 'Un partenaire fiable, certifié et engagé à vos côtés, avant, pendant et après.' },
         { icon: this.icon('clock'), title: 'Délais respectés', text: 'Des délais respectés pour que votre projet avance sans mauvaises surprises.' }
       ],
+      experienceStats: [
+        { value: '15', label: 'années d’expérience' },
+        { value: '+600', label: 'villas construites' },
+        { value: '+400', label: 'familles accompagnées' }
+      ],
       heritageCards: [
         { icon: this.icon('home'), label: 'Foyer' },
         { icon: this.icon('key'), label: 'Héritage' },
@@ -1340,7 +1645,17 @@ class Component extends DCLogic {
         { n: 6, title: 'Suivi chantier', text: 'Suivi à distance avec rapports réguliers.' },
         { n: 7, title: 'Livraison', text: 'Remise des clés et accompagnement post-livraison.' }
       ],
-      testimonialSlots: ['Vidéo témoignage à venir', 'Vidéo témoignage à venir', 'Vidéo témoignage à venir'],
+      testimonialSlots: [
+        'Témoignage client à venir', 'Témoignage client à venir',
+        'Témoignage client à venir', 'Témoignage client à venir'
+      ],
+      testimonials,
+      hasTestimonials: testimonials.length > 0,
+      noTestimonials: testimonials.length === 0,
+      testimonialsSubtitle: testimonials.length > 0
+        ? 'Quelques témoignages de nos heureux propriétaires'
+        : 'Nous recueillons actuellement les témoignages des familles déjà installées.',
+      pinIcon: this.icon('pin'),
 
       // Mosaïque de la section « Le chantier avance ». `spanClass` pilote la
       // place de chaque image dans la grille ; assets/responsive.css remet le
@@ -1361,7 +1676,7 @@ class Component extends DCLogic {
           sizes: '(max-width: 1024px) 100vw, 50vw',
           alt: 'Rangée de villas achevées à la Cité Cœur Joie',
           label: 'Villas livrées à Cœur Joie',
-          meta: '65 villas construites',
+          meta: '70 villas sur 4 hectares',
           spanClass: 'gc-gallery__item--wide'
         },
         {
