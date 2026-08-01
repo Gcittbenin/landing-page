@@ -36,10 +36,17 @@ jobs:
           dangerous-clean-slate: false
           # Rien de tout cela n'a sa place sur le serveur : le code de test, la
           # documentation et la configuration Vercel ne servent pas la page.
+          #
+          # logs/ est essentiel dans cette liste : l'étape de test ci-dessus
+          # démarre le serveur, qui écrit logs/startup.log dans le runner. Sans
+          # exclusion, ce fichier écrase à chaque déploiement le journal de
+          # démarrage de la production — précisément la trace dont on a besoin
+          # quand l'application ne démarre pas.
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
+            logs/**
             test/**
             docs/**
             *.md
