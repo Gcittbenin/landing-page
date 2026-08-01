@@ -260,7 +260,7 @@ test('a validated lead is written to the store before the notifications go out',
     const [lead] = await open().listLeads();
     assert.equal(lead.firstName, 'Awa');
     assert.equal(lead.lastName, 'Diallo');
-    assert.equal(lead.status, 'Nouveau', 'a new lead starts at the first CRM stage');
+    assert.equal(lead.stage, 'nouveau', 'a new lead starts at the first pipeline stage');
     assert.equal(lead.ip, '203.0.113.1');
     assert.equal(lead.device, 'Ordinateur');
     assert.equal(lead.browser, 'Chrome 131');

@@ -13,7 +13,7 @@
      ───────────────────────────────────────────────────────────────────────── -->
 
 <title>Villas à vendre au Bénin | Cités Cœur Joie &amp; Bethel - GCITT BENIN</title>
-<meta name="description" content="Découvrez les villas GCITT BENIN dans les cités Cœur Joie et Bethel : villas F4 et duplex modernes au Bénin, avec accompagnement personnalisé, solutions de paiement adaptées et réservation sécurisée.">
+<meta name="description" content="Villas F4 et duplex modernes au Bénin, dans les cités Cœur Joie et Béthel à Abomey-Calavi. Accompagnement de la diaspora de A à Z et réservation sécurisée.">
 
 <link rel="canonical" href="https://nos-villas.gcitt.com/">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -240,7 +240,7 @@
       "@id": "https://nos-villas.gcitt.com/#webpage",
       "url": "https://nos-villas.gcitt.com/",
       "name": "Villas à vendre au Bénin | Cités Cœur Joie & Bethel - GCITT BENIN",
-      "description": "Découvrez les villas GCITT BENIN dans les cités Cœur Joie et Bethel : villas F4 et duplex modernes au Bénin, avec accompagnement personnalisé, solutions de paiement adaptées et réservation sécurisée.",
+      "description": "Villas F4 et duplex modernes au Bénin, dans les cités Cœur Joie et Béthel à Abomey-Calavi. Accompagnement de la diaspora de A à Z et réservation sécurisée.",
       "inLanguage": "fr-FR",
       "isPartOf": { "@id": "https://nos-villas.gcitt.com/#website" },
       "about": { "@id": "https://nos-villas.gcitt.com/#organization" },
@@ -1278,6 +1278,7 @@ class Component extends DCLogic {
       utmTerm: utm.utmTerm || '',
       clickId: utm.clickId || '',
       pageUrl: window.location.href,
+      sid: (typeof window.gcittSessionId === 'function' ? window.gcittSessionId() : ''),
       screen: (window.screen ? window.screen.width + 'x' + window.screen.height : ''),
       timezone: (Intl.DateTimeFormat().resolvedOptions().timeZone || ''),
       language: navigator.language || '',

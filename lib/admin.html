@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Prospects — Espace GCITT</title>
+<title>Espace GCITT — Pilotage commercial</title>
 <style>
   /* Same palette as the landing page, so the two do not feel like two products. */
   :root {
     --navy: #12305c; --navy-dark: #0d2447; --red: #d21f2d;
     --ink: #1c2430; --muted: #5b6472; --faint: #8792a3;
-    --line: #e3e7ee; --bg: #f4f6f9; --card: #ffffff;
+    --line: #e3e7ee; --bg: #f4f6f9; --card: #ffffff; --raise: #f7f9fc;
+    --up: #1a6b3c; --down: #b01926; --amber: #8a5a00;
   }
   *, *::before, *::after { box-sizing: border-box; }
   body {
@@ -18,16 +19,39 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
   a { color: #1f4e96; }
+  h2, h3 { margin: 0; }
+  code { font-size: 12.5px; background: var(--raise); padding: 1px 5px; border-radius: 4px; }
 
-  /* ── header ── */
+  /* ── header + tabs ── */
   header {
-    background: var(--navy); color: #fff; padding: 14px 22px;
-    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    background: var(--navy); color: #fff; padding: 13px 22px 0;
+    position: sticky; top: 0; z-index: 30;
   }
+  .top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
   .brand { font-size: 12px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
   .brand span { color: #9fb6d9; font-weight: 600; letter-spacing: 0; text-transform: none; }
-  header .spacer { flex: 1; }
-  header .who { font-size: 12.5px; color: #c3d2ea; }
+  .top .spacer { flex: 1; }
+  .who { font-size: 12.5px; color: #c3d2ea; }
+  .live {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: #cfe6d8;
+    background: rgba(255,255,255,.12); padding: 5px 11px; border-radius: 999px;
+  }
+  .live .dot { width: 8px; height: 8px; border-radius: 50%; background: #46d17f; }
+  .live .dot.idle { background: #7c8bab; animation: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    .live .dot { animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+  }
+
+  nav { display: flex; gap: 2px; margin-top: 12px; overflow-x: auto; scrollbar-width: none; }
+  nav::-webkit-scrollbar { display: none; }
+  nav button {
+    font: inherit; font-size: 13px; font-weight: 700; white-space: nowrap;
+    background: none; border: 0; color: #9fb6d9; cursor: pointer;
+    padding: 10px 15px; border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0;
+  }
+  nav button:hover { color: #fff; background: rgba(255,255,255,.07); }
+  nav button[aria-current="true"] { color: #fff; border-bottom-color: var(--red); }
 
   .btn {
     font: inherit; font-size: 13px; font-weight: 700; padding: 9px 15px; border-radius: 8px;
@@ -35,6 +59,7 @@
     display: inline-block; line-height: 1.2;
   }
   .btn:hover { background: var(--navy-dark); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
   .btn--ghost { background: rgba(255, 255, 255, .14); }
   .btn--ghost:hover { background: rgba(255, 255, 255, .24); }
   .btn--red { background: var(--red); }
@@ -42,57 +67,109 @@
   .btn--quiet { background: #fff; color: var(--navy); border: 1.5px solid var(--line); }
   .btn--quiet:hover { background: #eef1f6; }
 
-  main { padding: 20px 22px 60px; max-width: 1400px; margin: 0 auto; }
+  main { padding: 20px 22px 70px; max-width: 1500px; margin: 0 auto; }
+  .view[hidden] { display: none; }
+  .lead-in { color: var(--muted); font-size: 13.5px; line-height: 1.65; margin: 0 0 16px; max-width: 82ch; }
 
-  /* ── cards ── */
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; margin-bottom: 18px; }
-  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 15px 17px; }
-  .kpi .label { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
-  .kpi .value { font-size: 27px; font-weight: 800; color: var(--navy); margin-top: 6px; line-height: 1.1; }
-  .kpi .hint { font-size: 12px; color: var(--faint); margin-top: 4px; }
-
+  /* ── panels ── */
   .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 18px; }
-  .panel > h2 {
-    font-size: 13px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
-    color: var(--muted); margin: 0; padding: 15px 18px; border-bottom: 1px solid var(--line);
+  .panel > h2, .panel > .head > h2 {
+    font-size: 13px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted);
   }
+  .panel > h2 { margin: 0; padding: 15px 18px; border-bottom: 1px solid var(--line); }
+  .panel > .head {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 18px; border-bottom: 1px solid var(--line);
+  }
+  .panel > .head .spacer { flex: 1; }
   .panel > .body { padding: 16px 18px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 18px; align-items: start; }
 
-  /* ── chart ── */
-  .chart { display: flex; align-items: flex-end; gap: 3px; height: 130px; }
-  .chart .bar { flex: 1; background: #dbe3ef; border-radius: 3px 3px 0 0; min-height: 2px; position: relative; }
-  .chart .bar[data-n]:not([data-n="0"]) { background: var(--navy); }
-  .chart .bar:hover::after {
+  /* ── KPI cards ── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(196px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 15px 17px; }
+  .kpi .label { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .kpi .value { font-size: 28px; font-weight: 800; color: var(--navy); margin-top: 7px; line-height: 1.1; }
+  .kpi .value .unit { font-size: 16px; font-weight: 700; margin-left: 2px; }
+  .kpi .foot { display: flex; align-items: center; gap: 7px; margin-top: 7px; font-size: 12px; color: var(--faint); flex-wrap: wrap; }
+  .trend { font-weight: 800; display: inline-flex; align-items: center; gap: 3px; }
+  .trend--good { color: var(--up); }
+  .trend--bad { color: var(--down); }
+  .trend--flat { color: var(--faint); }
+
+  /* ── charts: CSS and inline SVG only, no library ── */
+  .bars { display: flex; align-items: flex-end; gap: 3px; height: 150px; }
+  .bars .bar { flex: 1; background: #dbe3ef; border-radius: 3px 3px 0 0; min-height: 2px; position: relative; }
+  .bars .bar.on { background: var(--navy); }
+  .bars .bar:hover::after, .cell:hover::after {
     content: attr(data-title); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
     background: var(--ink); color: #fff; font-size: 11px; white-space: nowrap;
-    padding: 5px 8px; border-radius: 6px; margin-bottom: 6px; z-index: 5;
+    padding: 5px 8px; border-radius: 6px; margin-bottom: 6px; z-index: 5; pointer-events: none;
   }
-  .chart-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--faint); margin-top: 7px; }
+  .axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--faint); margin-top: 7px; }
 
-  /* ── breakdowns ── */
-  .breakdowns { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 22px; }
-  .breakdown h3 { font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
-  .breakdown ul { list-style: none; margin: 0; padding: 0; }
-  .breakdown li { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; }
-  .breakdown .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .breakdown .track { width: 74px; height: 6px; background: #eef1f6; border-radius: 3px; overflow: hidden; }
-  .breakdown .fill { height: 100%; background: var(--navy); }
-  .breakdown .n { font-weight: 700; color: var(--navy); min-width: 26px; text-align: right; }
+  .rank { list-style: none; margin: 0; padding: 0; }
+  .rank li { display: flex; align-items: center; gap: 9px; padding: 5px 0; font-size: 13px; }
+  .rank .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rank .track { width: 90px; height: 7px; background: #eef1f6; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+  .rank .fill { height: 100%; display: block; background: var(--navy); }
+  .rank .n { font-weight: 700; color: var(--navy); min-width: 34px; text-align: right; }
+  .muted-note { font-size: 12.5px; color: var(--faint); line-height: 1.6; margin: 12px 0 0; }
+  .empty-col { font-size: 12.5px; color: var(--faint); padding: 10px 0; line-height: 1.6; }
+
+  /* ── funnel ── */
+  .funnel { display: flex; flex-direction: column; gap: 8px; }
+  .step { display: flex; align-items: center; gap: 12px; }
+  .step .label { width: 220px; font-size: 13px; flex-shrink: 0; }
+  .step .track { flex: 1; background: #eef1f6; border-radius: 7px; height: 34px; overflow: hidden; }
+  .step .fill {
+    height: 100%; background: linear-gradient(90deg, var(--navy), #3d7ac4);
+    display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;
+    color: #fff; font-weight: 800; font-size: 13px; min-width: 46px;
+  }
+  .step .drop { width: 132px; font-size: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
+  .step .drop b { color: var(--down); }
+
+  /* ── Kanban ── */
+  .board { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; }
+  .column {
+    flex: 0 0 262px; background: var(--raise); border: 1px solid var(--line);
+    border-radius: 12px; display: flex; flex-direction: column; max-height: 74vh;
+  }
+  .column > .col-head {
+    padding: 11px 13px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .column h3 { font-size: 12px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); flex: 1; }
+  .column .count { background: var(--navy); color: #fff; font-size: 11.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+  .column .stack { padding: 10px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 78px; }
+  .column.over { outline: 2px dashed var(--navy); outline-offset: -3px; }
+
+  .ticket {
+    background: var(--card); border: 1px solid var(--line); border-left: 3px solid #3d7ac4;
+    border-radius: 9px; padding: 10px 11px; cursor: grab; font-size: 13px;
+  }
+  .ticket:hover { border-color: var(--navy); }
+  .ticket.dragging { opacity: .4; }
+  .ticket .who { color: var(--navy); font-weight: 700; margin-bottom: 3px; }
+  .ticket .meta { color: var(--muted); font-size: 12px; line-height: 1.5; }
+  .ticket .tags { margin-top: 6px; display: flex; gap: 5px; flex-wrap: wrap; }
+  .tag { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #eef1f6; color: var(--muted); }
 
   /* ── filters ── */
   .filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
   .field { display: flex; flex-direction: column; gap: 5px; }
   .field label { font-size: 11.5px; font-weight: 700; color: var(--muted); }
-  .field input, .field select {
+  .field input, .field select, .field textarea {
     font: inherit; font-size: 13.5px; padding: 8px 10px; border: 1.5px solid var(--line);
     border-radius: 8px; background: #fff; color: inherit; min-width: 132px;
   }
-  .field input:focus, .field select:focus { outline: none; border-color: var(--navy); }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--navy); }
   .field--grow { flex: 1; min-width: 200px; }
   .field--grow input { width: 100%; }
   .filters .actions { display: flex; gap: 8px; margin-left: auto; }
 
-  /* ── table ── */
+  /* ── tables ── */
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
   th {
@@ -100,188 +177,476 @@
     color: var(--muted); padding: 11px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
   }
   td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-  tbody tr { cursor: pointer; }
-  tbody tr:hover { background: #f7f9fc; }
+  tbody tr.clickable { cursor: pointer; }
+  tbody tr.clickable:hover { background: var(--raise); }
   td.name { font-weight: 700; color: var(--navy); white-space: nowrap; }
   td.dim { color: var(--muted); white-space: nowrap; }
   .empty { padding: 44px 18px; text-align: center; color: var(--muted); }
 
-  .pill {
-    display: inline-block; font-size: 11.5px; font-weight: 700; padding: 3px 9px;
-    border-radius: 999px; white-space: nowrap;
-  }
-  .pill--Nouveau   { background: #e7effb; color: #1c4d95; }
-  .pill--Contacte  { background: #fff2dc; color: #8a5a00; }
-  .pill--Encours   { background: #e9e6fb; color: #4a3aa8; }
-  .pill--Converti  { background: #e2f6ea; color: #1a6b3c; }
-  .pill--Perdu     { background: #f0f1f4; color: #5b6472; }
+  .pill { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .pill--blue { background: #e7effb; color: #1c4d95; }
+  .pill--sky { background: #e3f2fb; color: #14607f; }
+  .pill--amber { background: #fff2dc; color: #8a5a00; }
+  .pill--violet { background: #e9e6fb; color: #4a3aa8; }
+  .pill--orange { background: #ffeadb; color: #99430c; }
+  .pill--green { background: #e2f6ea; color: #1a6b3c; }
+  .pill--teal { background: #ddf4f3; color: #12605d; }
+  .pill--emerald { background: #d9f4e4; color: #14603a; }
+  .pill--grey { background: #f0f1f4; color: #5b6472; }
 
   .pager { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-top: 1px solid var(--line); }
   .pager .count { font-size: 12.5px; color: var(--muted); margin-right: auto; }
 
-  /* ── detail drawer ── */
-  .overlay {
-    position: fixed; inset: 0; background: rgba(12, 22, 40, .45); display: none; z-index: 40;
+  /* ── SEO ── */
+  .score-row { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .score {
+    width: 108px; height: 108px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 32px; font-weight: 800; color: #fff; background: var(--faint); flex-shrink: 0;
   }
+  .score.good { background: var(--up); }
+  .score.mid { background: #c8871f; }
+  .score.bad { background: var(--down); }
+  .checks { list-style: none; margin: 0; padding: 0; }
+  .checks li { display: flex; gap: 11px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .checks li:last-child { border-bottom: 0; }
+  .badge {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; color: #fff;
+    font-size: 12px; font-weight: 800; display: grid; place-items: center; margin-top: 1px;
+  }
+  .badge.pass { background: var(--up); }
+  .badge.warn { background: #c8871f; }
+  .badge.fail { background: var(--down); }
+  .badge.info { background: var(--faint); }
+  .checks .what { flex: 1; min-width: 0; }
+  .checks .what b { color: var(--navy); }
+  .checks .detail { color: var(--muted); font-size: 12.5px; margin-top: 2px; word-break: break-word; }
+  .checks .fix { color: var(--down); font-size: 12.5px; margin-top: 4px; }
+
+  .vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 12px; }
+  .vital { border: 1px solid var(--line); border-radius: 10px; padding: 13px 14px; }
+  .vital .m { font-size: 11.5px; font-weight: 800; color: var(--muted); letter-spacing: .04em; }
+  .vital .v { font-size: 23px; font-weight: 800; margin-top: 5px; color: var(--faint); }
+  .vital .v.good { color: var(--up); }
+  .vital .v.needs-improvement { color: var(--amber); }
+  .vital .v.poor { color: var(--down); }
+  .vital .s { font-size: 11.5px; color: var(--faint); margin-top: 3px; line-height: 1.5; }
+
+  /* ── heatmap ── */
+  .heat { display: grid; gap: 1px; background: var(--line); border-radius: 8px; overflow: hidden; }
+  .cell { background: var(--card); aspect-ratio: 1; position: relative; }
+  .reach { display: grid; grid-template-columns: repeat(auto-fit, minmax(126px, 1fr)); gap: 12px; margin-top: 16px; }
+  .reach div { border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px; }
+  .reach .p { font-size: 20px; font-weight: 800; color: var(--navy); }
+  .reach .l { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+
+  /* ── detail drawer ── */
+  .overlay { position: fixed; inset: 0; background: rgba(12, 22, 40, .45); display: none; z-index: 40; }
   .overlay.on { display: block; }
   .drawer {
-    position: fixed; top: 0; right: 0; bottom: 0; width: min(460px, 100%); background: #fff;
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100%); background: var(--card);
     z-index: 41; transform: translateX(100%); transition: transform .18s ease-out;
     display: flex; flex-direction: column; box-shadow: -14px 0 40px rgba(0, 0, 0, .16);
   }
   .drawer.on { transform: none; }
-  .drawer header { background: var(--navy); align-items: flex-start; }
-  .drawer header h2 { margin: 0; font-size: 18px; }
-  .drawer header .meta { font-size: 12.5px; color: #c3d2ea; margin-top: 3px; }
-  .drawer .content { padding: 18px 22px; overflow-y: auto; flex: 1; }
-  .drawer .row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
-  .drawer .row .k { color: var(--muted); min-width: 132px; }
-  .drawer .row .v { flex: 1; font-weight: 600; word-break: break-word; }
-  .drawer .msg { background: #f7f9fc; border-left: 3px solid var(--red); border-radius: 7px; padding: 12px 14px; margin: 14px 0; white-space: pre-wrap; line-height: 1.6; }
-  .drawer textarea {
-    width: 100%; min-height: 92px; font: inherit; font-size: 13.5px; padding: 10px 12px;
-    border: 1.5px solid var(--line); border-radius: 8px; resize: vertical;
+  .drawer .drawer-head { background: var(--navy); display: flex; gap: 12px; align-items: flex-start; padding: 16px 22px; }
+  .drawer .drawer-head h2 { font-size: 18px; color: #fff; text-transform: none; letter-spacing: 0; }
+  .drawer .drawer-head .meta { font-size: 12.5px; color: #c3d2ea; margin-top: 3px; }
+  .drawer .content { padding: 16px 22px; overflow-y: auto; flex: 1; }
+  .section-title {
+    font-size: 11.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--muted); margin: 20px 0 8px;
   }
-  .drawer .foot { padding: 14px 22px; border-top: 1px solid var(--line); display: flex; gap: 9px; align-items: center; }
-  .drawer .saved { font-size: 12.5px; color: #1a6b3c; font-weight: 700; }
+  .drawer .row { display: flex; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  .drawer .row .k { color: var(--muted); min-width: 138px; }
+  .drawer .row .v { flex: 1; font-weight: 600; word-break: break-word; }
+  .drawer .msg { background: var(--raise); border-left: 3px solid var(--red); border-radius: 7px; padding: 12px 14px; margin: 10px 0; white-space: pre-wrap; line-height: 1.6; }
+  .drawer textarea { width: 100%; min-height: 74px; resize: vertical; }
+  .drawer .foot { padding: 13px 22px; border-top: 1px solid var(--line); display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+  .drawer .saved { font-size: 12.5px; color: var(--up); font-weight: 700; }
+
+  .timeline { list-style: none; margin: 0; padding: 0 0 0 4px; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 13px 16px; font-size: 13px; }
+  .timeline li::before {
+    content: ''; position: absolute; left: -9px; top: 4px; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--navy);
+  }
+  .timeline .when { color: var(--faint); font-size: 11.5px; }
+  .comment { background: var(--raise); border-radius: 8px; padding: 9px 11px; margin-bottom: 8px; font-size: 13px; }
+  .comment .who { font-weight: 700; color: var(--navy); font-size: 12px; }
+  .comment .when { color: var(--faint); font-size: 11.5px; }
 
   .toast {
     position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(80px);
-    background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 9px; font-size: 13.5px;
+    background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 9px; font-size: 13.5px;
     z-index: 60; transition: transform .2s ease-out, opacity .2s; opacity: 0; pointer-events: none;
+    max-width: min(460px, 92vw); box-shadow: 0 14px 34px rgba(0,0,0,.24);
   }
   .toast.on { transform: translateX(-50%); opacity: 1; }
+  .toast.alert { background: var(--up); }
 
-  @media (max-width: 760px) {
-    main { padding: 16px 13px 50px; }
-    header { padding: 12px 14px; }
+  @media (max-width: 860px) {
+    main { padding: 16px 13px 60px; }
+    header { padding: 11px 14px 0; }
     .filters .actions { margin-left: 0; width: 100%; }
     .field, .field select, .field input { min-width: 0; width: 100%; }
     .field { flex: 1 1 140px; }
+    .step .label { width: 122px; font-size: 12px; }
+    .step .drop { width: 76px; font-size: 11px; }
+    .drawer .row { flex-direction: column; gap: 2px; }
+    .drawer .row .k { min-width: 0; }
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
       --ink: #e9edf4; --muted: #9aa5b6; --faint: #7c8798;
-      --line: #2a3140; --bg: #12161d; --card: #1a1f28;
+      --line: #2a3140; --bg: #12161d; --card: #1a1f28; --raise: #20262f;
+      --up: #4cc98a; --down: #ef6b7a; --amber: #e0a83c;
     }
-    body { color: var(--ink); }
-    .field input, .field select, .drawer textarea, .btn--quiet { background: #12161d; color: var(--ink); }
+    .field input, .field select, .field textarea, .btn--quiet, .cell { background: #12161d; color: var(--ink); }
     .btn--quiet { border-color: var(--line); }
-    tbody tr:hover { background: #20262f; }
-    .drawer { background: var(--card); }
-    .drawer .msg, .chart .bar { background: #232a35; }
-    .chart .bar[data-n]:not([data-n="0"]) { background: #4a7fd4; }
-    .breakdown .track { background: #232a35; }
-    .breakdown .fill, .kpi .value, .breakdown .n, td.name { color: inherit; }
-    .kpi .value, .breakdown .n, td.name { color: #7ea9ea; }
-    .breakdown .fill { background: #4a7fd4; }
+    .bars .bar, .rank .track, .step .track { background: #232a35; }
+    .bars .bar.on, .rank .fill, .column .count { background: #4a7fd4; }
+    .step .fill { background: linear-gradient(90deg, #2c5794, #4a7fd4); }
+    .rank .n, .kpi .value, td.name, .ticket .who, .reach .p, .checks .what b { color: #7ea9ea; }
+    .tag { background: #232a35; }
   }
 </style>
 </head>
 <body>
 <header>
-  <div class="brand">GCITT BENIN <span>· Espace prospects</span></div>
-  <div class="spacer"></div>
-  <div class="who">Connecté : {{USERNAME}}</div>
-  <button class="btn btn--ghost" id="logout" type="button">Déconnexion</button>
+  <div class="top">
+    <div class="brand">GCITT BENIN <span>· Pilotage commercial</span></div>
+    <div class="spacer"></div>
+    <span class="live"><span class="dot idle" id="live-dot"></span><span id="live-count">—</span>&nbsp;en ligne</span>
+    <span class="who">Connecté : {{USERNAME}}</span>
+    <button class="btn btn--ghost" id="logout" type="button">Déconnexion</button>
+  </div>
+  <nav id="tabs">
+    <button data-view="accueil" aria-current="true">Accueil</button>
+    <button data-view="pipeline">Pipeline</button>
+    <button data-view="prospects">Prospects</button>
+    <button data-view="marketing">Marketing</button>
+    <button data-view="parcours">Parcours</button>
+    <button data-view="seo">SEO</button>
+    <button data-view="temps-reel">Temps réel</button>
+    <button data-view="journal">Journal</button>
+    <button data-view="sauvegarde">Sauvegarde</button>
+  </nav>
 </header>
 
 <main>
-  <section class="cards" id="kpis"></section>
-
-  <section class="panel">
-    <h2>Prospects par jour (30 derniers jours)</h2>
-    <div class="body">
-      <div class="chart" id="chart"></div>
-      <div class="chart-axis"><span id="axis-from"></span><span id="axis-to"></span></div>
+  <!-- ── Accueil ────────────────────────────────────────────────────────── -->
+  <section class="view" id="view-accueil">
+    <section class="cards" id="kpis"></section>
+    <div class="grid-2">
+      <section class="panel">
+        <h2>Prospects par jour (30 jours)</h2>
+        <div class="body">
+          <div class="bars" id="daily"></div>
+          <div class="axis"><span id="daily-from"></span><span id="daily-to"></span></div>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Répartition du pipeline</h2>
+        <div class="body"><ul class="rank" id="stage-rank"></ul></div>
+      </section>
     </div>
   </section>
 
-  <section class="panel">
-    <h2>Répartition</h2>
-    <div class="body breakdowns" id="breakdowns"></div>
+  <!-- ── Pipeline ───────────────────────────────────────────────────────── -->
+  <section class="view" id="view-pipeline" hidden>
+    <p class="lead-in">
+      Faites glisser une fiche d'une colonne à l'autre pour faire avancer l'affaire.
+      Chaque déplacement est horodaté dans l'historique du prospect et dans le journal d'audit.
+      Cliquez sur une fiche pour l'ouvrir.
+    </p>
+    <div class="board" id="board"></div>
   </section>
 
-  <section class="panel">
-    <h2>Recherche et filtres</h2>
-    <div class="body">
-      <div class="filters">
-        <div class="field field--grow">
-          <label for="q">Recherche</label>
-          <input id="q" placeholder="Nom, email, téléphone, message…">
-        </div>
-        <div class="field"><label for="f-status">Statut</label><select id="f-status"></select></div>
-        <div class="field"><label for="f-cite">Cité</label><select id="f-cite"></select></div>
-        <div class="field"><label for="f-source">Source</label><select id="f-source"></select></div>
-        <div class="field"><label for="f-country">Pays</label><select id="f-country"></select></div>
-        <div class="field"><label for="f-from">Du</label><input id="f-from" type="date"></div>
-        <div class="field"><label for="f-to">Au</label><input id="f-to" type="date"></div>
-        <div class="actions">
-          <button class="btn btn--quiet" id="reset" type="button">Réinitialiser</button>
-          <a class="btn btn--red" id="export" href="/admin/export.csv">Exporter CSV</a>
+  <!-- ── Prospects ──────────────────────────────────────────────────────── -->
+  <section class="view" id="view-prospects" hidden>
+    <section class="panel">
+      <h2>Recherche et filtres</h2>
+      <div class="body">
+        <div class="filters">
+          <div class="field field--grow">
+            <label for="q">Recherche</label>
+            <input id="q" placeholder="Nom, email, téléphone, message, commercial…">
+          </div>
+          <div class="field"><label for="f-stage">Étape</label><select id="f-stage"></select></div>
+          <div class="field"><label for="f-cite">Cité</label><select id="f-cite"></select></div>
+          <div class="field"><label for="f-source">Source</label><select id="f-source"></select></div>
+          <div class="field"><label for="f-country">Pays</label><select id="f-country"></select></div>
+          <div class="field"><label for="f-from">Du</label><input id="f-from" type="date"></div>
+          <div class="field"><label for="f-to">Au</label><input id="f-to" type="date"></div>
+          <div class="actions">
+            <button class="btn btn--quiet" id="reset" type="button">Réinitialiser</button>
+            <a class="btn btn--red" id="export" href="/admin/export.csv">Exporter CSV</a>
+          </div>
         </div>
       </div>
+    </section>
+
+    <section class="panel">
+      <h2>Prospects</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th><th>Nom</th><th>Téléphone</th><th>Email</th>
+              <th>Pays</th><th>Projet</th><th>Source</th><th>Commercial</th><th>Étape</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden>Aucun prospect ne correspond à ces critères.</div>
+      </div>
+      <div class="pager">
+        <span class="count" id="count"></span>
+        <button class="btn btn--quiet" id="prev" type="button">Précédent</button>
+        <button class="btn btn--quiet" id="next" type="button">Suivant</button>
+      </div>
+    </section>
+  </section>
+
+  <!-- ── Marketing ──────────────────────────────────────────────────────── -->
+  <section class="view" id="view-marketing" hidden>
+    <section class="panel">
+      <div class="head">
+        <h2>Période analysée</h2>
+        <div class="spacer"></div>
+        <div class="field">
+          <select id="m-days">
+            <option value="7">7 derniers jours</option>
+            <option value="30" selected>30 derniers jours</option>
+            <option value="90">90 derniers jours</option>
+            <option value="365">12 derniers mois</option>
+          </select>
+        </div>
+      </div>
+      <div class="body"><section class="cards" id="m-kpis" style="margin:0"></section></div>
+    </section>
+
+    <section class="panel">
+      <h2>Heures de visite (heure du Bénin)</h2>
+      <div class="body">
+        <div class="bars" id="hours"></div>
+        <div class="axis"><span>00 h</span><span>12 h</span><span>23 h</span></div>
+      </div>
+    </section>
+
+    <div class="grid-2" id="marketing-charts"></div>
+  </section>
+
+  <!-- ── Parcours : entonnoir + heatmap ─────────────────────────────────── -->
+  <section class="view" id="view-parcours" hidden>
+    <section class="panel">
+      <h2>Tunnel de conversion (30 jours)</h2>
+      <div class="body">
+        <div class="funnel" id="funnel"></div>
+        <p class="muted-note" id="funnel-note"></p>
+      </div>
+    </section>
+
+    <div class="grid-2">
+      <section class="panel">
+        <h2>Zones cliquées</h2>
+        <div class="body">
+          <div class="heat" id="heat"></div>
+          <p class="muted-note">
+            Chaque case couvre 5 % de la largeur et 2,5 % de la hauteur de la page.
+            Plus la case est rouge, plus la zone est cliquée ; une case vide est une zone ignorée.
+            Les positions sont enregistrées en pourcentage, donc comparables entre un téléphone et un grand écran.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Éléments cliqués et profondeur atteinte</h2>
+        <div class="body">
+          <ul class="rank" id="heat-elements"></ul>
+          <div class="reach" id="reach"></div>
+        </div>
+      </section>
     </div>
   </section>
 
-  <section class="panel">
-    <h2>Prospects</h2>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th><th>Nom</th><th>Téléphone</th><th>Email</th>
-            <th>Pays</th><th>Projet</th><th>Source</th><th>Statut</th>
-          </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
-      <div class="empty" id="empty" hidden>Aucun prospect ne correspond à ces critères.</div>
+  <!-- ── SEO ────────────────────────────────────────────────────────────── -->
+  <section class="view" id="view-seo" hidden>
+    <section class="panel">
+      <h2>Score SEO</h2>
+      <div class="body">
+        <div class="score-row">
+          <div class="score" id="seo-score">—</div>
+          <div>
+            <div id="seo-summary" style="font-size:15px;font-weight:700"></div>
+            <p class="muted-note" id="seo-when"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid-2">
+      <section class="panel">
+        <h2>Contrôles</h2>
+        <div class="body"><ul class="checks" id="seo-checks"></ul></div>
+      </section>
+
+      <div>
+        <section class="panel">
+          <h2>Core Web Vitals — visiteurs réels</h2>
+          <div class="body">
+            <div class="vitals" id="vitals"></div>
+            <p class="muted-note">
+              Mesuré sur les appareils des visiteurs, pas en laboratoire : c'est la donnée que
+              Google utilise pour le classement. La valeur affichée est le 75<sup>e</sup> centile.
+            </p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Non mesurable depuis ce serveur</h2>
+          <div class="body"><ul class="checks" id="seo-unavailable"></ul></div>
+        </section>
+      </div>
     </div>
-    <div class="pager">
-      <span class="count" id="count"></span>
-      <button class="btn btn--quiet" id="prev" type="button">Précédent</button>
-      <button class="btn btn--quiet" id="next" type="button">Suivant</button>
+
+    <section class="panel">
+      <h2>Structure et liens</h2>
+      <div class="body grid-2" id="seo-structure"></div>
+    </section>
+  </section>
+
+  <!-- ── Temps réel ─────────────────────────────────────────────────────── -->
+  <section class="view" id="view-temps-reel" hidden>
+    <p class="lead-in">
+      Sessions ayant émis un événement dans les 5 dernières minutes, rafraîchies toutes les 10 secondes.
+      Le pays est déduit du fuseau horaire du navigateur : c'est une approximation utile pour lire une
+      tendance, pas une géolocalisation. La ville demanderait une base GeoIP, qui n'est pas installée.
+    </p>
+    <section class="panel">
+      <div class="head">
+        <h2>Visiteurs en ligne</h2>
+        <div class="spacer"></div>
+        <span class="pill pill--green" id="rt-count">0</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Réf.</th><th>Pays estimé</th><th>Page</th><th>Appareil</th><th>Navigateur</th><th>Source</th><th>Durée</th><th>Dernière action</th></tr>
+          </thead>
+          <tbody id="rt-rows"></tbody>
+        </table>
+        <div class="empty" id="rt-empty" hidden>Personne sur le site en ce moment.</div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ── Journal ────────────────────────────────────────────────────────── -->
+  <section class="view" id="view-journal" hidden>
+    <div class="grid-2">
+      <section class="panel">
+        <h2>Journal d'audit</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Cible</th><th>Détail</th></tr></thead>
+            <tbody id="audit-rows"></tbody>
+          </table>
+          <div class="empty" id="audit-empty" hidden>Aucune action enregistrée.</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Événements visiteurs</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Heure</th><th>Événement</th><th>Détail</th><th>Appareil</th><th>Session</th></tr></thead>
+            <tbody id="events"></tbody>
+          </table>
+          <div class="empty" id="events-empty" hidden>Aucun événement enregistré.</div>
+        </div>
+      </section>
     </div>
   </section>
-  <section class="panel">
-    <h2>Journal des événements</h2>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Heure</th><th>Événement</th><th>Détail</th><th>Appareil</th><th>Session</th></tr>
-        </thead>
-        <tbody id="events"></tbody>
-      </table>
-      <div class="empty" id="events-empty" hidden>
-        Aucun événement enregistré pour l'instant.
-      </div>
+
+  <!-- ── Sauvegarde ─────────────────────────────────────────────────────── -->
+  <section class="view" id="view-sauvegarde" hidden>
+    <div class="grid-2">
+      <section class="panel">
+        <h2>Sauvegarder</h2>
+        <div class="body">
+          <p class="lead-in">
+            Télécharge un fichier JSON contenant tous les prospects, tous les événements et le
+            journal d'audit. Conservez-le hors de l'hébergement : un déploiement ne touche pas au
+            dossier <code>data/</code>, mais une suppression de compte, si.
+          </p>
+          <a class="btn btn--red" id="backup" href="/admin/backup.json">Télécharger la sauvegarde</a>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Restaurer</h2>
+        <div class="body">
+          <p class="lead-in">
+            La restauration est <strong>additive</strong> : les fiches déjà présentes sont conservées,
+            seules les absentes sont réinsérées. Restaurer deux fois le même fichier ne crée pas de
+            doublon, et restaurer une vieille sauvegarde ne supprime jamais les prospects arrivés depuis.
+          </p>
+          <div class="field" style="margin-bottom:12px">
+            <label for="restore-file">Fichier de sauvegarde (.json)</label>
+            <input id="restore-file" type="file" accept="application/json,.json">
+          </div>
+          <button class="btn" id="restore" type="button" disabled>Restaurer</button>
+          <p class="muted-note" id="restore-result"></p>
+        </div>
+      </section>
     </div>
   </section>
 </main>
 
 <div class="overlay" id="overlay"></div>
 <aside class="drawer" id="drawer" aria-hidden="true">
-  <header>
-    <div>
+  <div class="drawer-head">
+    <div style="flex:1">
       <h2 id="d-name">—</h2>
       <div class="meta" id="d-when"></div>
     </div>
-    <div class="spacer"></div>
     <button class="btn btn--ghost" id="d-close" type="button">Fermer</button>
-  </header>
+  </div>
   <div class="content">
+    <div class="section-title">Coordonnées et projet</div>
     <div id="d-rows"></div>
+
+    <div class="section-title">Message du prospect</div>
     <div class="msg" id="d-message"></div>
-    <div class="field" style="margin-bottom:14px">
-      <label for="d-status">Statut</label>
-      <select id="d-status"></select>
+
+    <div class="section-title">Suivi commercial</div>
+    <div class="field" style="margin-bottom:12px">
+      <label for="d-stage">Étape</label>
+      <select id="d-stage"></select>
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label for="d-owner">Commercial assigné</label>
+      <input id="d-owner" placeholder="Nom du commercial">
     </div>
     <div class="field">
       <label for="d-notes">Notes internes</label>
       <textarea id="d-notes" placeholder="Compte-rendu d'appel, prochaine relance…"></textarea>
     </div>
+
+    <div class="section-title">Commentaires</div>
+    <div id="d-comments"></div>
+    <div class="field" style="margin-top:8px">
+      <label for="d-comment">Ajouter un commentaire</label>
+      <textarea id="d-comment" style="min-height:60px" placeholder="Visible par toute l'équipe."></textarea>
+    </div>
+    <button class="btn btn--quiet" id="d-add-comment" type="button" style="margin-top:8px">Publier le commentaire</button>
+
+    <div class="section-title">Historique des étapes</div>
+    <ul class="timeline" id="d-history"></ul>
+
+    <div class="section-title">Parcours sur le site</div>
+    <div id="d-activity"></div>
   </div>
   <div class="foot">
     <button class="btn" id="d-save" type="button">Enregistrer</button>
@@ -299,14 +664,18 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var PAGE = 50;
-  var state = { offset: 0, total: 0, current: null, statuses: [] };
+  var state = { view: 'accueil', offset: 0, total: 0, current: null, stages: [], lastSeen: null, loaded: {} };
 
   // ── helpers ──────────────────────────────────────────────────────────────
 
   function text(node, value) { node.textContent = value == null ? '' : String(value); }
 
-  /** Status names carry accents and spaces; CSS class names must not. */
-  function slug(status) { return String(status || '').normalize('NFD').replace(/[^A-Za-z]/g, ''); }
+  function el(tag, className, content) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (content != null) text(node, content);
+    return node;
+  }
 
   function formatDate(iso) {
     var d = new Date(iso);
@@ -316,13 +685,20 @@
     });
   }
 
+  function formatDuration(seconds) {
+    if (seconds === null || seconds === undefined || isNaN(seconds)) return '—';
+    if (seconds < 60) return Math.round(seconds) + ' s';
+    var m = Math.floor(seconds / 60);
+    return m + ' min ' + String(Math.round(seconds % 60)).padStart(2, '0') + ' s';
+  }
+
   var toastTimer;
-  function toast(message) {
-    var el = $('toast');
-    text(el, message);
-    el.className = 'toast on';
+  function toast(message, alert) {
+    var node = $('toast');
+    text(node, message);
+    node.className = 'toast on' + (alert ? ' alert' : '');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { el.className = 'toast'; }, 2600);
+    toastTimer = setTimeout(function () { node.className = 'toast'; }, alert ? 7000 : 2800);
   }
 
   /** Every call goes through here so an expired session lands back on login. */
@@ -333,10 +709,229 @@
     });
   }
 
+  function stageOf(id) {
+    for (var i = 0; i < state.stages.length; i++) if (state.stages[i].id === id) return state.stages[i];
+    return { id: id, label: id || '—', tone: 'grey' };
+  }
+
+  function toEntries(object) {
+    return Object.keys(object || {}).map(function (key) { return [key, object[key]]; });
+  }
+
+  /** A ranked list with proportional bars — the shape every breakdown uses. */
+  function renderRank(host, entries, options) {
+    options = options || {};
+    host.innerHTML = '';
+    var rows = entries.slice(0, options.limit || 8);
+    if (rows.length === 0) {
+      host.appendChild(el('li', 'empty-col', options.empty || 'Aucune donnée enregistrée.'));
+      return;
+    }
+    var max = rows[0][1] || 1;
+    rows.forEach(function (entry) {
+      var item = document.createElement('li');
+      item.appendChild(el('span', 'name', entry[0]));
+      var track = el('span', 'track');
+      var fill = el('span', 'fill');
+      fill.style.width = Math.max(4, Math.round((entry[1] / max) * 100)) + '%';
+      track.appendChild(fill);
+      item.appendChild(track);
+      item.appendChild(el('span', 'n', entry[1]));
+      host.appendChild(item);
+    });
+  }
+
+  function renderBars(host, entries, suffix) {
+    host.innerHTML = '';
+    var max = 0;
+    entries.forEach(function (e) { if (e[1] > max) max = e[1]; });
+    entries.forEach(function (entry) {
+      var bar = el('div', 'bar' + (entry[1] > 0 ? ' on' : ''));
+      bar.style.height = (max ? Math.round((entry[1] / max) * 100) : 0) + '%';
+      bar.setAttribute('data-title', entry[0] + ' · ' + entry[1] + (suffix || ''));
+      host.appendChild(bar);
+    });
+  }
+
+  // ── KPI cards ────────────────────────────────────────────────────────────
+
+  function renderCards(host, cards) {
+    host.innerHTML = '';
+    cards.forEach(function (card) {
+      var box = el('div', 'kpi');
+      box.appendChild(el('div', 'label', card.label));
+
+      var value = el('div', 'value');
+      if (card.value === null || card.value === undefined) {
+        text(value, '—');
+      } else {
+        text(value, typeof card.value === 'number' ? card.value.toLocaleString('fr-FR') : card.value);
+        if (card.unit) value.appendChild(el('span', 'unit', card.unit));
+      }
+      box.appendChild(value);
+
+      var foot = el('div', 'foot');
+      if (card.delta !== null && card.delta !== undefined) {
+        var arrow = card.direction === 'up' ? '▲' : card.direction === 'down' ? '▼' : '=';
+        var tone = card.good === null || card.good === undefined ? 'flat' : card.good ? 'good' : 'bad';
+        foot.appendChild(el('span', 'trend trend--' + tone, arrow + ' ' + Math.abs(card.delta) + ' %'));
+      }
+      if (card.hint) foot.appendChild(el('span', null, card.hint));
+      box.appendChild(foot);
+      host.appendChild(box);
+    });
+  }
+
+  // ── Accueil ──────────────────────────────────────────────────────────────
+
+  function loadOverview() {
+    return api('/admin/api/overview').then(function (data) {
+      if (!data.ok) return;
+      state.stages = data.stages;
+      renderCards($('kpis'), data.overview.cards);
+      setLive(data.overview.online);
+      renderRank(
+        $('stage-rank'),
+        data.stages.map(function (stage) { return [stage.label, data.overview.stageCounts[stage.id] || 0]; }),
+        { limit: 20, empty: 'Aucun prospect enregistré.' }
+      );
+    });
+  }
+
+  function loadDaily() {
+    // Rebuilt from the leads list so the chart can never disagree with the
+    // table below it.
+    return api('/admin/api/leads?limit=1000').then(function (data) {
+      if (!data.ok) return;
+      var daily = {};
+      var keys = [];
+      var today = new Date();
+      for (var i = 29; i >= 0; i--) {
+        var key = new Date(today.getTime() - i * 86400000).toISOString().slice(0, 10);
+        daily[key] = 0;
+        keys.push(key);
+      }
+      data.leads.forEach(function (lead) {
+        var key = (lead.createdAt || '').slice(0, 10);
+        if (key in daily) daily[key]++;
+      });
+      renderBars($('daily'), keys.map(function (k) { return [k, daily[k]]; }), ' prospect(s)');
+      text($('daily-from'), keys[0]);
+      text($('daily-to'), keys[keys.length - 1]);
+    });
+  }
+
+  // ── Pipeline (Kanban) ────────────────────────────────────────────────────
+
+  var dragged = null;
+
+  function ticketFor(lead) {
+    var card = el('div', 'ticket');
+    card.draggable = true;
+    card.dataset.id = lead.id;
+
+    card.appendChild(el('div', 'who', ((lead.firstName || '') + ' ' + (lead.lastName || '')).trim() || lead.name || '—'));
+    card.appendChild(el('div', 'meta', (lead.country || '—') + ' · ' + (lead.phone || '—')));
+    card.appendChild(el('div', 'meta', formatDate(lead.createdAt)));
+
+    var tags = el('div', 'tags');
+    if (lead.villa && lead.villa !== 'Je ne sais pas encore') tags.appendChild(el('span', 'tag', lead.villa));
+    else if (lead.cite) tags.appendChild(el('span', 'tag', 'Cité ' + lead.cite));
+    if (lead.source) tags.appendChild(el('span', 'tag', lead.source));
+    if (lead.owner) tags.appendChild(el('span', 'tag', lead.owner));
+    card.appendChild(tags);
+
+    card.addEventListener('click', function () { openDrawer(lead.id); });
+    card.addEventListener('dragstart', function (event) {
+      dragged = lead.id;
+      card.classList.add('dragging');
+      event.dataTransfer.effectAllowed = 'move';
+      // Firefox refuses to start a drag without a payload.
+      event.dataTransfer.setData('text/plain', lead.id);
+    });
+    card.addEventListener('dragend', function () {
+      dragged = null;
+      card.classList.remove('dragging');
+    });
+    return card;
+  }
+
+  function loadBoard() {
+    return api('/admin/api/leads?limit=1000').then(function (data) {
+      if (!data.ok) return;
+      var board = $('board');
+      board.innerHTML = '';
+
+      state.stages.forEach(function (stage) {
+        var column = el('div', 'column');
+        column.dataset.stage = stage.id;
+
+        var head = el('div', 'col-head');
+        head.appendChild(el('h3', null, stage.label));
+        var mine = data.leads.filter(function (lead) { return lead.stage === stage.id; });
+        head.appendChild(el('span', 'count', mine.length));
+        column.appendChild(head);
+
+        var stack = el('div', 'stack');
+        if (mine.length === 0) stack.appendChild(el('div', 'empty-col', 'Aucune fiche'));
+        mine.forEach(function (lead) { stack.appendChild(ticketFor(lead)); });
+        column.appendChild(stack);
+
+        column.addEventListener('dragover', function (event) {
+          if (!dragged) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'move';
+          column.classList.add('over');
+        });
+        column.addEventListener('dragleave', function () { column.classList.remove('over'); });
+        column.addEventListener('drop', function (event) {
+          event.preventDefault();
+          column.classList.remove('over');
+          if (dragged) moveLead(dragged, stage.id);
+        });
+
+        board.appendChild(column);
+      });
+    });
+  }
+
+  function moveLead(id, stage) {
+    api('/admin/api/leads/' + encodeURIComponent(id), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: stage })
+    }).then(function (data) {
+      if (!data.ok) { toast(data.error || 'Déplacement impossible.'); return; }
+      toast((data.lead.name || 'Fiche') + ' → ' + data.lead.stageLabel);
+      loadBoard();
+      loadOverview();
+      state.loaded.prospects = false;
+    }).catch(function () { toast('Serveur injoignable.'); });
+  }
+
+  // ── Prospects table ──────────────────────────────────────────────────────
+
+  function fillSelect(select, values, placeholder, valueOf, labelOf) {
+    var previous = select.value;
+    select.innerHTML = '';
+    var blank = document.createElement('option');
+    blank.value = '';
+    text(blank, placeholder);
+    select.appendChild(blank);
+    values.forEach(function (item) {
+      var option = document.createElement('option');
+      option.value = valueOf ? valueOf(item) : item;
+      text(option, labelOf ? labelOf(item) : item);
+      select.appendChild(option);
+    });
+    select.value = previous;
+    if (select.selectedIndex === -1) select.value = '';
+  }
+
   function filters() {
     return {
       q: $('q').value.trim(),
-      status: $('f-status').value,
+      stage: $('f-stage').value,
       cite: $('f-cite').value,
       source: $('f-source').value,
       country: $('f-country').value,
@@ -353,155 +948,10 @@
     return params.toString();
   }
 
-  // ── statistics ───────────────────────────────────────────────────────────
-
-  function renderKpis(stats) {
-    var converted = stats.byStatus['Converti'] || 0;
-    var cards = [
-      ['Prospects', stats.totalLeads, 'depuis le début'],
-      ['30 derniers jours', stats.periodLeads, ''],
-      ['Nouveaux à traiter', stats.byStatus['Nouveau'] || 0, 'statut « Nouveau »'],
-      ['Convertis', converted, ''],
-      ['Taux de conversion', stats.conversionRate === null ? '—' : stats.conversionRate + ' %',
-        stats.conversionRate === null
-          ? 'aucune visite enregistrée'
-          : stats.sessions + ' sessions · ' + stats.pageViews + ' pages vues']
-    ];
-    $('kpis').innerHTML = '';
-    cards.forEach(function (card) {
-      var box = document.createElement('div');
-      box.className = 'kpi';
-      var label = document.createElement('div'); label.className = 'label'; text(label, card[0]);
-      var value = document.createElement('div'); value.className = 'value'; text(value, card[1]);
-      var hint = document.createElement('div'); hint.className = 'hint'; text(hint, card[2]);
-      box.appendChild(label); box.appendChild(value); box.appendChild(hint);
-      $('kpis').appendChild(box);
-    });
-  }
-
-  function renderChart(daily) {
-    var days = Object.keys(daily);
-    var max = 0;
-    days.forEach(function (day) { if (daily[day] > max) max = daily[day]; });
-
-    var chart = $('chart');
-    chart.innerHTML = '';
-    days.forEach(function (day) {
-      var bar = document.createElement('div');
-      bar.className = 'bar';
-      bar.style.height = (max ? Math.round((daily[day] / max) * 100) : 0) + '%';
-      bar.setAttribute('data-n', daily[day]);
-      bar.setAttribute('data-title', day + ' · ' + daily[day] + (daily[day] > 1 ? ' prospects' : ' prospect'));
-      chart.appendChild(bar);
-    });
-    text($('axis-from'), days[0] || '');
-    text($('axis-to'), days[days.length - 1] || '');
-  }
-
-  function renderBreakdowns(stats) {
-    var groups = [
-      ['Statut', stats.byStatus], ['Source', stats.bySource], ['Cité', stats.byCite],
-      ['Villa', stats.byVilla], ['Pays', stats.byCountry], ['Appareil', stats.byDevice]
-    ];
-    var host = $('breakdowns');
-    host.innerHTML = '';
-
-    groups.forEach(function (group) {
-      var entries = Object.keys(group[1]).map(function (key) { return [key, group[1][key]]; });
-      if (!entries.length) return;
-      var max = entries[0][1];
-
-      var box = document.createElement('div');
-      box.className = 'breakdown';
-      var title = document.createElement('h3'); text(title, group[0]);
-      var list = document.createElement('ul');
-
-      entries.slice(0, 6).forEach(function (entry) {
-        var item = document.createElement('li');
-        var name = document.createElement('span'); name.className = 'name'; text(name, entry[0]);
-        var track = document.createElement('span'); track.className = 'track';
-        var fill = document.createElement('span'); fill.className = 'fill';
-        fill.style.width = Math.round((entry[1] / max) * 100) + '%';
-        fill.style.display = 'block';
-        track.appendChild(fill);
-        var n = document.createElement('span'); n.className = 'n'; text(n, entry[1]);
-        item.appendChild(name); item.appendChild(track); item.appendChild(n);
-        list.appendChild(item);
-      });
-
-      box.appendChild(title); box.appendChild(list);
-      host.appendChild(box);
-    });
-  }
-
-  function loadStats() {
-    return api('/admin/api/stats?days=30').then(function (data) {
-      if (!data.ok) return;
-      renderKpis(data.stats);
-      renderChart(data.stats.daily);
-      renderBreakdowns(data.stats);
-    });
-  }
-
-  // ── prospect table ───────────────────────────────────────────────────────
-
-  function fillSelect(select, values, placeholder) {
-    var previous = select.value;
-    select.innerHTML = '';
-    var blank = document.createElement('option');
-    blank.value = '';
-    text(blank, placeholder);
-    select.appendChild(blank);
-    values.forEach(function (value) {
-      var option = document.createElement('option');
-      option.value = value;
-      text(option, value);
-      select.appendChild(option);
-    });
-    if (values.indexOf(previous) !== -1) select.value = previous;
-  }
-
   function projectOf(lead) {
     if (lead.villa && lead.villa !== 'Je ne sais pas encore') return lead.villa;
     if (lead.cite) return 'Cité ' + lead.cite;
     return '—';
-  }
-
-  function renderRows(leads) {
-    var body = $('rows');
-    body.innerHTML = '';
-
-    leads.forEach(function (lead) {
-      var row = document.createElement('tr');
-      row.addEventListener('click', function () { openDrawer(lead); });
-
-      var cells = [
-        [formatDate(lead.createdAt), 'dim'],
-        [((lead.firstName || '') + ' ' + (lead.lastName || '')).trim() || lead.name || '—', 'name'],
-        [lead.phone || '—', 'dim'],
-        [lead.email || '—', ''],
-        [lead.country || '—', 'dim'],
-        [projectOf(lead), ''],
-        [lead.source || '—', 'dim']
-      ];
-      cells.forEach(function (cell) {
-        var td = document.createElement('td');
-        if (cell[1]) td.className = cell[1];
-        text(td, cell[0]);
-        row.appendChild(td);
-      });
-
-      var statusCell = document.createElement('td');
-      var pill = document.createElement('span');
-      pill.className = 'pill pill--' + slug(lead.status);
-      text(pill, lead.status || 'Nouveau');
-      statusCell.appendChild(pill);
-      row.appendChild(statusCell);
-
-      body.appendChild(row);
-    });
-
-    $('empty').hidden = leads.length > 0;
   }
 
   function loadLeads() {
@@ -511,68 +961,498 @@
     return api('/admin/api/leads?' + query).then(function (data) {
       if (!data.ok) return;
       state.total = data.total;
-      state.statuses = data.facets.statuses;
 
-      fillSelect($('f-status'), data.facets.statuses, 'Tous les statuts');
+      fillSelect($('f-stage'), data.facets.stages, 'Toutes les étapes',
+        function (s) { return s.id; }, function (s) { return s.label; });
       fillSelect($('f-cite'), data.facets.cites, 'Toutes les cités');
       fillSelect($('f-source'), data.facets.sources, 'Toutes les sources');
       fillSelect($('f-country'), data.facets.countries, 'Tous les pays');
 
-      renderRows(data.leads);
+      var body = $('rows');
+      body.innerHTML = '';
+      data.leads.forEach(function (lead) {
+        var row = el('tr', 'clickable');
+        row.addEventListener('click', function () { openDrawer(lead.id); });
+
+        [
+          [formatDate(lead.createdAt), 'dim'],
+          [((lead.firstName || '') + ' ' + (lead.lastName || '')).trim() || lead.name || '—', 'name'],
+          [lead.phone || '—', 'dim'],
+          [lead.email || '—', ''],
+          [lead.country || '—', 'dim'],
+          [projectOf(lead), ''],
+          [lead.source || '—', 'dim'],
+          [lead.owner || '—', 'dim']
+        ].forEach(function (cell) { row.appendChild(el('td', cell[1] || null, cell[0])); });
+
+        var stageCell = document.createElement('td');
+        stageCell.appendChild(el('span', 'pill pill--' + stageOf(lead.stage).tone, lead.stageLabel));
+        row.appendChild(stageCell);
+        body.appendChild(row);
+      });
+
+      $('empty').hidden = data.leads.length > 0;
 
       var first = data.total === 0 ? 0 : state.offset + 1;
       var last = Math.min(state.offset + PAGE, data.total);
       text($('count'), data.total === 0
         ? 'Aucun prospect'
-        : first + '–' + last + ' sur ' + data.total + (data.total !== data.totalUnfiltered ? ' (filtré sur ' + data.totalUnfiltered + ')' : ''));
+        : first + '–' + last + ' sur ' + data.total +
+          (data.total !== data.totalUnfiltered ? ' (filtré sur ' + data.totalUnfiltered + ')' : ''));
 
       $('prev').disabled = state.offset === 0;
       $('next').disabled = state.offset + PAGE >= data.total;
     });
   }
 
-  // ── detail drawer ────────────────────────────────────────────────────────
+  // ── Marketing ────────────────────────────────────────────────────────────
+
+  function loadMarketing() {
+    var days = $('m-days').value;
+    return api('/admin/api/stats?days=' + days).then(function (data) {
+      if (!data.ok) return;
+      var m = data.stats.marketing;
+
+      renderCards($('m-kpis'), [
+        { label: 'Sessions', value: m.sessions, hint: days + ' jours' },
+        { label: 'Pages vues', value: m.pageViews, hint: days + ' jours' },
+        { label: 'Temps moyen', value: m.averageSeconds, unit: '\u00a0s', hint: 'par session' },
+        { label: 'Scroll moyen', value: m.averageScroll, unit: '\u00a0%', hint: 'point le plus bas atteint' },
+        { label: 'Taux de rebond', value: m.bounceRate, unit: '\u00a0%', hint: 'sessions sans interaction' }
+      ]);
+
+      renderBars($('hours'), toEntries(m.byHour), ' session(s)');
+
+      var host = $('marketing-charts');
+      host.innerHTML = '';
+      [
+        ['Acquisition — visiteurs', m.bySource, 'Aucune session enregistrée.'],
+        ['Acquisition — prospects', m.bySourceLeads, 'Aucun prospect sur la période.'],
+        ['Campagnes UTM', m.byCampaign, 'Aucune campagne balisée. Ajoutez ?utm_source=…&utm_campaign=… à vos liens publicitaires.'],
+        ['Pays déclarés par les prospects', m.byCountryLeads, 'Aucun prospect sur la période.'],
+        ['Pays estimés des visiteurs', m.byCountryVisitors, 'Aucun fuseau horaire reconnu.'],
+        ['Appareils', m.byDevice, 'Aucune session enregistrée.'],
+        ['Navigateurs', m.byBrowser, 'Aucune session enregistrée.'],
+        ["Systèmes d'exploitation", m.byOs, 'Aucune session enregistrée.'],
+        ['Jours de visite', m.byWeekday, 'Aucune session enregistrée.'],
+        ['Sections atteintes', m.bySection, 'Aucune section suivie.'],
+        ['CTA les plus cliqués', m.byCta, 'Aucun clic sur un bouton enregistré.'],
+        ['Boutons WhatsApp', m.byWhatsapp, 'Aucune ouverture WhatsApp enregistrée.'],
+        ['Pages consultées', m.byPage, 'Aucune page vue enregistrée.'],
+        ['Langues du navigateur', m.byLanguage, 'Aucune session enregistrée.']
+      ].forEach(function (group) {
+        var panel = el('section', 'panel');
+        panel.appendChild(el('h2', null, group[0]));
+        var body = el('div', 'body');
+        var list = el('ul', 'rank');
+        renderRank(list, toEntries(group[1]), { limit: 8, empty: group[2] });
+        body.appendChild(list);
+        panel.appendChild(body);
+        host.appendChild(panel);
+      });
+    });
+  }
+
+  // ── Parcours : funnel + heatmap ──────────────────────────────────────────
+
+  function loadFunnel() {
+    return api('/admin/api/stats?days=30').then(function (data) {
+      if (!data.ok) return;
+      var steps = data.stats.funnel;
+      var host = $('funnel');
+      host.innerHTML = '';
+      var top = steps[0].value || 0;
+
+      steps.forEach(function (step) {
+        var row = el('div', 'step');
+        row.appendChild(el('div', 'label', step.label));
+
+        var track = el('div', 'track');
+        var fill = el('div', 'fill', step.value);
+        fill.style.width = Math.max(5, top ? (step.value / top) * 100 : 0) + '%';
+        track.appendChild(fill);
+        row.appendChild(track);
+
+        var drop = el('div', 'drop');
+        if (step.shareOfPrevious === null || step.shareOfPrevious === undefined) {
+          text(drop, '100 %');
+        } else {
+          drop.appendChild(el('span', null, step.shareOfPrevious + ' % '));
+          if (step.dropOff > 0) drop.appendChild(el('b', null, '−' + step.dropOff));
+        }
+        row.appendChild(drop);
+        host.appendChild(row);
+      });
+
+      text($('funnel-note'), top === 0
+        ? "Aucune session enregistrée sur la période : l'entonnoir se remplira dès les premières visites."
+        : 'Le pourcentage indique la part conservée depuis l’étape précédente ; le nombre en rouge, les visiteurs perdus à cette étape. Les trois dernières lignes viennent du CRM, pas du suivi.');
+    });
+  }
+
+  function loadHeatmap() {
+    return api('/admin/api/heatmap?days=30').then(function (data) {
+      if (!data.ok) return;
+      var h = data.heatmap;
+
+      var grid = $('heat');
+      grid.style.gridTemplateColumns = 'repeat(' + h.columns + ', 1fr)';
+      grid.innerHTML = '';
+
+      var index = {};
+      h.cells.forEach(function (cell) { index[cell.column + ':' + cell.row] = cell; });
+
+      for (var row = 0; row < h.rows; row++) {
+        for (var column = 0; column < h.columns; column++) {
+          var cell = el('div', 'cell');
+          var found = index[column + ':' + row];
+          if (found) {
+            // Red fading to transparent — the convention every heatmap uses,
+            // so it needs no legend.
+            cell.style.background = 'rgba(210, 31, 45, ' + (0.12 + found.intensity * 0.78).toFixed(3) + ')';
+            cell.setAttribute('data-title', found.count + ' clic(s)');
+          }
+          grid.appendChild(cell);
+        }
+      }
+
+      renderRank($('heat-elements'), toEntries(h.byElement), {
+        limit: 10,
+        empty: 'Aucun clic enregistré sur la période.'
+      });
+
+      var reach = $('reach');
+      reach.innerHTML = '';
+      [25, 50, 75, 90].forEach(function (milestone) {
+        var value = h.scrollReach[milestone];
+        var box = el('div');
+        box.appendChild(el('div', 'p', value === null ? '—' : value + ' %'));
+        box.appendChild(el('div', 'l', 'ont atteint ' + milestone + ' % de la page'));
+        reach.appendChild(box);
+      });
+    });
+  }
+
+  // ── SEO ──────────────────────────────────────────────────────────────────
+
+  var BADGE = { pass: '✓', warn: '!', fail: '✕', info: 'i' };
+
+  function loadSeo() {
+    return api('/admin/api/seo').then(function (data) {
+      if (!data.ok) return;
+      var seo = data.seo;
+
+      var score = $('seo-score');
+      text(score, seo.score === null ? '—' : seo.score);
+      score.className = 'score ' + (seo.score >= 90 ? 'good' : seo.score >= 70 ? 'mid' : 'bad');
+
+      var failed = seo.checks.filter(function (c) { return c.status === 'fail'; }).length;
+      var warned = seo.checks.filter(function (c) { return c.status === 'warn'; }).length;
+      text($('seo-summary'), failed === 0 && warned === 0
+        ? 'Les ' + seo.checks.length + ' contrôles passent.'
+        : failed + ' erreur(s) et ' + warned + ' avertissement(s) sur ' + seo.checks.length + ' contrôles.');
+      text($('seo-when'), 'Analyse du fichier réellement servi, effectuée le ' + formatDate(seo.generatedAt) + '.');
+
+      var list = $('seo-checks');
+      list.innerHTML = '';
+      seo.checks.forEach(function (check) {
+        var item = document.createElement('li');
+        item.appendChild(el('span', 'badge ' + check.status, BADGE[check.status]));
+        var what = el('div', 'what');
+        what.appendChild(el('b', null, check.label));
+        what.appendChild(el('div', 'detail', check.detail));
+        if (check.fix && check.status !== 'pass') what.appendChild(el('div', 'fix', '→ ' + check.fix));
+        item.appendChild(what);
+        list.appendChild(item);
+      });
+
+      var unavailable = $('seo-unavailable');
+      unavailable.innerHTML = '';
+      seo.unavailable.forEach(function (entry) {
+        var item = document.createElement('li');
+        item.appendChild(el('span', 'badge info', 'i'));
+        var what = el('div', 'what');
+        what.appendChild(el('b', null, entry.label));
+        what.appendChild(el('div', 'detail', entry.why));
+        item.appendChild(what);
+        unavailable.appendChild(item);
+      });
+
+      var vitals = $('vitals');
+      vitals.innerHTML = '';
+      seo.vitals.forEach(function (vital) {
+        var box = el('div', 'vital');
+        box.appendChild(el('div', 'm', vital.metric));
+        var value = el('div', 'v ' + (vital.rating || ''));
+        text(value, vital.p75 === null ? '—' : vital.p75 + (vital.unit ? ' ' + vital.unit : ''));
+        box.appendChild(value);
+        box.appendChild(el('div', 's', vital.samples > 0
+          ? vital.samples + ' mesure(s) · ' + vital.label
+          : 'aucune mesure · ' + vital.label));
+        vitals.appendChild(box);
+      });
+
+      var structure = $('seo-structure');
+      structure.innerHTML = '';
+      function block(title, entries, empty) {
+        var panel = el('div');
+        panel.appendChild(el('div', 'section-title', title));
+        var list = el('ul', 'rank');
+        if (entries.length === 0) list.appendChild(el('li', 'empty-col', empty));
+        entries.forEach(function (entry) {
+          var item = document.createElement('li');
+          item.appendChild(el('span', 'name', entry));
+          list.appendChild(item);
+        });
+        panel.appendChild(list);
+        structure.appendChild(panel);
+      }
+
+      block('Titres H2 (' + seo.headings.h2.length + ')', seo.headings.h2, 'Aucun H2.');
+      block('Types Schema.org (' + seo.schemaTypes.length + ')', seo.schemaTypes, 'Aucune donnée structurée.');
+      block('URL du sitemap', seo.sitemapUrls, 'Sitemap vide.');
+      block('Liens cassés',
+        seo.brokenLinks.map(function (link) { return link.href + ' — ' + link.reason; }),
+        'Aucun lien interne cassé.');
+    });
+  }
+
+  // ── Temps réel ───────────────────────────────────────────────────────────
+
+  function setLive(count) {
+    text($('live-count'), count);
+    $('live-dot').className = 'dot' + (count > 0 ? '' : ' idle');
+  }
+
+  function loadRealtime() {
+    return api('/admin/api/realtime').then(function (data) {
+      if (!data.ok) return;
+      var visitors = data.realtime.visitors;
+      setLive(visitors.length);
+      text($('rt-count'), visitors.length);
+
+      var body = $('rt-rows');
+      body.innerHTML = '';
+      visitors.forEach(function (visitor) {
+        var row = document.createElement('tr');
+        [
+          visitor.ref,
+          visitor.country || visitor.tz || '—',
+          visitor.path || '—',
+          visitor.device || '—',
+          visitor.browser || '—',
+          visitor.source || '—',
+          formatDuration(visitor.secondsOnSite),
+          EVENT_LABELS[visitor.lastEvent] || visitor.lastEvent || '—'
+        ].forEach(function (value) { row.appendChild(el('td', 'dim', value)); });
+        body.appendChild(row);
+      });
+      $('rt-empty').hidden = visitors.length > 0;
+    });
+  }
+
+  // ── Journal ──────────────────────────────────────────────────────────────
+
+  var AUDIT_LABELS = {
+    login: 'Connexion',
+    login_refuse: 'Connexion refusée',
+    logout: 'Déconnexion',
+    changement_etape: "Changement d'étape",
+    modification_fiche: 'Modification de fiche',
+    commentaire: 'Commentaire ajouté',
+    export_csv: 'Export CSV',
+    sauvegarde: 'Sauvegarde téléchargée',
+    restauration: 'Restauration'
+  };
+
+  var EVENT_LABELS = {
+    page_view: 'Page vue',
+    section_view: 'Section atteinte',
+    cta_click: 'Clic sur un CTA',
+    click: 'Clic',
+    select_item: 'Villa choisie',
+    form_open: 'Formulaire affiché',
+    form_start: 'Formulaire commencé',
+    form_submit: 'Formulaire envoyé',
+    generate_lead: 'Prospect confirmé',
+    whatsapp_click: 'Ouverture WhatsApp',
+    hero_slide_view: 'Slide du hero vue',
+    scroll: 'Défilement',
+    engagement: 'Temps passé',
+    web_vital: 'Mesure de performance'
+  };
+
+  var LOCATIONS = {
+    section_rdv: 'Section rendez-vous',
+    footer: 'Pied de page',
+    bouton_flottant: 'Bouton flottant',
+    confirmation: 'Écran de confirmation'
+  };
+
+  function eventDetail(event) {
+    if (event.name === 'engagement') return formatDuration(Number(event.seconds));
+    if (event.name === 'web_vital') return event.metric + ' = ' + event.value;
+    if (event.percent_scrolled) return event.percent_scrolled + ' %';
+    if (event.section) return event.section;
+    if (event.item_name) return event.item_name;
+    if (event.label) return event.label;
+    if (event.villa) return event.villa + (event.cite ? ' · ' + event.cite : '');
+    if (event.location) return LOCATIONS[event.location] || event.location;
+    if (event.slide_index) return 'slide ' + event.slide_index;
+    if (event.source) return event.source;
+    return event.path || '—';
+  }
+
+  function loadJournal() {
+    var audit = api('/admin/api/audit?limit=300').then(function (data) {
+      if (!data.ok) return;
+      var body = $('audit-rows');
+      body.innerHTML = '';
+      data.audit.forEach(function (entry) {
+        var row = document.createElement('tr');
+        [
+          [formatDate(entry.at), 'dim'],
+          [entry.user || '—', ''],
+          [AUDIT_LABELS[entry.action] || entry.action, ''],
+          [entry.target || '—', 'dim'],
+          [entry.detail || '—', 'dim']
+        ].forEach(function (cell) { row.appendChild(el('td', cell[1] || null, cell[0])); });
+        body.appendChild(row);
+      });
+      $('audit-empty').hidden = data.audit.length > 0;
+    });
+
+    var events = api('/admin/api/events?limit=300').then(function (data) {
+      if (!data.ok) return;
+      var body = $('events');
+      body.innerHTML = '';
+      data.events.forEach(function (event) {
+        var row = document.createElement('tr');
+        [
+          formatDate(event.at),
+          EVENT_LABELS[event.name] || event.name,
+          eventDetail(event),
+          event.device || '—',
+          (event.sid || '').slice(0, 8) || '—'
+        ].forEach(function (value) { row.appendChild(el('td', 'dim', value)); });
+        body.appendChild(row);
+      });
+      $('events-empty').hidden = data.events.length > 0;
+    });
+
+    return Promise.all([audit, events]);
+  }
+
+  // ── Detail drawer ────────────────────────────────────────────────────────
 
   var DETAIL_ROWS = [
     ['Téléphone / WhatsApp', 'phone'], ['Email', 'email'], ['Pays', 'country'],
     ['Cité', 'cite'], ['Villa', 'villa'], ['Type', 'villaType'],
     ['Budget', 'budget'], ['Délai', 'delai'], ['Source', 'source'],
-    ['Campagne', 'utmCampaign'], ['Page d’origine', 'pageUrl'],
+    ['Campagne', 'utmCampaign'], ['Support', 'utmMedium'], ['Page d’origine', 'pageUrl'],
     ['Appareil', 'device'], ['Navigateur', 'browser'], ['Système', 'os'],
     ['Écran', 'screen'], ['Fuseau horaire', 'timezone'], ['Adresse IP', 'ip']
   ];
 
-  function openDrawer(lead) {
-    state.current = lead;
+  function openDrawer(id) {
+    api('/admin/api/leads/' + encodeURIComponent(id)).then(function (data) {
+      if (!data.ok) { toast(data.error || 'Fiche introuvable.'); return; }
+      var lead = data.lead;
+      state.current = lead;
 
-    text($('d-name'), ((lead.firstName || '') + ' ' + (lead.lastName || '')).trim() || lead.name || '—');
-    text($('d-when'), 'Reçu le ' + formatDate(lead.createdAt));
+      text($('d-name'), ((lead.firstName || '') + ' ' + (lead.lastName || '')).trim() || lead.name || '—');
+      text($('d-when'), 'Reçu le ' + formatDate(lead.createdAt) + ' · ' + lead.stageLabel);
 
-    var host = $('d-rows');
+      var host = $('d-rows');
+      host.innerHTML = '';
+      DETAIL_ROWS.forEach(function (entry) {
+        var value = lead[entry[1]];
+        if (!value) return;
+        var row = el('div', 'row');
+        row.appendChild(el('span', 'k', entry[0]));
+        row.appendChild(el('span', 'v', value));
+        host.appendChild(row);
+      });
+
+      text($('d-message'), lead.message || 'Aucun message.');
+
+      fillSelect($('d-stage'), state.stages, 'Nouveau prospect',
+        function (s) { return s.id; }, function (s) { return s.label; });
+      $('d-stage').value = lead.stage;
+      $('d-owner').value = lead.owner || '';
+      $('d-notes').value = lead.notes || '';
+      $('d-comment').value = '';
+      $('d-saved').hidden = true;
+
+      var comments = $('d-comments');
+      comments.innerHTML = '';
+      (lead.comments || []).forEach(function (comment) {
+        var box = el('div', 'comment');
+        var head = el('div');
+        head.appendChild(el('span', 'who', comment.by + ' '));
+        head.appendChild(el('span', 'when', formatDate(comment.at)));
+        box.appendChild(head);
+        box.appendChild(el('div', null, comment.text));
+        comments.appendChild(box);
+      });
+      if ((lead.comments || []).length === 0) comments.appendChild(el('div', 'empty-col', 'Aucun commentaire.'));
+
+      var history = $('d-history');
+      history.innerHTML = '';
+      (lead.history || []).slice().reverse().forEach(function (entry) {
+        var item = document.createElement('li');
+        var label = stageOf(entry.stage).label;
+        item.appendChild(el('div', null, entry.from ? stageOf(entry.from).label + ' → ' + label : label));
+        item.appendChild(el('div', 'when', formatDate(entry.at) + ' · ' + (entry.by || '—')));
+        history.appendChild(item);
+      });
+      if ((lead.history || []).length === 0) history.appendChild(el('li', 'empty-col', 'Aucun changement enregistré.'));
+
+      renderActivity(data.activity);
+
+      var digits = String(lead.phone || '').replace(/\D/g, '');
+      $('d-wa').href = digits ? 'https://wa.me/' + digits : '#';
+      $('d-mail').href = lead.email ? 'mailto:' + lead.email : '#';
+
+      $('overlay').className = 'overlay on';
+      $('drawer').className = 'drawer on';
+      $('drawer').setAttribute('aria-hidden', 'false');
+    }).catch(function () { toast('Serveur injoignable.'); });
+  }
+
+  function renderActivity(activity) {
+    var host = $('d-activity');
     host.innerHTML = '';
-    DETAIL_ROWS.forEach(function (entry) {
-      var value = lead[entry[1]];
-      if (!value) return;
-      var row = document.createElement('div'); row.className = 'row';
-      var k = document.createElement('span'); k.className = 'k'; text(k, entry[0]);
-      var v = document.createElement('span'); v.className = 'v'; text(v, value);
-      row.appendChild(k); row.appendChild(v);
+    if (!activity || !activity.visits) {
+      host.appendChild(el('div', 'empty-col',
+        'Aucun parcours rattaché. Le rapprochement se fait par identifiant de session : il ' +
+        'n’existe que pour les prospects arrivés après la mise en place du suivi.'));
+      return;
+    }
+
+    var summary = el('div', 'row');
+    summary.appendChild(el('span', 'k', 'Pages vues'));
+    summary.appendChild(el('span', 'v', activity.visits));
+    host.appendChild(summary);
+
+    activity.pages.forEach(function (page) {
+      var row = el('div', 'row');
+      row.appendChild(el('span', 'k', 'Page'));
+      row.appendChild(el('span', 'v', page.path + ' (' + page.count + ')'));
       host.appendChild(row);
     });
 
-    text($('d-message'), lead.message || 'Aucun message.');
-    fillSelect($('d-status'), state.statuses, 'Nouveau');
-    $('d-status').value = lead.status || 'Nouveau';
-    $('d-notes').value = lead.notes || '';
-    $('d-saved').hidden = true;
-
-    var digits = String(lead.phone || '').replace(/\D/g, '');
-    $('d-wa').href = digits ? 'https://wa.me/' + digits : '#';
-    $('d-mail').href = lead.email ? 'mailto:' + lead.email : '#';
-
-    $('overlay').className = 'overlay on';
-    $('drawer').className = 'drawer on';
-    $('drawer').setAttribute('aria-hidden', 'false');
+    if (activity.interactions.length > 0) {
+      host.appendChild(el('div', 'section-title', 'Interactions'));
+      var list = el('ul', 'timeline');
+      activity.interactions.slice().reverse().forEach(function (event) {
+        var item = document.createElement('li');
+        item.appendChild(el('div', null, (EVENT_LABELS[event.name] || event.name) + ' — ' + eventDetail(event)));
+        item.appendChild(el('div', 'when', formatDate(event.at)));
+        list.appendChild(item);
+      });
+      host.appendChild(list);
+    }
   }
 
   function closeDrawer() {
@@ -580,6 +1460,14 @@
     $('drawer').className = 'drawer';
     $('drawer').setAttribute('aria-hidden', 'true');
     state.current = null;
+  }
+
+  function refreshAfterChange() {
+    state.loaded = {};
+    state.loaded[state.view] = true;
+    loadOverview();
+    if (state.view === 'pipeline') loadBoard();
+    if (state.view === 'prospects') loadLeads();
   }
 
   function save() {
@@ -590,86 +1478,121 @@
     api('/admin/api/leads/' + encodeURIComponent(state.current.id), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: $('d-status').value, notes: $('d-notes').value })
+      body: JSON.stringify({
+        stage: $('d-stage').value,
+        owner: $('d-owner').value,
+        notes: $('d-notes').value
+      })
     }).then(function (data) {
       button.disabled = false;
       if (!data.ok) { toast(data.error || 'Enregistrement impossible.'); return; }
       state.current = data.lead;
       $('d-saved').hidden = false;
-      toast('Prospect mis à jour.');
-      loadLeads();
-      loadStats();
+      toast('Fiche mise à jour.');
+      refreshAfterChange();
     }).catch(function () {
       button.disabled = false;
       toast('Serveur injoignable.');
     });
   }
 
-  // ── event log ────────────────────────────────────────────────────────────
+  function addComment() {
+    if (!state.current) return;
+    var value = $('d-comment').value.trim();
+    if (!value) return;
+    var button = $('d-add-comment');
+    button.disabled = true;
 
-  var EVENT_LABELS = {
-    page_view: 'Page vue',
-    cta_click: 'Clic sur un CTA',
-    select_item: 'Villa choisie',
-    form_start: 'Formulaire commencé',
-    form_submit: 'Formulaire envoyé',
-    generate_lead: 'Prospect confirmé',
-    whatsapp_click: 'Ouverture WhatsApp',
-    hero_slide_view: 'Slide du hero vue',
-    scroll: 'Défilement'
-  };
-
-  // The page identifies WhatsApp buttons by position; spell them out here.
-  var LOCATIONS = {
-    section_rdv: 'Section rendez-vous',
-    footer: 'Pied de page',
-    bouton_flottant: 'Bouton flottant',
-    confirmation: 'Écran de confirmation'
-  };
-
-  /** The one parameter worth showing per event type. */
-  function eventDetail(event) {
-    if (event.percent_scrolled) return event.percent_scrolled + ' %';
-    if (event.item_name) return event.item_name;
-    if (event.villa) return event.villa + (event.cite ? ' · ' + event.cite : '');
-    if (event.location) return LOCATIONS[event.location] || event.location;
-    if (event.slide_index) return 'slide ' + event.slide_index;
-    if (event.source) return event.source;
-    return event.path || '—';
-  }
-
-  function loadEvents() {
-    return api('/admin/api/events?limit=200').then(function (data) {
-      if (!data.ok) return;
-      var body = $('events');
-      body.innerHTML = '';
-
-      data.events.forEach(function (event) {
-        var row = document.createElement('tr');
-        row.style.cursor = 'default';
-        var cells = [
-          [formatDate(event.at), 'dim'],
-          [EVENT_LABELS[event.name] || event.name, ''],
-          [eventDetail(event), 'dim'],
-          [event.device || '—', 'dim'],
-          // Only the first characters: enough to follow one visit through the
-          // log, not enough to be a durable identifier.
-          [(event.sid || '').slice(0, 8) || '—', 'dim']
-        ];
-        cells.forEach(function (cell) {
-          var td = document.createElement('td');
-          if (cell[1]) td.className = cell[1];
-          text(td, cell[0]);
-          row.appendChild(td);
-        });
-        body.appendChild(row);
-      });
-
-      $('events-empty').hidden = data.events.length > 0;
+    api('/admin/api/leads/' + encodeURIComponent(state.current.id) + '/comment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: value })
+    }).then(function (data) {
+      button.disabled = false;
+      if (!data.ok) { toast(data.error || 'Commentaire non enregistré.'); return; }
+      openDrawer(data.lead.id);
+      toast('Commentaire publié.');
+    }).catch(function () {
+      button.disabled = false;
+      toast('Serveur injoignable.');
     });
   }
 
-  // ── wiring ───────────────────────────────────────────────────────────────
+  // ── Backup and restore ───────────────────────────────────────────────────
+
+  $('restore-file').addEventListener('change', function () {
+    $('restore').disabled = !$('restore-file').files.length;
+    text($('restore-result'), '');
+  });
+
+  $('restore').addEventListener('click', function () {
+    var file = $('restore-file').files[0];
+    if (!file) return;
+    var button = $('restore');
+    button.disabled = true;
+    text($('restore-result'), 'Lecture du fichier…');
+
+    var reader = new FileReader();
+    reader.onload = function () {
+      api('/admin/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: String(reader.result)
+      }).then(function (data) {
+        button.disabled = false;
+        if (!data.ok) { text($('restore-result'), data.error || 'Restauration impossible.'); return; }
+        text($('restore-result'),
+          'Restauration terminée : ' + data.added.leads + ' prospect(s), ' + data.added.events +
+          ' événement(s) et ' + data.added.audit + ' entrée(s) de journal ajoutés.');
+        toast('Sauvegarde restaurée.');
+        refreshAfterChange();
+      }).catch(function () {
+        button.disabled = false;
+        text($('restore-result'), 'Serveur injoignable ou fichier illisible.');
+      });
+    };
+    reader.readAsText(file);
+  });
+
+  // ── Views ────────────────────────────────────────────────────────────────
+
+  var LOADERS = {
+    accueil: function () { return Promise.all([loadOverview(), loadDaily()]); },
+    pipeline: loadBoard,
+    prospects: loadLeads,
+    marketing: loadMarketing,
+    parcours: function () { return Promise.all([loadFunnel(), loadHeatmap()]); },
+    seo: loadSeo,
+    'temps-reel': loadRealtime,
+    journal: loadJournal,
+    sauvegarde: function () { return Promise.resolve(); }
+  };
+
+  function show(view) {
+    state.view = view;
+    var buttons = $('tabs').querySelectorAll('button');
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute('aria-current', buttons[i].dataset.view === view ? 'true' : 'false');
+    }
+    var sections = document.querySelectorAll('.view');
+    for (var j = 0; j < sections.length; j++) sections[j].hidden = sections[j].id !== 'view-' + view;
+
+    // Each view loads once, then only on demand: the SEO audit reads files
+    // from disk and the heatmap walks every stored event, so re-running them
+    // on every tab switch would be pure waste.
+    if (!state.loaded[view]) {
+      state.loaded[view] = true;
+      Promise.resolve(LOADERS[view]()).catch(function () { toast('Chargement impossible.'); });
+    }
+    if (window.history.replaceState) window.history.replaceState(null, '', '#' + view);
+  }
+
+  // ── Wiring ───────────────────────────────────────────────────────────────
+
+  $('tabs').addEventListener('click', function (event) {
+    var button = event.target.closest('button[data-view]');
+    if (button) show(button.dataset.view);
+  });
 
   var debounce;
   function refilter() {
@@ -681,13 +1604,14 @@
     clearTimeout(debounce);
     debounce = setTimeout(refilter, 250);
   });
-  ['f-status', 'f-cite', 'f-source', 'f-country', 'f-from', 'f-to'].forEach(function (id) {
+  ['f-stage', 'f-cite', 'f-source', 'f-country', 'f-from', 'f-to'].forEach(function (id) {
     $(id).addEventListener('change', refilter);
   });
+  $('m-days').addEventListener('change', loadMarketing);
 
   $('reset').addEventListener('click', function () {
     $('q').value = '';
-    ['f-status', 'f-cite', 'f-source', 'f-country', 'f-from', 'f-to'].forEach(function (id) { $(id).value = ''; });
+    ['f-stage', 'f-cite', 'f-source', 'f-country', 'f-from', 'f-to'].forEach(function (id) { $(id).value = ''; });
     refilter();
   });
 
@@ -702,6 +1626,7 @@
   $('d-close').addEventListener('click', closeDrawer);
   $('overlay').addEventListener('click', closeDrawer);
   $('d-save').addEventListener('click', save);
+  $('d-add-comment').addEventListener('click', addComment);
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') closeDrawer();
   });
@@ -710,9 +1635,53 @@
     fetch('/admin/logout', { method: 'POST' }).then(function () { window.location.href = '/admin'; });
   });
 
-  loadStats();
-  loadLeads();
-  loadEvents();
+  // ── Live notification of new prospects ───────────────────────────────────
+  //
+  // A short poll rather than server-sent events: Apache in front of Passenger
+  // buffers an SSE stream, and a stalled stream is a dashboard that silently
+  // stops updating — worse than a poll that always works.
+
+  function poll() {
+    var query = state.lastSeen ? '?since=' + encodeURIComponent(state.lastSeen) : '';
+    api('/admin/api/ping' + query).then(function (data) {
+      if (!data.ok) return;
+      setLive(data.online);
+
+      if (data.newCount > 0 && data.latest) {
+        var who = ((data.latest.firstName || '') + ' ' + (data.latest.lastName || '')).trim() || 'Nouveau prospect';
+        toast(
+          data.newCount === 1
+            ? '🔔 Nouveau prospect : ' + who + (data.latest.country ? ' (' + data.latest.country + ')' : '')
+            : '🔔 ' + data.newCount + ' nouveaux prospects',
+          true
+        );
+        // The figures move with the notification, so nobody has to reload.
+        refreshAfterChange();
+        if (state.view === 'temps-reel') loadRealtime();
+      }
+      state.lastSeen = data.now;
+    }).catch(function () { /* a failed poll is simply retried on the next tick */ });
+  }
+
+  setInterval(poll, 15000);
+  setInterval(function () { if (state.view === 'temps-reel') loadRealtime(); }, 10000);
+
+  // ── Boot ─────────────────────────────────────────────────────────────────
+
+  var initial = (window.location.hash || '').replace('#', '');
+  if (!LOADERS[initial]) initial = 'accueil';
+
+  // The stage list is needed by almost every view, so it is fetched once up
+  // front rather than by whichever tab happens to open first.
+  loadOverview().then(function () {
+    state.loaded.accueil = true;
+    loadDaily();
+    show(initial);
+    poll();
+  }).catch(function () {
+    toast('Chargement impossible.');
+    show(initial);
+  });
 })();
 </script>
 </body>

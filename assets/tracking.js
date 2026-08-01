@@ -180,11 +180,8 @@
     sendBeacon(name, data);
   };
 
-  // One page_view per load, so the conversion rate has a denominator even for
-  // a visitor who reads the page and leaves. Sent to our own endpoint only:
-  // GA4's own config call already counts the page view, and routing it through
-  // gcittTrack would have GA4 count it twice.
-  sendBeacon('page_view', {});
+  // The page_view is sent further down, once loadAttribution() has run: the
+  // source is the one field on it that cannot be recovered afterwards.
 
   /**
    * Where the visitor came from, for the "source d'acquisition" field.
@@ -327,6 +324,233 @@
   }
 
   window.gcittAttribution = loadAttribution();
+
+
+  // ── Session context and the page view ─────────────────────────────────────
+  //
+  // Sent once the attribution is known, because `source` is the one field on
+  // a page_view that cannot be reconstructed after the fact. Everything else
+  // the server derives itself from the request.
+
+  function sessionContext() {
+    var tz = '';
+    try {
+      tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    } catch (e) {
+      tz = '';
+    }
+    return {
+      source: (window.gcittAttribution || {}).source || '',
+      tz: tz,
+      lang: navigator.language || ''
+    };
+  }
+
+  // The form sends this with the lead, which is what lets the prospect's
+  // fiche show the pages and clicks that preceded the submission.
+  window.gcittSessionId = sessionId;
+
+  sendBeacon('page_view', sessionContext());
+
+  // ── Sections seen ─────────────────────────────────────────────────────────
+  //
+  // What the funnel is built on: not "did they load the page" but "did they
+  // ever get as far as the villas". IntersectionObserver rather than scroll
+  // arithmetic, so the browser does the work off the main thread.
+
+  (function trackSections() {
+    if (!('IntersectionObserver' in window)) return;
+
+    var seen = {};
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          var id = entry.target.id;
+          if (!id || seen[id]) return;
+          seen[id] = true;
+          sendBeacon('section_view', { section: id });
+          if (id === 'rendez-vous') sendBeacon('form_open', { section: id });
+          observer.unobserve(entry.target);
+        });
+      },
+      // A quarter of the section on screen counts as reached: a section that
+      // merely brushes the viewport edge during a fast scroll does not.
+      { threshold: 0.25 }
+    );
+
+    function observeAll() {
+      var sections = document.querySelectorAll('section[id], [data-section]');
+      for (var i = 0; i < sections.length; i++) observer.observe(sections[i]);
+    }
+
+    // The page is rendered by a runtime, so the sections do not exist at parse
+    // time. One deferred pass picks them up without polling.
+    if (document.readyState === 'complete') setTimeout(observeAll, 400);
+    else window.addEventListener('load', function () { setTimeout(observeAll, 400); });
+  })();
+
+  // ── Clicks ────────────────────────────────────────────────────────────────
+  //
+  // Two things at once: a readable label for the CTA ranking, and a position
+  // for the heatmap. The position is a percentage of the document, never a
+  // pixel count — a percentage is the only form that is comparable between a
+  // phone and a 27-inch screen, and it is what an overlay needs anyway.
+
+  (function trackClicks() {
+    /** The nearest thing a person would call "what I clicked". */
+    function describe(target) {
+      var node = target;
+      for (var depth = 0; node && depth < 5; depth++, node = node.parentElement) {
+        if (node.getAttribute && node.getAttribute('data-track')) return node.getAttribute('data-track');
+        var tag = (node.tagName || '').toLowerCase();
+        if (tag === 'a' || tag === 'button') {
+          var text = (node.getAttribute('aria-label') || node.textContent || '').replace(/\s+/g, ' ').trim();
+          return text.slice(0, 60) || tag;
+        }
+      }
+      return '';
+    }
+
+    /** Is this a call to action, or just a click somewhere on the page? */
+    function isCta(target) {
+      var node = target;
+      for (var depth = 0; node && depth < 5; depth++, node = node.parentElement) {
+        if (!node.classList) continue;
+        if (node.classList.contains('gc-btn') || node.classList.contains('gc-fab')) return true;
+      }
+      return false;
+    }
+
+    document.addEventListener(
+      'click',
+      function (event) {
+        var doc = document.documentElement;
+        var height = doc.scrollHeight || 1;
+        var width = doc.clientWidth || 1;
+        var label = describe(event.target);
+
+        sendBeacon('click', {
+          label: label,
+          x: Math.round((event.clientX / width) * 1000) / 10,
+          y: Math.round((((window.scrollY || doc.scrollTop) + event.clientY) / height) * 1000) / 10
+        });
+
+        // A CTA click is the one the marketing report ranks, so it is a
+        // separate event rather than a filter over every click on the page.
+        if (label && isCta(event.target)) sendBeacon('cta_click', { label: label });
+      },
+      { passive: true, capture: true }
+    );
+  })();
+
+  // ── Engaged time ──────────────────────────────────────────────────────────
+  //
+  // Only time the tab was actually visible is counted. A page left open in a
+  // background tab for an hour is not an hour of interest, and counting it
+  // would make the average meaningless.
+
+  (function trackEngagement() {
+    var visibleSince = document.visibilityState === 'visible' ? Date.now() : 0;
+    var accumulated = 0;
+    var sent = false;
+
+    function total() {
+      return Math.round((accumulated + (visibleSince ? Date.now() - visibleSince : 0)) / 1000);
+    }
+
+    function flush() {
+      if (sent) return;
+      var seconds = total();
+      // Under two seconds is a bounce or a bot, not a visit worth averaging.
+      if (seconds < 2 || seconds > 3600) return;
+      sent = true;
+      sendBeacon('engagement', { seconds: seconds });
+    }
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') {
+        visibleSince = Date.now();
+        return;
+      }
+      if (visibleSince) accumulated += Date.now() - visibleSince;
+      visibleSince = 0;
+      // Hiding the tab is the last reliable moment on mobile: iOS often never
+      // fires pagehide or unload at all.
+      flush();
+    });
+    window.addEventListener('pagehide', flush);
+  })();
+
+  // ── Core Web Vitals ───────────────────────────────────────────────────────
+  //
+  // Field data from real visits, measured with PerformanceObserver — no
+  // library. This is what Google's own Core Web Vitals report is built from,
+  // and unlike a Lighthouse score it reflects the phones and connections our
+  // prospects actually have.
+
+  (function trackVitals() {
+    if (!('PerformanceObserver' in window)) return;
+
+    function report(metric, value) {
+      if (!Number.isFinite(value)) return;
+      sendBeacon('web_vital', { metric: metric, value: Math.round(value * 1000) / 1000 });
+    }
+
+    function observe(type, handler, options) {
+      try {
+        var observer = new PerformanceObserver(function (list) {
+          list.getEntries().forEach(handler);
+        });
+        observer.observe(Object.assign({ type: type, buffered: true }, options || {}));
+        return observer;
+      } catch (e) {
+        // An unsupported entry type throws; the other metrics still report.
+        return null;
+      }
+    }
+
+    // TTFB and FCP are single values, available early.
+    observe('navigation', function (entry) {
+      report('TTFB', entry.responseStart);
+    });
+    observe('paint', function (entry) {
+      if (entry.name === 'first-contentful-paint') report('FCP', entry.startTime);
+    });
+
+    // LCP and CLS keep changing until the page is left, so only the final
+    // value is worth sending.
+    var lcp = 0;
+    observe('largest-contentful-paint', function (entry) {
+      lcp = entry.startTime;
+    });
+
+    var cls = 0;
+    observe('layout-shift', function (entry) {
+      // Shifts the visitor caused by interacting are not penalised by Google.
+      if (!entry.hadRecentInput) cls += entry.value;
+    });
+
+    // INP: the worst interaction delay the visitor actually felt.
+    var inp = 0;
+    observe('event', function (entry) {
+      if (entry.duration > inp) inp = entry.duration;
+    }, { durationThreshold: 40 });
+
+    var flushed = false;
+    function flushVitals() {
+      if (flushed) return;
+      flushed = true;
+      if (lcp) report('LCP', lcp);
+      if (cls) report('CLS', cls);
+      if (inp) report('INP', inp);
+    }
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') flushVitals();
+    });
+    window.addEventListener('pagehide', flushVitals);
+  })();
 
   /**
    * Scroll depth.

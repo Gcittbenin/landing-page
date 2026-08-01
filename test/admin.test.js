@@ -245,13 +245,16 @@ test('a session lists the prospects with the filter options', async () => {
     assert.equal(data.total, 2);
     assert.equal(data.leads.length, 2);
     assert.deepEqual(data.facets.sources, ['Facebook', 'TikTok']);
-    assert.deepEqual(data.facets.statuses, ['Nouveau', 'Contacté', 'En cours', 'Converti', 'Perdu']);
+    assert.deepEqual(
+      data.facets.stages.map((s) => s.id),
+      ['nouveau', 'contact', 'relance', 'rdv', 'negociation', 'signe', 'lance', 'livre', 'perdu'],
+    );
   } finally {
     cleanup();
   }
 });
 
-test('a status change is persisted and reflected in the stats', async () => {
+test('a stage change is persisted and reflected in the stats', async () => {
   const { store, cleanup } = await seeded([lead()]);
   try {
     const cookie = await login(store);
@@ -260,33 +263,35 @@ test('a status change is persisted and reflected in the stats', async () => {
     const res = await handleAdmin(
       req('POST', `/admin/api/leads/${existing.id}`, {
         headers: { cookie },
-        body: { status: 'Converti', notes: 'Visite prévue le 12' },
+        body: { stage: 'signe', notes: 'Visite prévue le 12' },
       }),
       { env: ENV, store },
     );
     assert.equal(res.status, 200);
-    assert.equal(JSON.parse(res.body).lead.status, 'Converti');
+    assert.equal(JSON.parse(res.body).lead.stage, 'signe');
+    assert.equal(JSON.parse(res.body).lead.stageLabel, 'Contrat signé');
 
     const stats = JSON.parse(
       (await handleAdmin(req('GET', '/admin/api/stats', { headers: { cookie } }), { env: ENV, store })).body,
     ).stats;
-    assert.deepEqual(stats.byStatus, { Converti: 1 });
+    assert.equal(stats.stageCounts.signe, 1);
+    assert.equal(stats.stageCounts.nouveau, 0);
   } finally {
     cleanup();
   }
 });
 
-test('an unknown status is refused with the list of valid ones', async () => {
+test('an unknown stage is refused with the list of valid ones', async () => {
   const { store, cleanup } = await seeded([lead()]);
   try {
     const cookie = await login(store);
     const [existing] = await store.listLeads();
     const res = await handleAdmin(
-      req('POST', `/admin/api/leads/${existing.id}`, { headers: { cookie }, body: { status: 'Archivé' } }),
+      req('POST', `/admin/api/leads/${existing.id}`, { headers: { cookie }, body: { stage: 'archive' } }),
       { env: ENV, store },
     );
     assert.equal(res.status, 422);
-    assert.ok(JSON.parse(res.body).statuses.includes('Perdu'));
+    assert.ok(JSON.parse(res.body).stages.some((s) => s.id === 'perdu'));
   } finally {
     cleanup();
   }
@@ -297,7 +302,7 @@ test('updating an unknown prospect is a 404, not a new record', async () => {
   try {
     const cookie = await login(store);
     const res = await handleAdmin(
-      req('POST', '/admin/api/leads/inexistant', { headers: { cookie }, body: { status: 'Perdu' } }),
+      req('POST', '/admin/api/leads/inexistant', { headers: { cookie }, body: { stage: 'perdu' } }),
       { env: ENV, store },
     );
     assert.equal(res.status, 404);
@@ -381,12 +386,304 @@ test('the dashboard escapes the username it echoes back', async () => {
   }
 });
 
+// ── the new console routes ──────────────────────────────────────────────────
+
+test('the overview hands the KPI cards and the stage counters to the dashboard', async () => {
+  const { store, cleanup } = await seeded([lead(), lead({ stage: 'rdv' })]);
+  try {
+    const cookie = await login(store);
+    const res = await handleAdmin(req('GET', '/admin/api/overview', { headers: { cookie } }), { env: ENV, store });
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.body);
+    assert.equal(data.overview.totalLeads, 2);
+    assert.ok(data.overview.cards.some((c) => c.label === 'Taux de conversion'));
+    assert.equal(data.stages.length, 9);
+  } finally {
+    cleanup();
+  }
+});
+
+test('a comment is stored on the fiche and attributed to its author', async () => {
+  const { store, cleanup } = await seeded([lead()]);
+  try {
+    const cookie = await login(store);
+    const [existing] = await store.listLeads();
+
+    const res = await handleAdmin(
+      req('POST', `/admin/api/leads/${existing.id}/comment`, {
+        headers: { cookie },
+        body: { text: 'Rappelé, rappelle jeudi.' },
+      }),
+      { env: ENV, store },
+    );
+    assert.equal(res.status, 200);
+    const lead = JSON.parse(res.body).lead;
+    assert.equal(lead.comments.length, 1);
+    assert.equal(lead.comments[0].by, 'admin');
+    assert.equal(lead.comments[0].text, 'Rappelé, rappelle jeudi.');
+  } finally {
+    cleanup();
+  }
+});
+
+test('an empty comment is ignored rather than stored', async () => {
+  const { store, cleanup } = await seeded([lead()]);
+  try {
+    const cookie = await login(store);
+    const [existing] = await store.listLeads();
+    const res = await handleAdmin(
+      req('POST', `/admin/api/leads/${existing.id}/comment`, { headers: { cookie }, body: { text: '   ' } }),
+      { env: ENV, store },
+    );
+    assert.equal(JSON.parse(res.body).lead.comments.length, 0);
+  } finally {
+    cleanup();
+  }
+});
+
+test("the fiche carries the prospect's own browsing, joined by session id", async () => {
+  const { store, cleanup } = await seeded();
+  try {
+    const cookie = await login(store);
+    const saved = await store.addLead({ ...lead(), sid: 'session-1' });
+    await store.addEvent({ name: 'page_view', sid: 'session-1', path: '/' });
+    await store.addEvent({ name: 'cta_click', sid: 'session-1', label: 'Prendre rendez-vous' });
+    // Somebody else's session must not leak onto this fiche.
+    await store.addEvent({ name: 'page_view', sid: 'session-2', path: '/' });
+
+    const res = await handleAdmin(req('GET', `/admin/api/leads/${saved.id}`, { headers: { cookie } }), {
+      env: ENV,
+      store,
+    });
+    const data = JSON.parse(res.body);
+    assert.equal(data.activity.visits, 1);
+    assert.equal(data.activity.interactions.length, 1);
+    assert.equal(data.activity.interactions[0].label, 'Prendre rendez-vous');
+  } finally {
+    cleanup();
+  }
+});
+
+test('a lead with no session id simply has no browsing history', async () => {
+  const { store, cleanup } = await seeded([lead()]);
+  try {
+    const cookie = await login(store);
+    const [existing] = await store.listLeads();
+    const res = await handleAdmin(req('GET', `/admin/api/leads/${existing.id}`, { headers: { cookie } }), {
+      env: ENV,
+      store,
+    });
+    assert.equal(JSON.parse(res.body).activity.visits, 0);
+  } finally {
+    cleanup();
+  }
+});
+
+test('the SEO audit runs against the real page and returns a score', async () => {
+  const { store, cleanup } = await seeded();
+  try {
+    const cookie = await login(store);
+    const res = await handleAdmin(req('GET', '/admin/api/seo', { headers: { cookie } }), { env: ENV, store });
+    assert.equal(res.status, 200);
+    const seo = JSON.parse(res.body).seo;
+    assert.ok(seo.score >= 0 && seo.score <= 100);
+    assert.ok(seo.checks.length >= 10);
+    assert.ok(seo.unavailable.length > 0, 'what cannot be measured is stated, not left blank');
+  } finally {
+    cleanup();
+  }
+});
+
+test('the ping answers with the live count and only genuinely new leads', async () => {
+  const { store, cleanup } = await seeded();
+  try {
+    const cookie = await login(store);
+    const before = new Date(Date.now() - 60_000).toISOString();
+    await store.addLead({ ...lead(), submittedAt: new Date().toISOString() });
+
+    const fresh = JSON.parse(
+      (await handleAdmin(req('GET', '/admin/api/ping', { headers: { cookie }, query: { since: before } }), {
+        env: ENV,
+        store,
+      })).body,
+    );
+    assert.equal(fresh.newCount, 1);
+    assert.ok(fresh.latest);
+
+    // Asking again from "now" must not re-announce the same prospect.
+    const after = JSON.parse(
+      (await handleAdmin(req('GET', '/admin/api/ping', { headers: { cookie }, query: { since: fresh.now } }), {
+        env: ENV,
+        store,
+      })).body,
+    );
+    assert.equal(after.newCount, 0);
+    assert.equal(after.latest, null);
+  } finally {
+    cleanup();
+  }
+});
+
+test('the first ping of a session announces nothing', async () => {
+  // Without a `since`, every stored prospect would look new and the dashboard
+  // would open with a burst of notifications.
+  const { store, cleanup } = await seeded([lead(), lead()]);
+  try {
+    const cookie = await login(store);
+    const res = await handleAdmin(req('GET', '/admin/api/ping', { headers: { cookie } }), { env: ENV, store });
+    const data = JSON.parse(res.body);
+    assert.equal(data.newCount, 0);
+    assert.equal(data.total, 2);
+  } finally {
+    cleanup();
+  }
+});
+
+// ── audit trail ─────────────────────────────────────────────────────────────
+
+test('logins, stage changes and exports are all written to the audit trail', async () => {
+  const { store, cleanup } = await seeded([lead()]);
+  try {
+    const cookie = await login(store);
+    const [existing] = await store.listLeads();
+
+    await handleAdmin(
+      req('POST', `/admin/api/leads/${existing.id}`, { headers: { cookie }, body: { stage: 'contact' } }),
+      { env: ENV, store },
+    );
+    await handleAdmin(req('GET', '/admin/export.csv', { headers: { cookie } }), { env: ENV, store });
+
+    const entries = await store.listAudit();
+    const actions = entries.map((e) => e.action);
+    assert.ok(actions.includes('login'));
+    assert.ok(actions.includes('changement_etape'));
+    assert.ok(actions.includes('export_csv'));
+
+    const move = entries.find((e) => e.action === 'changement_etape');
+    assert.equal(move.user, 'admin');
+    assert.match(move.detail, /Nouveau prospect → Premier contact/);
+  } finally {
+    cleanup();
+  }
+});
+
+test('a refused login is recorded too', async () => {
+  const { store, cleanup } = await seeded();
+  try {
+    await handleAdmin(
+      req('POST', '/admin/login', { body: { username: 'admin', password: 'faux' } }),
+      { env: ENV, store },
+    );
+    const entries = await store.listAudit();
+    assert.equal(entries[0].action, 'login_refuse');
+    assert.ok(!JSON.stringify(entries).includes('faux'), 'the attempted password is never logged');
+  } finally {
+    cleanup();
+  }
+});
+
+test('the audit trail is readable from the dashboard', async () => {
+  const { store, cleanup } = await seeded();
+  try {
+    const cookie = await login(store);
+    const res = await handleAdmin(req('GET', '/admin/api/audit', { headers: { cookie } }), { env: ENV, store });
+    assert.equal(res.status, 200);
+    assert.ok(JSON.parse(res.body).audit.length > 0);
+  } finally {
+    cleanup();
+  }
+});
+
+// ── backup and restore ──────────────────────────────────────────────────────
+
+test('the backup downloads as a file and is recorded in the audit trail', async () => {
+  const { store, cleanup } = await seeded([lead()]);
+  try {
+    const cookie = await login(store);
+    const res = await handleAdmin(req('GET', '/admin/backup.json', { headers: { cookie } }), { env: ENV, store });
+    assert.equal(res.status, 200);
+    assert.match(res.headers['Content-Disposition'], /attachment; filename="sauvegarde-gcitt-/);
+
+    const payload = JSON.parse(res.body);
+    assert.equal(payload.format, 'gcitt-backup-1');
+    assert.equal(payload.leads.length, 1);
+    assert.ok((await store.listAudit()).some((e) => e.action === 'sauvegarde'));
+  } finally {
+    cleanup();
+  }
+});
+
+test('a restore reinserts what is missing and reports what it added', async () => {
+  const { store, cleanup } = await seeded([lead({ firstName: 'Awa' })]);
+  try {
+    const cookie = await login(store);
+    const backup = await store.exportAll();
+    backup.leads.push({ ...backup.leads[0], id: 'importe', firstName: 'Koffi' });
+
+    const res = await handleAdmin(
+      req('POST', '/admin/restore', { headers: { cookie }, body: backup }),
+      { env: ENV, store },
+    );
+    assert.equal(res.status, 200);
+    assert.equal(JSON.parse(res.body).added.leads, 1);
+    assert.equal((await store.listLeads()).length, 2);
+  } finally {
+    cleanup();
+  }
+});
+
+test('a file that is not a GCITT backup is refused', async () => {
+  const { store, cleanup } = await seeded();
+  try {
+    const cookie = await login(store);
+    for (const body of [{}, { leads: [] }, { format: 'autre-chose', leads: [] }]) {
+      const res = await handleAdmin(req('POST', '/admin/restore', { headers: { cookie }, body }), {
+        env: ENV,
+        store,
+      });
+      assert.equal(res.status, 422);
+      assert.match(JSON.parse(res.body).error, /sauvegarde GCITT/);
+    }
+  } finally {
+    cleanup();
+  }
+});
+
+test('a cross-origin restore is refused', async () => {
+  const { store, cleanup } = await seeded();
+  try {
+    const cookie = await login(store);
+    const res = await handleAdmin(
+      req('POST', '/admin/restore', {
+        headers: { cookie, origin: 'https://evil.example' },
+        body: { format: 'gcitt-backup-1', leads: [] },
+      }),
+      { env: ENV, store },
+    );
+    assert.equal(res.status, 403);
+  } finally {
+    cleanup();
+  }
+});
+
+test('the backup and the restore need a session like everything else', async () => {
+  const { store, cleanup } = await seeded([lead()]);
+  try {
+    for (const [method, path] of [['GET', '/admin/backup.json'], ['POST', '/admin/restore'], ['GET', '/admin/api/audit']]) {
+      const res = await handleAdmin(req(method, path), { env: ENV, store });
+      assert.equal(res.status, 401, path);
+    }
+  } finally {
+    cleanup();
+  }
+});
+
 // ── filtering ───────────────────────────────────────────────────────────────
 
 const rows = [
-  { createdAt: '2026-03-01T10:00:00.000Z', firstName: 'Awa', lastName: 'Diallo', email: 'awa@example.com', status: 'Nouveau', cite: 'Cœur Joie', source: 'TikTok', country: 'France', message: 'Je visite en juillet' },
-  { createdAt: '2026-03-05T10:00:00.000Z', firstName: 'Koffi', lastName: 'Agbo', email: 'koffi@example.com', status: 'Converti', cite: 'Bethel', source: 'Facebook', country: 'Bénin', message: '' },
-  { createdAt: '2026-04-02T10:00:00.000Z', firstName: 'Mariam', lastName: 'Sow', email: 'mariam@example.com', status: 'Nouveau', cite: 'Bethel', source: 'TikTok', country: 'France', message: '' },
+  { createdAt: '2026-03-01T10:00:00.000Z', firstName: 'Awa', lastName: 'Diallo', email: 'awa@example.com', stage: 'nouveau', cite: 'Cœur Joie', source: 'TikTok', country: 'France', message: 'Je visite en juillet' },
+  { createdAt: '2026-03-05T10:00:00.000Z', firstName: 'Koffi', lastName: 'Agbo', email: 'koffi@example.com', stage: 'signe', cite: 'Bethel', source: 'Facebook', country: 'Bénin', message: '' },
+  { createdAt: '2026-04-02T10:00:00.000Z', firstName: 'Mariam', lastName: 'Sow', email: 'mariam@example.com', stage: 'nouveau', cite: 'Bethel', source: 'TikTok', country: 'France', message: '' },
 ];
 
 test('the free-text search covers the fields a salesperson types', () => {
@@ -398,9 +695,15 @@ test('the free-text search covers the fields a salesperson types', () => {
 });
 
 test('the column filters combine', () => {
-  assert.equal(filterLeads(rows, { status: 'Nouveau' }).length, 2);
+  assert.equal(filterLeads(rows, { stage: 'nouveau' }).length, 2);
   assert.equal(filterLeads(rows, { cite: 'Bethel', source: 'TikTok' }).length, 1);
-  assert.equal(filterLeads(rows, { status: 'Nouveau', country: 'Bénin' }).length, 0);
+  assert.equal(filterLeads(rows, { stage: 'nouveau', country: 'Bénin' }).length, 0);
+});
+
+test('a bookmarked ?status= from the old dashboard still works', () => {
+  // The five original statuses map onto the new stages on read, so an old
+  // link keeps filtering the same set rather than returning nothing.
+  assert.equal(filterLeads(rows, { status: 'nouveau' }).length, 2);
 });
 
 test('the date range includes both of its bounds', () => {

@@ -375,8 +375,11 @@ const server = createServer(async (req, res) => {
     if (urlPath === '/admin' || urlPath.startsWith('/admin/')) {
       let body = '';
       if (req.method === 'POST' || req.method === 'PATCH') {
+        // A restore carries the whole prospect base; everything else is a
+        // status change or a comment.
+        const limit = urlPath === '/admin/restore' ? 8 * 1024 * 1024 : 64 * 1024;
         try {
-          body = await readBody(req, 64 * 1024);
+          body = await readBody(req, limit);
         } catch (err) {
           if (err.code !== 'TOO_LARGE') throw err;
           res.writeHead(413, {

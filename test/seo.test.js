@@ -35,8 +35,10 @@ test('the title is the agreed one and sits in the static head', () => {
 test('the meta description is the agreed one and is within Google’s display limit', () => {
   const m = /<meta name="description" content="([^"]+)">/.exec(staticHead);
   assert.ok(m, 'no meta description');
-  assert.ok(m[1].startsWith('Découvrez les villas GCITT BENIN'));
+  assert.ok(m[1].startsWith('Villas F4 et duplex modernes au Bénin'));
   assert.ok(m[1].includes('réservation sécurisée'));
+  // Google cuts the snippet around 160 characters; a longer one is wasted.
+  assert.ok(m[1].length >= 140 && m[1].length <= 160, `${m[1].length} caractères`);
 });
 
 test('canonical and robots are present', () => {
