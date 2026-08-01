@@ -813,6 +813,8 @@ a:hover{color:#d21f2d}
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-phone">Numéro WhatsApp</label>
             <input id="f-phone" required="" type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+229 01 67 21 21 28" value="{{ form.phone }}" sc-camel-on-change="{{ phoneHandler }}" style="{{ phoneErrorStyle }}">
           </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-country">Pays de résidence</label>
             <sc-raw-select id="f-country" value="{{ form.country }}" sc-camel-on-change="{{ countryHandler }}" class="gc-field" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:10px;font-size:14px;font-family:inherit;background:#fff">
@@ -824,8 +826,6 @@ a:hover{color:#d21f2d}
               <option value="Autre">Autre</option>
             </sc-raw-select>
           </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-cite">Cité souhaitée</label>
             <sc-raw-select id="f-cite" value="{{ form.cite }}" sc-camel-on-change="{{ citeHandler }}" class="gc-field" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:10px;font-size:14px;font-family:inherit;background:#fff">
@@ -834,6 +834,8 @@ a:hover{color:#d21f2d}
               <option value="Bethel">Cité Béthel</option>
             </sc-raw-select>
           </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-villaType">Type de villa</label>
             <sc-raw-select id="f-villaType" value="{{ form.villaType }}" sc-camel-on-change="{{ villaTypeHandler }}" class="gc-field" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:10px;font-size:14px;font-family:inherit;background:#fff">
@@ -843,8 +845,6 @@ a:hover{color:#d21f2d}
               <option value="Autre">Autre</option>
             </sc-raw-select>
           </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-villa">Villa souhaitée</label>
             <sc-raw-select id="f-villa" value="{{ form.villa }}" sc-camel-on-change="{{ villaHandler }}" class="gc-field" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:10px;font-size:14px;font-family:inherit;background:#fff">
@@ -856,6 +856,8 @@ a:hover{color:#d21f2d}
               <option value="Je ne sais pas encore">Je ne sais pas encore</option>
             </sc-raw-select>
           </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
             <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-delai">Délai du projet</label>
             <sc-raw-select id="f-delai" value="{{ form.delai }}" sc-camel-on-change="{{ delaiHandler }}" class="gc-field" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:10px;font-size:14px;font-family:inherit;background:#fff">
@@ -867,17 +869,17 @@ a:hover{color:#d21f2d}
               <option value="Je ne sais pas encore">Je ne sais pas encore</option>
             </sc-raw-select>
           </div>
-        </div>
-        <div style="margin-bottom:14px">
-          <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-budget">Budget estimatif (optionnel)</label>
-          <sc-raw-select id="f-budget" value="{{ form.budget }}" sc-camel-on-change="{{ budgetHandler }}" class="gc-field" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:10px;font-size:14px;font-family:inherit;background:#fff">
-            <option value="">Sélectionner</option>
-            <option value="Moins de 40M FCFA">Moins de 40M FCFA</option>
-            <option value="Entre 40M et 60M FCFA">Entre 40M et 60M FCFA</option>
-            <option value="Entre 60M et 90M FCFA">Entre 60M et 90M FCFA</option>
-            <option value="Plus de 90M FCFA">Plus de 90M FCFA</option>
-            <option value="Je préfère en discuter">Je préfère en discuter</option>
-          </sc-raw-select>
+          <div>
+            <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-budget">Budget estimatif (optionnel)</label>
+            <sc-raw-select id="f-budget" value="{{ form.budget }}" sc-camel-on-change="{{ budgetHandler }}" class="gc-field" style="width:100%;padding:12px 14px;border:1.5px solid #dfe3ea;border-radius:10px;font-size:14px;font-family:inherit;background:#fff">
+              <option value="">Sélectionner</option>
+              <option value="Moins de 40M FCFA">Moins de 40M FCFA</option>
+              <option value="Entre 40M et 60M FCFA">Entre 40M et 60M FCFA</option>
+              <option value="Entre 60M et 90M FCFA">Entre 60M et 90M FCFA</option>
+              <option value="Plus de 90M FCFA">Plus de 90M FCFA</option>
+              <option value="Je préfère en discuter">Je préfère en discuter</option>
+            </sc-raw-select>
+          </div>
         </div>
         <div style="margin-bottom:20px">
           <label style="font-size:12.5px;font-weight:700;color:#334055;display:block;margin-bottom:6px" for="f-message">Votre message (optionnel)</label>

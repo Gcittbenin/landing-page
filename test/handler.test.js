@@ -130,6 +130,22 @@ test('a too-fast submission looks like success but sends nothing', async () => {
   assert.equal(fetchImpl.calls.length, 0);
 });
 
+test('MIN_FILL_MS=0 really disables the timing check', async () => {
+  // Regression guard: `0` used to fall through to the 3000 ms default, so a
+  // fast submission was silently dropped as spam — a 200 with nothing sent,
+  // which is the hardest kind of failure to notice.
+  const fetchImpl = okFetch();
+  const now = 1_000_000;
+  const res = await handleLead(post({ ...validBody, formOpenedAt: now - 10 }), {
+    env: { ...ENV, MIN_FILL_MS: '0' },
+    fetchImpl,
+    now,
+  });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.delivered.email, true, 'the lead was actually sent');
+  assert.ok(fetchImpl.calls.length > 0);
+});
+
 test('rate-limits a single IP and sets Retry-After', async () => {
   const env = { ...ENV, RATE_LIMIT_MAX: '3', RATE_LIMIT_WINDOW_MS: '60000' };
   const fetchImpl = okFetch();
@@ -235,7 +251,7 @@ async function withStore(fn) {
 test('a validated lead is written to the store before the notifications go out', async () => {
   await withStore(async (env, open) => {
     const res = await handleLead(
-      post(validBody, { headers: { 'user-agent': CHROME_UA, referer: 'https://www.google.com/' } }),
+      post(validBody, { headers: { 'user-agent': CHROME_UA } }),
       { env, fetchImpl: okFetch() },
     );
     assert.equal(res.status, 200);
@@ -249,7 +265,6 @@ test('a validated lead is written to the store before the notifications go out',
     assert.equal(lead.device, 'Ordinateur');
     assert.equal(lead.browser, 'Chrome 131');
     assert.equal(lead.os, 'macOS 10.15');
-    assert.equal(lead.referer, 'https://www.google.com/');
     assert.ok(lead.id, 'the record carries an id');
   });
 });

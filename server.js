@@ -26,7 +26,9 @@ import { fileURLToPath } from 'node:url';
 import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'node:zlib';
 import { createHash } from 'node:crypto';
 
-import { handleLead } from './lib/handler.js';
+import { handleLead, getStore } from './lib/handler.js';
+import { handleAdmin } from './lib/admin.js';
+import { loadConfig } from './lib/config.js';
 import { clientIp } from './lib/ratelimit.js';
 import { logStartup, environmentSummary, describeStartupError, STARTUP_LOG_PATH } from './lib/startup.js';
 
@@ -335,6 +337,43 @@ const server = createServer(async (req, res) => {
         'Cache-Control': 'no-store',
       });
       res.end(JSON.stringify(result.body));
+      return;
+    }
+
+    // ── Admin area ───────────────────────────────────────────────────────
+    // Answers 404 for everything when ADMIN_PASSWORD is unset, so a site
+    // deployed without one has no dashboard at all — see lib/admin.js.
+    if (urlPath === '/admin' || urlPath.startsWith('/admin/')) {
+      let body = '';
+      if (req.method === 'POST' || req.method === 'PATCH') {
+        try {
+          body = await readBody(req, 64 * 1024);
+        } catch (err) {
+          if (err.code !== 'TOO_LARGE') throw err;
+          res.writeHead(413, {
+            'Content-Type': 'application/json; charset=utf-8',
+            Connection: 'close',
+            ...SECURITY_HEADERS,
+          });
+          res.end(JSON.stringify({ ok: false, error: 'Requête trop volumineuse.' }), () => req.destroy());
+          return;
+        }
+      }
+
+      const result = await handleAdmin(
+        {
+          method: req.method,
+          path: urlPath,
+          query: Object.fromEntries(new URL(req.url ?? '/', 'http://localhost').searchParams),
+          headers: req.headers,
+          body,
+          ip: TRUST_PROXY ? clientIp(req.headers, req.socket.remoteAddress) : req.socket.remoteAddress,
+        },
+        { store: getStore(loadConfig(process.env)) },
+      );
+
+      res.writeHead(result.status, { ...result.headers, ...SECURITY_HEADERS });
+      res.end(req.method === 'HEAD' ? undefined : result.body);
       return;
     }
 

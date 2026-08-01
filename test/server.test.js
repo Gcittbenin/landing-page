@@ -385,6 +385,7 @@ test('server-side source is not downloadable', async () => {
   const hidden = [
     '/lib/config.js', '/lib/handler.js', '/lib/whatsapp.js', '/lib/email.js',
     '/lib/validate.js', '/lib/startup.js', '/api/lead.js', '/test/server.test.js',
+    '/lib/store.js', '/lib/auth.js', '/lib/admin.js', '/lib/admin.html', '/lib/admin-login.html',
     '/package.json', '/package-lock.json', '/server.js', '/app.js', '/app.cjs',
     '/vercel.json', '/README.md', '/DEPLOIEMENT_LWS.md', '/docs/WHATSAPP.md',
   ];
@@ -403,6 +404,26 @@ test('leaking lib/ would hand a spammer the anti-spam design', async () => {
   const body = await res.text();
   assert.ok(!body.includes('website'), 'the honeypot field name leaked');
   assert.ok(!body.includes('isHoneypotTripped'));
+});
+
+// ── The admin area ──────────────────────────────────────────────────────────
+
+test('/admin does not exist when no admin password is configured', async () => {
+  // The spawned server runs with ADMIN_PASSWORD empty, which is how the site
+  // ships. A dashboard nobody meant to deploy is worse than no dashboard.
+  for (const path of ['/admin', '/admin/', '/admin/api/leads', '/admin/export.csv']) {
+    const res = await get(path);
+    assert.equal(res.status, 404, `${path} answered ${res.status}`);
+  }
+});
+
+test('POST /admin/login is a 404 too, so the area cannot even be probed', async () => {
+  const res = await fetch(`${BASE}/admin/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: 'admin', password: 'x' }),
+  });
+  assert.equal(res.status, 404);
 });
 
 test('everything the page actually needs is still public', async () => {

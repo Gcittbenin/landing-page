@@ -26,6 +26,8 @@ const UA = {
   opera:
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 OPR/114.0.0.0',
   facebookCrawler: 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+  headless:
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/131.0.0.0 Safari/537.36',
   googlebot: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
 };
 
@@ -75,12 +77,18 @@ test('reads the mobile operating systems', () => {
 });
 
 test('flags crawlers so they never look like prospects', () => {
-  for (const ua of [UA.facebookCrawler, UA.googlebot]) {
+  for (const ua of [UA.facebookCrawler, UA.googlebot, UA.headless]) {
     const parsed = parseUserAgent(ua);
     assert.equal(parsed.bot, true, ua);
     assert.equal(parsed.device, 'Robot');
   }
   assert.equal(parseUserAgent(UA.chromeMac).bot, false);
+});
+
+test('a headless browser is named, not mistaken for Safari', () => {
+  // "HeadlessChrome/…" has no word boundary before "Chrome", so a \bChrome\/
+  // rule misses it and the UA falls through to the generic Safari pattern.
+  assert.equal(parseUserAgent(UA.headless).browser, 'Chrome (headless) 131');
 });
 
 test('an unknown or missing user agent degrades to empty, never to a guess', () => {

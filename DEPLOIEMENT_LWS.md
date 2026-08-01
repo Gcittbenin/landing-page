@@ -227,7 +227,7 @@ codées ; ne les renseignez que pour les modifier.
 | --- | --- | --- |
 | `RATE_LIMIT_MAX` | `5` | Soumissions autorisées par IP et par fenêtre |
 | `RATE_LIMIT_WINDOW_MS` | `600000` | Durée de la fenêtre (10 min) |
-| `MIN_FILL_MS` | `3000` | En dessous, la soumission est considérée robotisée |
+| `MIN_FILL_MS` | `3000` | En dessous, la soumission est considérée robotisée (`0` désactive le contrôle) |
 | `TRUST_PROXY` | `true` | **Laissez à `true` sur LWS** — voir ci-dessous |
 
 `TRUST_PROXY` mérite une explication. Sur LWS, Apache se place devant Node :
@@ -237,6 +237,45 @@ spammeur bloquerait tous les prospects. Avec `TRUST_PROXY=true`, le serveur lit
 l'en-tête `X-Forwarded-For` posé par Apache. Ne passez à `false` que si le
 processus Node est exposé directement à Internet, cas où un client pourrait
 forger l'en-tête pour contourner la limite.
+
+### Base des prospects et espace `/admin`
+
+| Variable | Défaut | Rôle |
+| --- | --- | --- |
+| `LEAD_STORE` | `true` | Enregistre chaque prospect dans `data/leads.jsonl` |
+| `DATA_DIR` | `<projet>/data` | Où écrire ce fichier — doit être accessible en écriture |
+| `ADMIN_PASSWORD` | *(vide)* | **Sans lui, `/admin` répond 404** |
+| `ADMIN_PASSWORD_HASH` | *(vide)* | Variante hachée, pour ne pas mettre le mot de passe en clair dans le panneau |
+| `ADMIN_USERNAME` | `admin` | Identifiant de connexion |
+| `ADMIN_SESSION_SECRET` | *(aléatoire)* | Signature des cookies de session |
+
+Deux choses méritent d'être dites clairement.
+
+**`/admin` n'existe pas tant qu'`ADMIN_PASSWORD` n'est pas défini.** Toutes les
+routes répondent 404 — pas 403, qui confirmerait l'existence du tableau de
+bord. C'est le comportement voulu : un dashboard mis en ligne par inadvertance
+expose les noms, téléphones et adresses de tous les prospects.
+
+**`ADMIN_SESSION_SECRET` n'est pas facultatif en pratique.** Sans lui, une clé
+aléatoire est tirée à chaque démarrage : l'équipe est déconnectée à chaque
+redémarrage de l'application, donc après chaque déploiement. Générez-la une
+fois :
+
+```sh
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Pour ne pas laisser le mot de passe en clair dans le panneau LWS, calculez son
+haché scrypt et renseignez `ADMIN_PASSWORD_HASH` à la place :
+
+```sh
+node -e "import('./lib/auth.js').then(m=>console.log(m.hashPassword('votre-mot-de-passe')))"
+```
+
+`data/` contient des données personnelles. Il est ignoré par git **et exclu du
+déploiement FTP** : un envoi ne doit jamais écraser la base des prospects. Il
+n'est pas non plus servi par HTTP — `server.js` ne sert que les chemins de sa
+liste blanche, et `data/` n'en fait pas partie.
 
 ### CRM (optionnel, pour plus tard)
 
@@ -312,7 +351,10 @@ Sur Vercel, `vercel.json` s'occupait des en-têtes. Ici Node est l'origine :
 - **le refus** des fichiers cachés (`.env`, `.git`), des remontées de chemin,
   des URL mal encodées, et de tout ce qui ne figure pas dans la liste blanche
   des chemins publics ;
-- **`/healthz`**, une sonde de vivacité qui ne divulgue aucune configuration.
+- **`/healthz`**, une sonde de vivacité qui ne divulgue aucune configuration ;
+- **`/admin`**, l'espace prospects : session signée, cookie `HttpOnly ;
+  SameSite=Strict ; Secure`, `no-store` sur chaque réponse, et 404 partout
+  tant qu'`ADMIN_PASSWORD` n'est pas défini.
 
 Si Apache ajoute lui aussi de la compression, il n'y a pas de double
 compression : voyant `Content-Encoding` déjà posé, il laisse la réponse
@@ -331,6 +373,10 @@ curl -sI -H 'Accept-Encoding: br' https://nos-villas.gcitt.com/ | grep -i 'conte
 
 # Les assets sont servis
 curl -s -o /dev/null -w '%{http_code}\n' https://nos-villas.gcitt.com/assets/fonts.css
+
+# L'espace prospects : 404 tant qu'ADMIN_PASSWORD n'est pas défini,
+# 200 (page de connexion) une fois la variable posée et l'application relancée
+curl -s -o /dev/null -w '%{http_code}\n' https://nos-villas.gcitt.com/admin
 curl -s -o /dev/null -w '%{http_code}\n' https://nos-villas.gcitt.com/vendor/react.production.min.js
 curl -s -o /dev/null -w '%{http_code}\n' "https://nos-villas.gcitt.com/uploads/Image%20COEUR-JOIE/HEVIE%20CJ%20.jpg"
 
