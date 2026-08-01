@@ -28,6 +28,31 @@
 
   var cfg = window.GCITT_TRACKING || {};
 
+  // ── Framed? Then this is a preview, not a visit ───────────────────────────
+  //
+  // The /admin heatmap renders the real page in an iframe underneath the click
+  // grid, so the grid sits on something recognisable. Without this guard every
+  // opening of that tab would file a page view, a set of Core Web Vitals and a
+  // scroll depth — the dashboard would be inflating the very numbers it shows.
+  //
+  // The landing page is never legitimately framed, so the check is safe. A
+  // cross-origin frame throws on `window.top`, which is also a frame.
+  var framed;
+  try {
+    framed = window.top !== window.self;
+  } catch (e) {
+    framed = true;
+  }
+
+  if (framed) {
+    // The page component calls these; give it inert versions rather than
+    // letting it hit an undefined function.
+    window.gcittTrack = function () {};
+    window.gcittSessionId = function () { return ''; };
+    window.gcittAttribution = { source: 'Direct', detail: '', utm: {} };
+    return;
+  }
+
   // dataLayer must exist before GTM loads, and gtag() pushes onto it.
   window.dataLayer = window.dataLayer || [];
   function gtag() {

@@ -232,8 +232,24 @@
   .vital .s { font-size: 11.5px; color: var(--faint); margin-top: 3px; line-height: 1.5; }
 
   /* ── heatmap ── */
-  .heat { display: grid; gap: 1px; background: var(--line); border-radius: 8px; overflow: hidden; }
-  .cell { background: var(--card); aspect-ratio: 1; position: relative; }
+  /* The click grid is laid over a scaled iframe of the real page, so a hot
+     zone is recognisable as "the rendez-vous button" rather than "cell 7,12". */
+  .heat-stage {
+    position: relative; width: 100%; overflow: hidden;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--card);
+    max-height: 70vh; overflow-y: auto;
+  }
+  .heat-stage iframe {
+    position: absolute; top: 0; left: 0; width: 1440px; border: 0;
+    transform-origin: top left; pointer-events: none;
+  }
+  .heat-stage.no-page iframe { display: none; }
+  .heat { position: relative; display: grid; }
+  .heat-stage .heat { position: absolute; inset: 0; }
+  .cell { position: relative; }
+  /* Without the page underneath, the grid needs its own lines to be readable. */
+  .heat-stage.no-page .heat { gap: 1px; background: var(--line); }
+  .heat-stage.no-page .cell { background: var(--card); }
   .reach { display: grid; grid-template-columns: repeat(auto-fit, minmax(126px, 1fr)); gap: 12px; margin-top: 16px; }
   .reach div { border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px; }
   .reach .p { font-size: 20px; font-weight: 800; color: var(--navy); }
@@ -450,13 +466,23 @@
 
     <div class="grid-2">
       <section class="panel">
-        <h2>Zones cliquées</h2>
+        <div class="head">
+          <h2>Zones cliquées</h2>
+          <div class="spacer"></div>
+          <label style="font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px">
+            <input type="checkbox" id="heat-page" checked> Afficher la page dessous
+          </label>
+        </div>
         <div class="body">
-          <div class="heat" id="heat"></div>
+          <div class="heat-stage" id="heat-stage">
+            <iframe id="heat-frame" title="Aperçu de la landing page" tabindex="-1" aria-hidden="true" scrolling="no"></iframe>
+            <div class="heat" id="heat"></div>
+          </div>
           <p class="muted-note">
-            Chaque case couvre 5 % de la largeur et 2,5 % de la hauteur de la page.
-            Plus la case est rouge, plus la zone est cliquée ; une case vide est une zone ignorée.
-            Les positions sont enregistrées en pourcentage, donc comparables entre un téléphone et un grand écran.
+            La grille est posée sur la page réelle, à l'échelle. Chaque case couvre 5 % de la
+            largeur et 2,5 % de la hauteur ; plus elle est rouge, plus la zone est cliquée, et
+            une case vide est une zone ignorée. Les positions sont enregistrées en pourcentage,
+            donc comparables entre un téléphone et un grand écran.
           </p>
         </div>
       </section>
@@ -1097,6 +1123,7 @@
 
       var grid = $('heat');
       grid.style.gridTemplateColumns = 'repeat(' + h.columns + ', 1fr)';
+      grid.style.gridTemplateRows = 'repeat(' + h.rows + ', 1fr)';
       grid.innerHTML = '';
 
       var index = {};
@@ -1116,6 +1143,8 @@
         }
       }
 
+      mountPagePreview();
+
       renderRank($('heat-elements'), toEntries(h.byElement), {
         limit: 10,
         empty: 'Aucun clic enregistré sur la période.'
@@ -1132,6 +1161,57 @@
       });
     });
   }
+
+  /**
+   * The landing page, scaled to fit under the click grid.
+   *
+   * Loaded lazily and only once: it is a full render of the site, and doing it
+   * on every tab switch would be wasteful. tracking.js detects that it is
+   * framed and records nothing, so opening this tab does not inflate the very
+   * figures it displays.
+   */
+  var previewMounted = false;
+
+  function mountPagePreview() {
+    var stage = $('heat-stage');
+    var frame = $('heat-frame');
+
+    function fit() {
+      var width = stage.clientWidth || 1;
+      var scale = width / 1440;
+      var doc = null;
+      try {
+        doc = frame.contentDocument;
+      } catch (e) {
+        doc = null;
+      }
+      // Same-origin, so the real height is readable; fall back to a sensible
+      // page height if it is not yet known.
+      var pageHeight = (doc && doc.documentElement.scrollHeight) || 9000;
+      frame.style.height = pageHeight + 'px';
+      frame.style.transform = 'scale(' + scale + ')';
+      stage.style.height = Math.round(pageHeight * scale) + 'px';
+    }
+
+    if (!previewMounted) {
+      previewMounted = true;
+      frame.addEventListener('load', function () {
+        fit();
+        // The page renders through a runtime and lazy-loads its images, so the
+        // height settles a moment after load.
+        setTimeout(fit, 1200);
+        setTimeout(fit, 3000);
+      });
+      frame.src = '/';
+      window.addEventListener('resize', fit);
+    } else {
+      fit();
+    }
+  }
+
+  $('heat-page').addEventListener('change', function () {
+    $('heat-stage').classList.toggle('no-page', !$('heat-page').checked);
+  });
 
   // ── SEO ──────────────────────────────────────────────────────────────────
 

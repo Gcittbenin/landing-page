@@ -141,8 +141,17 @@ Les clics sont enregistrés en **pourcentage de la page**, jamais en pixels :
 un pourcentage est comparable entre un téléphone et un écran 27 pouces, et
 c'est de toute façon ce dont une superposition a besoin.
 
+La grille est posée **sur la page réelle**, chargée à l'échelle dans un cadre :
+une zone chaude se reconnaît comme « le bouton Prendre rendez-vous » et non
+comme « la case 7,12 ». La case à cocher « Afficher la page dessous » permet de
+revenir à la grille seule.
+
 Chaque case couvre 5 % de la largeur et 2,5 % de la hauteur. Plus la case est
 rouge, plus la zone est cliquée ; une case vide est une zone ignorée.
+
+L'aperçu n'enregistre rien : `tracking.js` détecte qu'il est dans un cadre et
+se met en sommeil. Sans cela, chaque ouverture de cet onglet gonflerait les
+chiffres que l'onglet affiche.
 
 À côté, la **profondeur atteinte** : la part des sessions ayant vu 25, 50, 75
 et 90 % de la page. C'est ce qui dit si les prospects arrivent jusqu'au
