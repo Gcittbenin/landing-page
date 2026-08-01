@@ -295,6 +295,13 @@ textarea:focus-visible,
 .gc-stagger > *:nth-child(4) { animation-delay: 250ms; }
 .gc-stagger > *:nth-child(5) { animation-delay: 320ms; }
 .gc-stagger > *:nth-child(6) { animation-delay: 390ms; }
+/* Beyond six, everything arrives together rather than trailing off — a long
+   list that keeps fading in reads as a slow page, not as a considered one. */
+.gc-stagger > *:nth-child(n + 7) { animation-delay: 420ms; }
+
+/* The animation runs on mount. Without this, a card whose image is still
+   loading would flash at opacity 0 with its shadow already painted. */
+.gc-stagger > * { will-change: opacity, transform; }
 
 @keyframes gc-rise {
   from { opacity: 0; transform: translateY(14px); }

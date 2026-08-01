@@ -116,6 +116,11 @@ const YEAR = 31_536_000;
  * itself must revalidate, or edits never reach returning visitors.
  */
 function cacheControl(urlPath) {
+  // Editable content, not a build artefact: the sales team publishes a client
+  // testimonial by uploading this one file, and a year of `immutable` would
+  // hide the change from every returning visitor.
+  if (urlPath === '/assets/temoignages.json') return 'public, max-age=300';
+
   if (/^\/(uploads|assets|vendor)\//.test(urlPath)) {
     return `public, max-age=${YEAR}, immutable`;
   }

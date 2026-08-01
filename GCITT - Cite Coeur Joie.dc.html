@@ -507,7 +507,7 @@ a:hover{color:#d21f2d}
       <p style="font-size:16px;line-height:1.75;color:#4c5566;margin:0 0 18px">Forte de 15 années d’expérience, GCITT BENIN S.A s’impose comme un acteur majeur du secteur de la construction au Bénin.</p>
       <p style="font-size:16px;line-height:1.75;color:#4c5566;margin:0 0 28px">Plus de 600 villas construites et plus de 400 familles accompagnées témoignent de notre engagement, de notre expertise et de la confiance que nous accordent nos clients.</p>
 
-      <div class="gc-exp__stats">
+      <div class="gc-exp__stats gc-stagger">
         <sc-for list="{{ experienceStats }}" as="stat" hint-placeholder-count="3">
           <div class="gc-exp__stat">
             <span class="gc-exp__stat-value">{{ stat.value }}</span>
@@ -533,7 +533,7 @@ a:hover{color:#d21f2d}
       </div>
       <span style="background:#eaf0fb;color:#1f4e96;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;white-space:nowrap">70 villas · 4 hectares</span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:64px">
+    <div class="gc-stagger" style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:64px">
       <sc-for list="{{ coeurJoieVillas }}" as="v" hint-placeholder-count="2">
         <div class="gc-villa" style="background:#fff">
           <div class="gc-villa__media" style="height:288px">
@@ -574,7 +574,7 @@ a:hover{color:#d21f2d}
       </div>
       <span style="background:#eaf0fb;color:#1f4e96;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;white-space:nowrap">+600 villas livrées et habitées</span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
+    <div class="gc-stagger" style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
       <sc-for list="{{ bethelVillas }}" as="v" hint-placeholder-count="2">
         <div class="gc-villa" style="background:#fff">
           <div class="gc-villa__media" style="height:288px">
@@ -703,7 +703,7 @@ a:hover{color:#d21f2d}
       </div>
 
       <sc-if value="{{ hasTestimonials }}" hint-placeholder-val="{{ true }}">
-        <div class="gc-testi__grid">
+        <div class="gc-testi__grid gc-stagger">
           <sc-for list="{{ testimonials }}" as="t" hint-placeholder-count="4">
             <figure class="gc-testi" style="margin:0">
               <div class="gc-testi__media">
@@ -724,7 +724,7 @@ a:hover{color:#d21f2d}
       </sc-if>
 
       <sc-if value="{{ noTestimonials }}" hint-placeholder-val="{{ false }}">
-        <div class="gc-testi__grid">
+        <div class="gc-testi__grid gc-stagger">
           <sc-for list="{{ testimonialSlots }}" as="s" hint-placeholder-count="4">
             <div class="gc-slot" style="height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#5b6472;text-align:center;padding:0 16px">
               <span style="opacity:0.55">{{ playIcon }}</span>
@@ -1069,6 +1069,9 @@ const HERO_SLIDES = [
 class Component extends DCLogic {
   state = {
     revealed: {},
+    // Loaded from assets/temoignages.json on mount, so publishing a client
+    // quote is an FTP upload of one small file rather than a redeployment.
+    testimonials: [],
     heroSlide: 0,
     heroPaused: false,
     expandedVilla: null,
@@ -1143,6 +1146,7 @@ class Component extends DCLogic {
   };
 
   componentDidMount() {
+    this.loadTestimonials();
     this.startHeroTimer();
     // Preload the second slide's imagery so switching never shows a gap.
     HERO_SLIDES.forEach((slide, i) => {
@@ -1162,6 +1166,25 @@ class Component extends DCLogic {
     }, { threshold: 0.12 });
     els.forEach(el => this._observer.observe(el));
   }
+
+  /**
+   * Client testimonials, from assets/temoignages.json.
+   *
+   * Fetched rather than inlined so the sales team can publish a new quote by
+   * editing one file. Any failure — missing file, bad JSON, offline — leaves
+   * the section on its "à venir" placeholders, which is exactly what it shows
+   * before the first testimonial arrives. Nothing is ever invented to fill it.
+   */
+  loadTestimonials = () => {
+    fetch('assets/temoignages.json', { cache: 'no-cache' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        const list = Array.isArray(data && data.temoignages) ? data.temoignages : [];
+        const clean = list.filter(t => t && typeof t.quote === 'string' && t.quote.trim());
+        if (clean.length) this.setState({ testimonials: clean });
+      })
+      .catch(() => { /* the placeholders stay, which is the honest fallback */ });
+  };
 
   componentWillUnmount() {
     this._observer && this._observer.disconnect();
@@ -1498,7 +1521,7 @@ class Component extends DCLogic {
     // du client, accompagnée de sa propre photo. Publier des avis rédigés pour
     // l’occasion expose GCITT au titre des pratiques commerciales trompeuses,
     // et se retourne contre la marque le jour où un prospect le découvre.
-    const testimonials = [];
+    const testimonials = s.testimonials;
 
     const faqData = [
       { q: 'Comment suivre mon chantier depuis l’étranger ?', a: 'GCITT met en place un suivi régulier par photos, vidéos et rapports d’avancement, transmis tout au long de la construction pour que vous restiez informé où que vous soyez.' },

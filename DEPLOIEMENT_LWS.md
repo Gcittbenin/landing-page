@@ -272,10 +272,19 @@ haché scrypt et renseignez `ADMIN_PASSWORD_HASH` à la place :
 node -e "import('./lib/auth.js').then(m=>console.log(m.hashPassword('votre-mot-de-passe')))"
 ```
 
-`data/` contient des données personnelles. Il est ignoré par git **et exclu du
-déploiement FTP** : un envoi ne doit jamais écraser la base des prospects. Il
+`data/` contient trois journaux en ajout seul : `leads.jsonl` (les prospects et
+leurs changements d'étape), `events.jsonl` (le trafic) et `audit.jsonl` (qui a
+fait quoi dans l'espace d'administration).
+
+Ce dossier contient des données personnelles. Il est ignoré par git **et exclu
+du déploiement FTP** : un envoi ne doit jamais écraser la base des prospects. Il
 n'est pas non plus servi par HTTP — `server.js` ne sert que les chemins de sa
 liste blanche, et `data/` n'en fait pas partie.
+
+> **Sauvegardez.** L'onglet « Sauvegarde » de `/admin` télécharge un JSON
+> complet. Un déploiement ne touche pas à `data/`, mais une suppression de
+> compte, si. Le mode d'emploi complet de l'espace est dans
+> `docs/PILOTAGE.md`.
 
 ### CRM (optionnel, pour plus tard)
 
@@ -355,7 +364,8 @@ Sur Vercel, `vercel.json` s'occupait des en-têtes. Ici Node est l'origine :
 - **`/admin`**, l'espace prospects : session signée, cookie `HttpOnly ;
   SameSite=Strict ; Secure`, `no-store` sur chaque réponse, et 404 partout
   tant qu'`ADMIN_PASSWORD` n'est pas défini ;
-- **`/api/event`**, le collecteur d'audience maison. GA4 et le Pixel Meta sont
+- **`/api/event`**, le collecteur d'audience maison (pages vues, sections
+  atteintes, clics et leur position, temps passé, Core Web Vitals). GA4 et le Pixel Meta sont
   bloqués par les bloqueurs de publicité et demandent un compte Google ou Meta
   pour être lus : cette copie sur notre propre serveur est ce qui permet au
   tableau de bord d'afficher un taux de conversion. Il répond **toujours 204**,

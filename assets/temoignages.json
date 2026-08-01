@@ -1,0 +1,29 @@
+{
+  "_lisez_moi": [
+    "Témoignages affichés sur la landing page, dans la section « Ils nous font confiance ».",
+    "",
+    "Tant que la liste « temoignages » est vide, la section affiche quatre",
+    "emplacements « Témoignage client à venir » et un sous-titre qui l'annonce.",
+    "Rien n'est inventé : un témoignage doit être une citation réelle, obtenue",
+    "avec l'accord écrit du client, accompagnée de sa propre photo. Publier des",
+    "avis rédigés pour l'occasion expose GCITT au titre des pratiques",
+    "commerciales trompeuses, et se retourne contre la marque le jour où un",
+    "prospect le découvre.",
+    "",
+    "Pour publier un témoignage, ajoutez un objet à « temoignages » :",
+    "",
+    "  {",
+    "    \"quote\": \"La phrase du client, mot pour mot.\",",
+    "    \"place\": \"Prénom N. · Ville, Pays\",",
+    "    \"image\": \"uploads/temoignages/prenom.jpg\",",
+    "    \"srcset\": \"uploads/temoignages/prenom-sm.jpg 500w, uploads/temoignages/prenom.jpg 1200w\",",
+    "    \"alt\": \"Description de la photo, pour les lecteurs d'écran et le référencement\"",
+    "  }",
+    "",
+    "La grille est prévue pour quatre témoignages ; au-delà elle se poursuit sur",
+    "une deuxième ligne. Le fichier est rechargé à chaque visite : aucune",
+    "reconstruction ni redéploiement du site n'est nécessaire après une",
+    "modification, un simple envoi FTP de ce fichier suffit."
+  ],
+  "temoignages": []
+}

@@ -18,6 +18,18 @@ window.GCITT_TRACKING = {
   // Meta Pixel — the numeric pixel ID
   metaPixel: '',
 
+  // Microsoft Clarity — the project ID, e.g. "abcd1234ef".
+  // The dashboard already draws a click heatmap and a scroll-reach chart from
+  // our own event log. Clarity adds session replay and rage-click detection,
+  // which we deliberately do not collect ourselves — recording what a visitor
+  // does keystroke by keystroke is a different order of data collection, and
+  // it should be a conscious decision rather than a default.
+  clarity: '',
+
+  // Hotjar — the numeric site ID. Same reasoning as Clarity; set one or the
+  // other, not both, or every session is recorded twice.
+  hotjar: '',
+
   // Log every event to the console. Turn on to verify the wiring before the
   // real IDs exist; leave off in production.
   debug: false,

@@ -80,6 +80,36 @@
     window.fbq('track', 'PageView');
   }
 
+  // ── Session-replay heatmaps, if one is configured ─────────────────────────
+  //
+  // Our own event log already feeds a click heatmap and a scroll-reach chart
+  // in /admin. These are for what we deliberately do not collect ourselves:
+  // session replay and rage-click detection. Neither loads unless an ID is
+  // set, so the page is byte-for-byte identical without them.
+
+  if (cfg.clarity) {
+    /* eslint-disable */
+    (function (c, l, a, r, i, t, y) {
+      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+      t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i;
+      y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    })(window, document, 'clarity', 'script', cfg.clarity);
+    /* eslint-enable */
+  }
+
+  if (cfg.hotjar) {
+    /* eslint-disable */
+    (function (h, o, t, j, a, r) {
+      h.hj = h.hj || function () { (h.hj.q = h.hj.q || []).push(arguments); };
+      h._hjSettings = { hjid: Number(cfg.hotjar), hjsv: 6 };
+      a = o.getElementsByTagName('head')[0];
+      r = o.createElement('script'); r.async = 1;
+      r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
+      a.appendChild(r);
+    })(window, document, 'https://static.hotjar.com/c/hotjar-', '.js?sv=');
+    /* eslint-enable */
+  }
+
   // GA4 recommended name → Meta Pixel standard event. Anything not listed is
   // sent to Meta as a custom event via trackCustom.
   var META_STANDARD = {

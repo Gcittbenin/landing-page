@@ -44,17 +44,54 @@ that endpoint never echoes configuration back.
 | `robots.txt`, `sitemap.xml`, `site.webmanifest`, `favicon.ico` | Crawler and installability files. |
 | `api/lead.js` | Vercel serverless adapter (inert on LWS). |
 | `app.js`, `app.cjs` | Passenger / cPanel entry points. Wrap `server.js` and log every boot step to `logs/startup.log`, so a failed start is legible even when the panel shows only "Erreur". |
-| `server.js` | The server: static files + `/api/lead` + `/healthz`, with compression, caching and security headers. |
+| `assets/temoignages.json` | Client testimonials. Edit this one file to publish a quote — no redeployment. |
+| `server.js` | The server: static files + `/api/lead` + `/api/event` + `/admin` + `/healthz`, with compression, caching and security headers. |
 | `lib/startup.js` | Boot diagnostics. Logs what is configured as booleans — never a value. |
 | `lib/` | The backend proper — see below. |
-| `test/` | 129 tests, no dependencies (`node:test`). |
+| `test/` | 274 tests, no dependencies (`node:test`). |
+| `docs/PILOTAGE.md` | **The /admin console**: what every figure means and where it comes from. |
 | `docs/WHATSAPP.md` | Meta credentials, the template to submit, error codes. |
 | `docs/DEPLOIEMENT.md` | Vercel and standalone deployment, production checklist. |
 | `DEPLOIEMENT_LWS.md` | **LWS deployment**: Node version, startup file, panel variables, verification. |
 
-`lib/` breaks down as `handler.js` (the endpoint, framework-agnostic),
+`lib/` breaks down as `handler.js` (the lead endpoint, framework-agnostic),
 `validate.js` (allow-list validation), `format.js` (per-channel rendering),
-`whatsapp.js`, `email.js`, `crm.js`, `ratelimit.js`, `config.js`.
+`whatsapp.js`, `email.js`, `crm.js`, `ratelimit.js`, `config.js`,
+`useragent.js` (device and browser, derived server-side).
+
+The back office adds `store.js` (append-only JSONL for prospects, events and
+the audit trail), `pipeline.js` (the nine sales stages), `analytics.js` (every
+figure the dashboard shows), `seo.js` (the SEO audit), `events.js` (the
+first-party analytics beacon), `auth.js` (scrypt + signed session cookie) and
+`admin.js` with `admin.html` / `admin-login.html`.
+
+Those two HTML files live in `lib/`, not in `assets/`, on purpose: `lib/` is
+outside the static allow-list, so the dashboard is never served as a file —
+only through the authenticated handler.
+
+---
+
+## Content still owed by GCITT
+
+Two things on the page are built, wired and tested, but ship without their real
+content. Neither is a bug, and neither should be filled in by guesswork.
+
+**Cité Béthel photographs.** The hero slider carries `uploads/bethel-f4.png`
+(713×360) and `uploads/bethel-duplex.png` (706×353). Both are renders, not
+photographs, and both are visibly soft when the slider scales them. The Cœur
+Joie slide uses real site photography at 1400 px. Drop real Béthel photographs
+into `uploads/` and update the two entries in `HERO_SLIDES` — the images of the
+two cités are kept strictly separate and must stay that way.
+
+**Client testimonials.** `assets/temoignages.json` ships with an empty list, so
+the section shows four "Témoignage client à venir" placeholders and a subtitle
+that says as much. The format is documented inside the file. A testimonial must
+be a real quotation, obtained with the client's written consent, with their own
+photograph: invented endorsements expose GCITT under French and Beninese
+consumer law, and they turn on the brand the day a prospect finds out.
+
+Editing that one file is enough — it is fetched at runtime with a five-minute
+cache, so publishing a quote is an FTP upload, not a redeployment.
 
 ---
 
