@@ -678,6 +678,125 @@ test('the backup and the restore need a session like everything else', async () 
   }
 });
 
+// ── where the console is mounted ────────────────────────────────────────────
+
+test('the console can answer somewhere other than /admin', async () => {
+  // `/admin` is reserved by an Apache alias on a good many shared hosts, which
+  // intercepts the request before it ever reaches Node.
+  const { store, cleanup } = await seeded([lead()]);
+  try {
+    const opts = { env: ENV, store, prefix: '/pilotage' };
+
+    const login = await handleAdmin(
+      req('POST', '/pilotage/login', { body: { username: 'admin', password: ENV.ADMIN_PASSWORD } }),
+      opts,
+    );
+    assert.equal(login.status, 200);
+    const cookie = login.headers['Set-Cookie'].split(';')[0];
+
+    const dashboard = await handleAdmin(req('GET', '/pilotage', { headers: { cookie } }), opts);
+    assert.equal(dashboard.status, 200);
+    assert.ok(dashboard.body.includes('Exporter CSV'));
+
+    const leads = await handleAdmin(req('GET', '/pilotage/api/leads', { headers: { cookie } }), opts);
+    assert.equal(leads.status, 200);
+    assert.equal(JSON.parse(leads.body).total, 1);
+  } finally {
+    cleanup();
+  }
+});
+
+test('the old path stops answering once the console has moved', async () => {
+  const { store, cleanup } = await seeded([lead()]);
+  try {
+    const opts = { env: ENV, store, prefix: '/pilotage' };
+    for (const path of ['/admin', '/admin/api/leads', '/admin/login']) {
+      assert.equal((await handleAdmin(req('GET', path), opts)).status, 404, path);
+    }
+  } finally {
+    cleanup();
+  }
+});
+
+test('every URL inside the page follows the mount point', async () => {
+  // A single hard-coded '/admin/…' in the client JavaScript would break the
+  // whole console the moment it is relocated.
+  const { store, cleanup } = await seeded();
+  try {
+    const opts = { env: ENV, store, prefix: '/pilotage' };
+    const login = await handleAdmin(
+      req('POST', '/pilotage/login', { body: { username: 'admin', password: ENV.ADMIN_PASSWORD } }),
+      opts,
+    );
+    const cookie = login.headers['Set-Cookie'].split(';')[0];
+
+    const pages = [
+      (await handleAdmin(req('GET', '/pilotage', { headers: { cookie } }), opts)).body,
+      (await handleAdmin(req('GET', '/pilotage'), opts)).body, // login screen
+    ];
+
+    for (const page of pages) {
+      assert.ok(page.includes("'/pilotage'"), 'the base is injected');
+      assert.ok(!/['"]\/admin\//.test(page), 'no /admin/ URL survives in the markup or the script');
+      assert.ok(!page.includes('{{BASE}}'), 'every placeholder is substituted');
+    }
+  } finally {
+    cleanup();
+  }
+});
+
+test('the sub-routes are matched against the mount point, not a fixed pattern', async () => {
+  const { store, cleanup } = await seeded([lead()]);
+  try {
+    const opts = { env: ENV, store, prefix: '/pilotage' };
+    const login = await handleAdmin(
+      req('POST', '/pilotage/login', { body: { username: 'admin', password: ENV.ADMIN_PASSWORD } }),
+      opts,
+    );
+    const cookie = login.headers['Set-Cookie'].split(';')[0];
+    const [existing] = await store.listLeads();
+
+    // These two are built from a regular expression, so they are the ones a
+    // relocation is most likely to break.
+    const fiche = await handleAdmin(
+      req('GET', `/pilotage/api/leads/${existing.id}`, { headers: { cookie } }),
+      opts,
+    );
+    assert.equal(fiche.status, 200);
+
+    const comment = await handleAdmin(
+      req('POST', `/pilotage/api/leads/${existing.id}/comment`, { headers: { cookie }, body: { text: 'ok' } }),
+      opts,
+    );
+    assert.equal(comment.status, 200);
+    assert.equal(JSON.parse(comment.body).lead.comments.length, 1);
+  } finally {
+    cleanup();
+  }
+});
+
+test('a mount point containing regex metacharacters is matched literally', async () => {
+  const { store, cleanup } = await seeded();
+  try {
+    // server.js rejects such a value, but the handler must not turn it into a
+    // wildcard if it ever receives one.
+    const opts = { env: ENV, store, prefix: '/a.b' };
+    assert.equal((await handleAdmin(req('GET', '/a.b'), opts)).status, 200);
+    assert.equal((await handleAdmin(req('GET', '/axb'), opts)).status, 404);
+  } finally {
+    cleanup();
+  }
+});
+
+test('the default mount point is unchanged', async () => {
+  const { store, cleanup } = await seeded();
+  try {
+    assert.equal((await handleAdmin(req('GET', '/admin'), { env: ENV, store })).status, 200);
+  } finally {
+    cleanup();
+  }
+});
+
 // ── filtering ───────────────────────────────────────────────────────────────
 
 const rows = [

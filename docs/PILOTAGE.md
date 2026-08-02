@@ -1,5 +1,11 @@
 # Espace de pilotage — mode d'emploi
 
+> **L'adresse de la console.** Par défaut `/admin`. Si l'hébergeur réserve ce
+> chemin — symptôme : une erreur 500 sur `/admin` alors que le site répond —
+> elle se déplace avec la variable `ADMIN_PATH` (par exemple `/pilotage`). La
+> procédure de diagnostic complète est dans `DEPLOIEMENT_LWS.md`, section
+> « Diagnostiquer une erreur 500 ».
+
 L'espace `/admin` sert trois métiers à la fois : la direction lit l'onglet
 **Accueil**, le commerce vit dans **Pipeline** et **Prospects**, le marketing
 dans **Marketing**, **Parcours** et **SEO**.

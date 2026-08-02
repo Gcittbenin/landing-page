@@ -439,6 +439,16 @@ test('GET /api/event is refused', async () => {
 
 // ── The admin area ──────────────────────────────────────────────────────────
 
+test('/healthz says whether the console is switched on', async () => {
+  // The one fact you cannot establish from outside: if this says the console
+  // is on and the console itself answers 500, the request never reached Node.
+  const res = await get('/healthz');
+  const body = await res.json();
+  assert.equal(body.ok, true);
+  assert.equal(body.admin, false, 'no ADMIN_PASSWORD in this test process');
+  assert.ok(!JSON.stringify(body).includes('admin/'), 'the path is never disclosed');
+});
+
 test('/admin does not exist when no admin password is configured', async () => {
   // The spawned server runs with ADMIN_PASSWORD empty, which is how the site
   // ships. A dashboard nobody meant to deploy is worse than no dashboard.

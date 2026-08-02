@@ -248,6 +248,7 @@ forger l'en-tête pour contourner la limite.
 | `ADMIN_PASSWORD_HASH` | *(vide)* | Variante hachée, pour ne pas mettre le mot de passe en clair dans le panneau |
 | `ADMIN_USERNAME` | `admin` | Identifiant de connexion |
 | `ADMIN_SESSION_SECRET` | *(aléatoire)* | Signature des cookies de session |
+| `ADMIN_PATH` | `/admin` | Où répond la console. À changer si l'hébergeur réserve `/admin` |
 
 Deux choses méritent d'être dites clairement.
 
@@ -264,6 +265,20 @@ fois :
 ```sh
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
+
+**`/admin` est un chemin réservé chez beaucoup d'hébergeurs mutualisés.** Une
+installation de type cPanel porte fréquemment un alias Apache pour `/admin`,
+`/webmail` ou `/cpanel` : la requête est interceptée avant d'atteindre
+Passenger, et le symptôme est une **erreur 500 qu'aucun journal applicatif
+n'explique — parce que l'application n'a jamais été sollicitée**. Si c'est le
+cas, déplacez la console :
+
+```
+ADMIN_PATH=/pilotage
+```
+
+Cela retire au passage une cible permanente d'attaque par force brute. Voir la
+section « Diagnostiquer une erreur 500 » plus bas.
 
 Pour ne pas laisser le mot de passe en clair dans le panneau LWS, calculez son
 haché scrypt et renseignez `ADMIN_PASSWORD_HASH` à la place :
@@ -469,6 +484,98 @@ curl -sS -o /dev/null -w '%{http_code}\n' https://api.resend.com/
 
 Un code HTTP quelconque signifie que la sortie fonctionne ; un blocage réseau
 ou un timeout est à signaler au support LWS.
+
+---
+
+## 9 bis. Diagnostiquer une erreur 500
+
+Une 500 peut venir de deux endroits, et la distinction change complètement la
+correction. **Commencez par déterminer lequel** — une seule commande suffit.
+
+### Étape 1 — l'application est-elle vivante ?
+
+```sh
+curl -s https://nos-villas.gcitt.com/healthz
+```
+
+Attendu : `{"ok":true,...,"admin":true}`.
+
+- `admin:false` → **`ADMIN_PASSWORD` n'est pas défini** (ou l'application n'a
+  pas redémarré depuis). Dans ce cas la console répond 404, pas 500.
+- Pas de réponse du tout → l'application ne démarre pas : lisez
+  `logs/startup.log`, la cause y est nommée.
+
+### Étape 2 — qui émet la 500 ?
+
+```sh
+curl -sI https://nos-villas.gcitt.com/admin
+```
+
+| Indice dans la réponse | Émetteur | Que faire |
+| --- | --- | --- |
+| `Content-Type: text/plain` **et** `X-Content-Type-Options: nosniff`, corps `Internal server error (réf. xxxxxxxx)` | **Node** | Voir l'étape 3 |
+| `Content-Type: text/html`, corps `<title>500 Internal Server Error</title>`, en-tête `Server: Apache` | **Apache / Passenger** | Voir l'étape 4 |
+
+Les en-têtes de sécurité de l'application sont la signature décisive : Apache
+ne les pose pas.
+
+### Étape 3 — la 500 vient de Node
+
+Chaque erreur inattendue est désormais écrite dans `logs/startup.log` avec sa
+pile d'appels et une **référence à huit caractères**, la même que celle
+affichée au visiteur. Retrouvez-la :
+
+```sh
+grep -A 12 "ERREUR 500 \[xxxxxxxx\]" logs/startup.log
+```
+
+Le fichier, la ligne et la cause y figurent.
+
+### Étape 4 — la 500 vient d'Apache
+
+L'application n'a jamais reçu la requête. C'est le cas typique d'un **alias
+Apache sur `/admin`** : beaucoup d'hébergements mutualisés en réservent le
+chemin pour un panneau de contrôle.
+
+Vérification en une commande — si un autre chemin fonctionne alors que
+`/admin` échoue, le diagnostic est établi :
+
+```sh
+# 1. Déplacer la console dans le panneau LWS :
+#      ADMIN_PATH=/pilotage
+# 2. Redémarrer l'application (ou toucher tmp/restart.txt)
+# 3. Tester :
+curl -s -o /dev/null -w '%{http_code}\n' https://nos-villas.gcitt.com/pilotage
+```
+
+`200` sur `/pilotage` et `500` sur `/admin` : c'est bien Apache qui intercepte
+`/admin`. Conservez `ADMIN_PATH=/pilotage` — la console est entièrement
+relative à son point de montage, rien d'autre n'est à changer.
+
+Le chemin retenu est journalisé à chaque démarrage :
+
+```sh
+grep "administration monté" logs/startup.log
+```
+
+---
+
+## 9 ter. Vérifier qu'Apache ne sert pas les fichiers de l'application
+
+Sous Passenger, toutes les requêtes doivent passer par Node, qui n'expose que
+sa liste blanche. Si Apache sert les fichiers du répertoire lui-même, le code
+et les données deviennent téléchargeables. À contrôler une fois :
+
+```sh
+for p in /lib/auth.js /lib/admin.html /data/leads.jsonl /.env /package.json; do
+  printf '%-24s %s\n' "$p" "$(curl -s -o /dev/null -w '%{http_code}' https://nos-villas.gcitt.com$p)"
+done
+```
+
+**Les cinq doivent répondre 404.** Un `200` sur l'un d'eux signifie qu'Apache
+court-circuite Passenger : il faut alors placer l'application hors du
+répertoire web (`PassengerAppRoot` en dehors de `public_html`) et n'y exposer
+que le point d'entrée. Contactez le support LWS avec ce constat précis.
 
 ---
 

@@ -64,6 +64,7 @@
 
 <script>
 (function () {
+  var BASE = '{{BASE}}';
   var form = document.getElementById('form');
   var button = document.getElementById('submit');
   var error = document.getElementById('error');
@@ -81,7 +82,7 @@
     button.disabled = true;
     button.textContent = 'Connexion…';
 
-    fetch('/admin/login', {
+    fetch(BASE + '/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -92,7 +93,7 @@
       return response.json().then(function (data) { return { ok: response.ok, data: data }; });
     }).then(function (result) {
       if (result.ok && result.data.ok) {
-        window.location.href = '/admin';
+        window.location.href = BASE;
         return;
       }
       fail(result.data.error || 'Connexion impossible.');

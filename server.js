@@ -24,7 +24,7 @@ import { existsSync } from 'node:fs';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'node:zlib';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { handleLead, getStore } from './lib/handler.js';
 import { handleAdmin } from './lib/admin.js';
@@ -80,6 +80,30 @@ const HOST = process.env.HOST || undefined;
  * where a client could forge the header to dodge the limit.
  */
 const TRUST_PROXY = (process.env.TRUST_PROXY ?? 'true').toLowerCase() !== 'false';
+
+/**
+ * Where the administration console answers.
+ *
+ * `/admin` is a reserved path on a good many shared hosts: cPanel-style
+ * installations frequently carry an Apache alias for it, which intercepts the
+ * request before Passenger ever forwards it to Node. The symptom is a 500 that
+ * no amount of application logging can explain, because the application was
+ * never asked. Moving the console with ADMIN_PATH=/pilotage sidesteps it — and
+ * removes a permanent brute-force target while it is at it.
+ *
+ * Anything malformed falls back to /admin rather than mounting the console on
+ * a path nobody can guess.
+ */
+const ADMIN_PATH = (() => {
+  const raw = (process.env.ADMIN_PATH ?? '').trim();
+  if (!raw) return '/admin';
+  const cleaned = ('/' + raw.replace(/^\/+|\/+$/g, '')).toLowerCase();
+  if (!/^\/[a-z0-9][a-z0-9._~-]{0,58}$/.test(cleaned)) {
+    logStartup(`ADMIN_PATH « ${raw} » invalide (lettres, chiffres, . _ ~ - uniquement) — /admin conservé`);
+    return '/admin';
+  }
+  return cleaned;
+})();
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -299,6 +323,14 @@ const server = createServer(async (req, res) => {
           node: process.version,
           env: process.env.NODE_ENV || 'development',
           uptimeSeconds: Math.round((Date.now() - STARTED_AT) / 1000),
+          // Whether the console is switched on — not where it lives. A 500 on
+          // the console while this says `true` proves the request never
+          // reached this process, which is the one thing you cannot otherwise
+          // tell from outside.
+          admin: Boolean(
+            (process.env.ADMIN_PASSWORD ?? '').trim() ||
+              (process.env.ADMIN_PASSWORD_HASH ?? '').trim(),
+          ),
         }),
       );
       return;
@@ -377,12 +409,12 @@ const server = createServer(async (req, res) => {
     // ── Admin area ───────────────────────────────────────────────────────
     // Answers 404 for everything when ADMIN_PASSWORD is unset, so a site
     // deployed without one has no dashboard at all — see lib/admin.js.
-    if (urlPath === '/admin' || urlPath.startsWith('/admin/')) {
+    if (urlPath === ADMIN_PATH || urlPath.startsWith(ADMIN_PATH + '/')) {
       let body = '';
       if (req.method === 'POST' || req.method === 'PATCH') {
         // A restore carries the whole prospect base; everything else is a
         // status change or a comment.
-        const limit = urlPath === '/admin/restore' ? 8 * 1024 * 1024 : 64 * 1024;
+        const limit = urlPath === `${ADMIN_PATH}/restore` ? 8 * 1024 * 1024 : 64 * 1024;
         try {
           body = await readBody(req, limit);
         } catch (err) {
@@ -406,7 +438,7 @@ const server = createServer(async (req, res) => {
           body,
           ip: TRUST_PROXY ? clientIp(req.headers, req.socket.remoteAddress) : req.socket.remoteAddress,
         },
-        { store: getStore(loadConfig(process.env)) },
+        { store: getStore(loadConfig(process.env)), prefix: ADMIN_PATH },
       );
 
       res.writeHead(result.status, { ...result.headers, ...SECURITY_HEADERS });
@@ -485,11 +517,19 @@ const server = createServer(async (req, res) => {
     res.writeHead(200, headers);
     res.end(req.method === 'HEAD' ? undefined : body);
   } catch (err) {
+    // Passenger discards stdout, so a console.error here is a 500 with no
+    // explanation — exactly the situation this catch exists to prevent. The
+    // reference is echoed to the caller so a report of "I got a 500" can be
+    // matched to a stack trace in logs/startup.log.
+    const reference = randomUUID().slice(0, 8);
     console.error('[server]', urlPath, err);
+    logStartup(`ERREUR 500 [${reference}] ${req.method} ${urlPath} : ${err?.code ?? ''} ${err?.message ?? err}`);
+    logStartup(String(err?.stack ?? ''));
+
     if (!res.headersSent) {
       res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8', ...SECURITY_HEADERS });
     }
-    res.end('Internal server error');
+    res.end(`Internal server error (réf. ${reference})`);
   }
 });
 
@@ -534,6 +574,7 @@ server.listen(PORT, HOST, () => {
   const where = typeof PORT === 'number' ? `port ${PORT}` : `socket ${PORT}`;
   logStartup(`en écoute sur ${where} (${process.env.NODE_ENV || 'development'})`);
   logStartup(`proxy de confiance : ${TRUST_PROXY ? 'oui' : 'non'}`);
+  logStartup(`espace d'administration monté sur ${ADMIN_PATH}`);
   logStartup(`journal de démarrage : ${STARTUP_LOG_PATH}`);
   logStartup('PRÊT — l\'application répond');
 });
