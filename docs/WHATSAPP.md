@@ -126,7 +126,7 @@ vide. **Le message intégral reste toujours dans l'email.**
 
 ```sh
 # 1. Renseignez .env, puis démarrez le serveur
-node server.js
+npm start                # lance node app.js
 
 # 2. Envoyez un prospect de test
 curl -X POST http://localhost:3000/api/lead \

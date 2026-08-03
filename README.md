@@ -99,7 +99,7 @@ cache, so publishing a quote is an FTP upload, not a redeployment.
 
 ```sh
 cp .env.example .env          # fill in the values
-npm start                     # server.js loads .env itself when present
+npm start                     # runs node app.js; it loads .env itself when present
 #  page → http://localhost:3000
 #  API  → POST http://localhost:3000/api/lead
 ```

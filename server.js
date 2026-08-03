@@ -7,8 +7,12 @@
  *
  * Dependency-free: node:http and node:zlib only.
  *
- *   npm start                 # honours PORT, defaults to 3000
+ *   npm start                 # runs node app.js; honours PORT, default 3000
  *   PORT=8080 npm start
+ *
+ * Never start this file directly in production: app.js is the entry point that
+ * installs the error handlers, logs every boot step to logs/startup.log and
+ * watches for the listen() call Passenger waits on.
  *
  * On LWS the panel supplies PORT and the environment variables; see
  * DEPLOIEMENT_LWS.md.

@@ -23,9 +23,14 @@ const BASE = `http://127.0.0.1:${PORT}`;
 const DATA_DIR = mkdtempSync(join(tmpdir(), 'gcitt-server-'));
 
 let child;
+let bootLog = '';
 
 test.before(async () => {
-  child = spawn(process.execPath, ['server.js'], {
+  // app.js, not server.js: production runs the Passenger entry point, and an
+  // integration test that exercises a different path is not an integration
+  // test. Starting server.js directly is exactly the mistake that left a
+  // stale process running for days with no diagnostics.
+  child = spawn(process.execPath, ['app.js'], {
     cwd: root,
     env: {
       ...process.env,
@@ -52,6 +57,9 @@ test.before(async () => {
       seen += String(chunk);
       if (seen.includes('PRÊT')) {
         clearTimeout(timer);
+        // Kept for the assertions below: it is the proof that the wrapper ran
+        // and that listen() happened exactly once.
+        bootLog = seen;
         resolve();
       }
     });
@@ -360,8 +368,12 @@ test('app.js and app.cjs exist and carry no external dependency', () => {
 
 test('package.json declares what the host needs', () => {
   const pkg = JSON.parse(readFileSync(root + 'package.json', 'utf8'));
-  assert.equal(pkg.scripts.start, 'node server.js');
-  assert.equal(pkg.main, 'server.js');
+  // Both point at the Passenger wrapper, never at server.js directly. This
+  // assertion previously locked in the wrong value, which is how production
+  // ran for days on `node server.js` while the panel displayed app.js: no
+  // wrapper, no diagnostics, and an environment frozen at launch time.
+  assert.equal(pkg.scripts.start, 'node app.js');
+  assert.equal(pkg.main, 'app.js', 'some panels read `main` as the startup file');
   assert.ok(pkg.engines.node);
   // Zero dependencies is the property that makes npm install unable to fail.
   assert.deepEqual(pkg.dependencies, {});
@@ -404,6 +416,22 @@ test('leaking lib/ would hand a spammer the anti-spam design', async () => {
   const body = await res.text();
   assert.ok(!body.includes('website'), 'the honeypot field name leaked');
   assert.ok(!body.includes('isHoneypotTripped'));
+});
+
+// ── The startup path ────────────────────────────────────────────────────────
+
+test('the wrapper really ran, and listen() happened once', async () => {
+  assert.match(bootLog, /\[app\.js\] démarrage/, 'app.js logged its own boot');
+  assert.match(bootLog, /\[app\.js\] server\.js chargé/, 'server.js was loaded by the wrapper');
+
+  const listens = bootLog.match(/listen\(\) effectif/g) ?? [];
+  assert.equal(listens.length, 1, `listen() called ${listens.length} times`);
+});
+
+test('the wrapper reports the address it actually bound', async () => {
+  // Under Passenger this is the hijacked Unix socket; here, a TCP port. Either
+  // way the line is the proof that the handover happened.
+  assert.match(bootLog, new RegExp(`listen\\(\\) effectif sur .*:${PORT}`));
 });
 
 // ── The analytics beacon ────────────────────────────────────────────────────

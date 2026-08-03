@@ -6,13 +6,14 @@
   "keywords": ["gcitt", "benin", "landing-page", "whatsapp-business", "immobilier"],
   "license": "UNLICENSED",
   "type": "module",
-  "main": "server.js",
+  "main": "app.js",
   "engines": {
     "node": ">=20.12.0"
   },
+  "//scripts": "« start » lance app.js, jamais server.js directement. app.js installe les gestionnaires d'erreurs, journalise chaque étape du démarrage dans logs/startup.log et surveille l'appel à listen(), puis charge server.js. Démarrer server.js seul contourne tout ce diagnostic — et c'est exactement ce qui s'est produit en production le 30 juillet : un processus lancé par « npm start » avec l'ancien script, donc sans app.js et avec un environnement figé, pendant que le panneau affichait app.js comme fichier de démarrage.",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
+    "start": "node app.js",
+    "dev": "node --watch app.js",
     "test": "node --test test/*.test.js"
   },
   "//dependencies": "Aucune dépendance runtime : le serveur n'utilise que les modules natifs de Node (node:http, node:zlib, node:crypto). `npm install` n'a donc rien à télécharger et ne peut pas échouer sur l'hébergement.",

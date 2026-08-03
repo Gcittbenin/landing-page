@@ -27,8 +27,11 @@ venir, et signale « Erreur » alors que l'application tourne peut-être très b
 
 **Ce qu'il faut faire :**
 
-1. Vérifiez que le fichier de démarrage du panneau est `app.js` (ou
-   `server.js`). Enregistrez.
+1. Vérifiez que le fichier de démarrage du panneau est **`app.js`**.
+   Enregistrez. **Jamais `server.js` directement** : c'est `app.js` qui pose
+   les gestionnaires d'erreurs, journalise chaque étape dans
+   `logs/startup.log` et surveille l'appel à `listen()`. Démarrer `server.js`
+   seul contourne tout ce diagnostic.
 2. Cliquez sur **Redémarrer** l'application — pas sur « Exécuter le script
    start ».
 3. Ouvrez `https://nos-villas.gcitt.com/healthz`. Une réponse comme
@@ -37,6 +40,27 @@ venir, et signale « Erreur » alors que l'application tourne peut-être très b
 Un second cas classique : lancer `npm start` **à la main** alors que Passenger a
 déjà démarré l'application. Le second processus tente d'ouvrir le même port et
 meurt sur `EADDRINUSE`. Le message est maintenant explicite dans le journal.
+
+> **Le piège qui a coûté le plus cher.** Un processus lancé une fois par
+> « Exécuter le script start » **survit indéfiniment**, indépendamment du
+> fichier de démarrage affiché par le panneau, et **avec l'environnement figé
+> au moment de son lancement**. Toute variable ajoutée ensuite lui est
+> invisible. Le panneau peut donc afficher `startup_file = app.js` pendant
+> qu'un `node server.js` de la semaine précédente sert réellement les
+> requêtes.
+>
+> Pour le vérifier en SSH :
+>
+> ```sh
+> ps -eo pid,lstart,args | grep -E "node (app|server)\.js" | grep -v grep
+> ```
+>
+> Une date de lancement ancienne, ou `server.js` au lieu de `app.js`, signe le
+> problème. Tuez le processus, puis **Redémarrer** dans le panneau — jamais
+> « Exécuter le script start » pour un serveur.
+>
+> Depuis, `npm start` lance `node app.js` : les deux chemins sont devenus
+> identiques et l'erreur n'est plus possible.
 
 ### Où lire l'erreur réelle
 
@@ -320,12 +344,16 @@ Puis, **dans le panneau**, cliquez sur **Redémarrer** l'application. Passenger
 la lance lui-même à la première requête ; il n'y a pas de `npm start` à
 déclencher. Voir §0 si le panneau affiche « Erreur ».
 
-`npm start` reste utile **en SSH** pour un test manuel :
+`npm start` reste utile **en SSH** pour un test manuel. Il lance `node app.js`,
+donc exactement ce que Passenger exécute :
 
 ```sh
 npm start                # écoute sur 3000 si PORT n'est pas défini
 curl -s http://127.0.0.1:3000/healthz
 ```
+
+Pensez à l'arrêter (`Ctrl-C`) : un test manuel laissé en fond est précisément
+ce qui produit un processus fantôme à l'environnement figé.
 
 `npm install` est **sans effet mais sans risque** : `dependencies` est vide, le
 serveur n'utilisant que des modules natifs. Cela signifie aussi qu'aucune panne
