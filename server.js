@@ -28,7 +28,7 @@ import { existsSync } from 'node:fs';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'node:zlib';
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 
 import { handleLead, getStore } from './lib/handler.js';
 import { handleAdmin } from './lib/admin.js';
@@ -36,6 +36,14 @@ import { handleEvent } from './lib/events.js';
 import { loadConfig } from './lib/config.js';
 import { clientIp } from './lib/ratelimit.js';
 import { logStartup, environmentSummary, describeStartupError, STARTUP_LOG_PATH } from './lib/startup.js';
+import {
+  logRequest,
+  newRequestId,
+  countRequest,
+  countAdminError,
+  counters,
+  REQUEST_LOG_PATH,
+} from './lib/reqlog.js';
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
 const INDEX = 'GCITT - Cite Coeur Joie.dc.html';
@@ -310,6 +318,19 @@ const PIXEL = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBR
 
 const server = createServer(async (req, res) => {
   const urlPath = (req.url ?? '/').split('?')[0];
+  const isAdmin = urlPath === ADMIN_PATH || urlPath.startsWith(ADMIN_PATH + '/');
+
+  /**
+   * The identifier that ties a public test to a line in the log.
+   *
+   * Sent on every response, and — this is the point — only ever by this
+   * process. A 500 that carries no X-Request-Id was not produced here: it
+   * came from Apache, LiteSpeed or a cache layer in front. That single header
+   * settles the question without any log access.
+   */
+  const requestId = newRequestId();
+  res.setHeader('X-Request-Id', requestId);
+  countRequest(isAdmin);
 
   try {
     // ── Health check ─────────────────────────────────────────────────────
@@ -335,6 +356,12 @@ const server = createServer(async (req, res) => {
             (process.env.ADMIN_PASSWORD ?? '').trim() ||
               (process.env.ADMIN_PASSWORD_HASH ?? '').trim(),
           ),
+          // Requests this process has handled since it started. `admin` moves
+          // only when a console URL actually reached Node, which is what
+          // distinguishes "the handler failed" from "the request never
+          // arrived". Counters only — no paths, no addresses, nothing about
+          // any visitor.
+          requests: { ...counters },
         }),
       );
       return;
@@ -413,7 +440,15 @@ const server = createServer(async (req, res) => {
     // ── Admin area ───────────────────────────────────────────────────────
     // Answers 404 for everything when ADMIN_PASSWORD is unset, so a site
     // deployed without one has no dashboard at all — see lib/admin.js.
-    if (urlPath === ADMIN_PATH || urlPath.startsWith(ADMIN_PATH + '/')) {
+    if (isAdmin) {
+      // Admin traffic is a handful of requests a day, so logging all of it is
+      // free. See lib/reqlog.js for why this is a separate file.
+      logRequest(
+        `[${requestId}] ENTRÉE  ${req.method} url=${JSON.stringify(req.url ?? '')} ` +
+          `chemin=${JSON.stringify(urlPath)} ADMIN_PATH=${JSON.stringify(ADMIN_PATH)} ` +
+          `hôte=${req.headers.host ?? '—'} proto=${req.headers['x-forwarded-proto'] ?? '—'}`,
+      );
+
       let body = '';
       if (req.method === 'POST' || req.method === 'PATCH') {
         // A restore carries the whole prospect base; everything else is a
@@ -433,17 +468,44 @@ const server = createServer(async (req, res) => {
         }
       }
 
-      const result = await handleAdmin(
-        {
-          method: req.method,
-          path: urlPath,
-          query: Object.fromEntries(new URL(req.url ?? '/', 'http://localhost').searchParams),
-          headers: req.headers,
-          body,
-          ip: TRUST_PROXY ? clientIp(req.headers, req.socket.remoteAddress) : req.socket.remoteAddress,
-        },
-        { store: getStore(loadConfig(process.env)), prefix: ADMIN_PATH },
-      );
+      /**
+       * The console is wrapped in its own try/catch rather than relying on the
+       * outer one, so a failure here is reported with the routing context
+       * already in hand — and so a 500 from the dashboard is never confused
+       * with a 500 from anywhere else in the server.
+       */
+      let result;
+      try {
+        logRequest(`[${requestId}] APPEL   handleAdmin()`);
+        result = await handleAdmin(
+          {
+            method: req.method,
+            path: urlPath,
+            query: Object.fromEntries(new URL(req.url ?? '/', 'http://localhost').searchParams),
+            headers: req.headers,
+            body,
+            ip: TRUST_PROXY ? clientIp(req.headers, req.socket.remoteAddress) : req.socket.remoteAddress,
+          },
+          { store: getStore(loadConfig(process.env)), prefix: ADMIN_PATH },
+        );
+      } catch (err) {
+        countAdminError();
+        logRequest(`[${requestId}] EXCEPTION ${err?.code ?? ''} ${err?.message ?? err}`);
+        logRequest(String(err?.stack ?? ''));
+        // Also in the boot log: that is the file anyone already knows to open.
+        logStartup(`ERREUR console [${requestId}] ${req.method} ${urlPath} : ${err?.code ?? ''} ${err?.message ?? err}`);
+        logStartup(String(err?.stack ?? ''));
+
+        res.writeHead(500, {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'no-store',
+          ...SECURITY_HEADERS,
+        });
+        res.end(`Erreur de la console (réf. ${requestId})`);
+        return;
+      }
+
+      logRequest(`[${requestId}] SORTIE  HTTP ${result.status} (${Buffer.byteLength(String(result.body ?? ''))} octets)`);
 
       res.writeHead(result.status, { ...result.headers, ...SECURITY_HEADERS });
       res.end(req.method === 'HEAD' ? undefined : result.body);
@@ -525,15 +587,15 @@ const server = createServer(async (req, res) => {
     // explanation — exactly the situation this catch exists to prevent. The
     // reference is echoed to the caller so a report of "I got a 500" can be
     // matched to a stack trace in logs/startup.log.
-    const reference = randomUUID().slice(0, 8);
     console.error('[server]', urlPath, err);
-    logStartup(`ERREUR 500 [${reference}] ${req.method} ${urlPath} : ${err?.code ?? ''} ${err?.message ?? err}`);
+    logStartup(`ERREUR 500 [${requestId}] ${req.method} ${urlPath} : ${err?.code ?? ''} ${err?.message ?? err}`);
     logStartup(String(err?.stack ?? ''));
+    if (isAdmin) logRequest(`[${requestId}] EXCEPTION hors handleAdmin : ${err?.message ?? err}`);
 
     if (!res.headersSent) {
       res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8', ...SECURITY_HEADERS });
     }
-    res.end(`Internal server error (réf. ${reference})`);
+    res.end(`Internal server error (réf. ${requestId})`);
   }
 });
 
@@ -579,6 +641,7 @@ server.listen(PORT, HOST, () => {
   logStartup(`en écoute sur ${where} (${process.env.NODE_ENV || 'development'})`);
   logStartup(`proxy de confiance : ${TRUST_PROXY ? 'oui' : 'non'}`);
   logStartup(`espace d'administration monté sur ${ADMIN_PATH}`);
+  logStartup(`journal des requêtes console : ${REQUEST_LOG_PATH}`);
   logStartup(`journal de démarrage : ${STARTUP_LOG_PATH}`);
   logStartup('PRÊT — l\'application répond');
 });

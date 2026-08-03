@@ -535,29 +535,72 @@ Attendu : `{"ok":true,...,"admin":true}`.
 
 ### Étape 2 — qui émet la 500 ?
 
+**Deux façons de trancher, l'une et l'autre définitives.**
+
+#### a. L'en-tête `X-Request-Id`
+
 ```sh
-curl -sI https://nos-villas.gcitt.com/admin
+curl -sI https://nos-villas.gcitt.com/pilotage | grep -i x-request-id
 ```
 
-| Indice dans la réponse | Émetteur | Que faire |
-| --- | --- | --- |
-| `Content-Type: text/plain` **et** `X-Content-Type-Options: nosniff`, corps `Internal server error (réf. xxxxxxxx)` | **Node** | Voir l'étape 3 |
-| `Content-Type: text/html`, corps `<title>500 Internal Server Error</title>`, en-tête `Server: Apache` | **Apache / Passenger** | Voir l'étape 4 |
+Node pose cet en-tête sur **toutes** ses réponses, y compris ses erreurs.
 
-Les en-têtes de sécurité de l'application sont la signature décisive : Apache
-ne les pose pas.
+- **Un identifiant est présent** → la requête a atteint Node. Cas **A**, allez
+  à l'étape 3 : l'identifiant vous donne la ligne exacte du journal.
+- **Aucun en-tête** → la réponse n'a pas été produite par l'application. Cas
+  **B** : c'est Apache, LiteSpeed ou un cache en amont. Allez à l'étape 4.
+
+#### b. Les compteurs de `/healthz`
+
+Plus robuste encore, car cela ne dépend d'aucun en-tête qu'un proxy pourrait
+retirer. Trois commandes :
+
+```sh
+curl -s https://nos-villas.gcitt.com/healthz          # notez requests.admin
+curl -s -o /dev/null https://nos-villas.gcitt.com/pilotage
+curl -s https://nos-villas.gcitt.com/healthz          # relisez requests.admin
+```
+
+| `requests.admin` | Conclusion |
+| --- | --- |
+| **a augmenté** | La requête a atteint Node → cas **A** |
+| **inchangé** | La requête n'est jamais arrivée → cas **B** |
+
+Seul ce processus peut incrémenter ce compteur. `requests.adminErrors` indique
+en plus combien d'exceptions la console a levées depuis le démarrage : s'il
+reste à zéro alors que `/pilotage` renvoie 500, l'erreur ne vient pas d'elle.
 
 ### Étape 3 — la 500 vient de Node
 
-Chaque erreur inattendue est désormais écrite dans `logs/startup.log` avec sa
-pile d'appels et une **référence à huit caractères**, la même que celle
-affichée au visiteur. Retrouvez-la :
+Deux journaux, avec la même référence à huit caractères que celle renvoyée
+dans `X-Request-Id` et affichée au visiteur.
+
+**`logs/requests.log`** trace chaque requête de la console — entrée, appel du
+gestionnaire, sortie ou exception :
 
 ```sh
-grep -A 12 "ERREUR 500 \[xxxxxxxx\]" logs/startup.log
+grep -A 12 "xxxxxxxx" logs/requests.log
 ```
 
-Le fichier, la ligne et la cause y figurent.
+```
+[…] [60a852e1] ENTRÉE  GET url="/pilotage" chemin="/pilotage" ADMIN_PATH="/pilotage" hôte=… proto=https
+[…] [60a852e1] APPEL   handleAdmin()
+[…] [60a852e1] SORTIE  HTTP 200 (4086 octets)
+```
+
+Une ligne `ENTRÉE` sans `SORTIE` ni `EXCEPTION` signifie que le gestionnaire
+ne rend jamais la main. Une ligne `EXCEPTION` est suivie de la pile complète.
+
+Ces lignes montrent aussi **la valeur exacte** de `req.url`, du chemin analysé
+et d'`ADMIN_PATH` : si les deux derniers diffèrent, le point de montage n'est
+pas celui que vous croyez.
+
+**`logs/startup.log`** reçoit une copie des exceptions, parce que c'est le
+fichier que tout le monde ouvre en premier :
+
+```sh
+grep -A 12 "ERREUR console \[xxxxxxxx\]" logs/startup.log
+```
 
 ### Étape 4 — la 500 vient d'Apache
 

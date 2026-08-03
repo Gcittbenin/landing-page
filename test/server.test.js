@@ -418,6 +418,52 @@ test('leaking lib/ would hand a spammer the anti-spam design', async () => {
   assert.ok(!body.includes('isHoneypotTripped'));
 });
 
+// ── Telling "the handler failed" from "the request never arrived" ───────────
+
+test('every response carries a request id only this process can set', async () => {
+  // The decisive tell. A 500 with no X-Request-Id did not come from Node — it
+  // came from Apache, LiteSpeed or a cache layer in front of it.
+  for (const path of ['/', '/healthz', '/admin', '/nexistepas']) {
+    const res = await get(path);
+    const id = res.headers.get('x-request-id');
+    assert.ok(id, `${path} carries no request id`);
+    assert.match(id, /^[0-9a-f]{8}$/, `${path} -> ${id}`);
+  }
+});
+
+test('two requests get two different ids', async () => {
+  const a = (await get('/healthz')).headers.get('x-request-id');
+  const b = (await get('/healthz')).headers.get('x-request-id');
+  assert.notEqual(a, b);
+});
+
+test('/healthz reports counters that only move when Node is reached', async () => {
+  const before = (await (await get('/healthz')).json()).requests;
+  assert.equal(typeof before.total, 'number');
+  assert.equal(typeof before.admin, 'number');
+
+  // A console URL. It answers 404 here — no ADMIN_PASSWORD in this process —
+  // but it still reached Node, and that is the whole point of the counter.
+  await get('/admin');
+  const after = (await (await get('/healthz')).json()).requests;
+
+  assert.ok(after.admin > before.admin, 'the console counter moved');
+  assert.ok(after.total > before.total);
+});
+
+test('a non-console request does not move the console counter', async () => {
+  const before = (await (await get('/healthz')).json()).requests.admin;
+  await get('/robots.txt');
+  const after = (await (await get('/healthz')).json()).requests.admin;
+  assert.equal(after, before);
+});
+
+test('the counters disclose no path, address or visitor detail', async () => {
+  const body = await (await get('/healthz')).json();
+  assert.deepEqual(Object.keys(body.requests).sort(), ['admin', 'adminErrors', 'total']);
+  assert.ok(!JSON.stringify(body).includes('admin/'), 'the console path is never disclosed');
+});
+
 // ── The startup path ────────────────────────────────────────────────────────
 
 test('the wrapper really ran, and listen() happened once', async () => {
