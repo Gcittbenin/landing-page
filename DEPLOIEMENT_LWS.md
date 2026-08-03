@@ -631,7 +631,117 @@ grep "administration monté" logs/startup.log
 
 ---
 
-## 9 ter. Vérifier qu'Apache ne sert pas les fichiers de l'application
+## 9 ter. Seule `/` atteint Passenger — les autres chemins répondent 500
+
+C'est le cas observé en production le 3 août : la racine répond `200` avec
+`x-powered-by: Phusion Passenger` et un `x-request-id`, tandis que `/healthz`,
+`/pilotage` et `/admin` répondent une page 500 générique d'Apache **sans**
+aucun de ces deux en-têtes. La requête n'arrive donc jamais jusqu'à Node.
+
+### Ce que la signature indique
+
+Les trois chemins qui échouent n'ont qu'une seule propriété commune : **aucun
+ne correspond à un fichier ou à un répertoire réel**. Le seul chemin qui
+fonctionne, `/`, en est un. Autrement dit, Passenger n'est sollicité que pour
+les requêtes qu'Apache sait déjà résoudre sur le disque — exactement ce que
+produit un bloc Passenger absent ou incomplet dans le `.htaccess` du
+répertoire racine de l'application, en particulier la directive
+`PassengerBaseURI "/"` qui déclare que **tout** ce qui est sous `/` appartient
+à l'application.
+
+Ce n'est pas notre code : le dépôt ne contient aucun `.htaccess` racine. Les
+quatre `.htaccess` du projet (`api/`, `docs/`, `lib/`, `test/`) sont portés par
+des sous-répertoires, ne contiennent qu'un `Require all denied`, et deux
+d'entre eux ne partent même pas au déploiement. Aucun ne peut concerner
+`/healthz`.
+
+### Le test qui départage
+
+Une seule commande sépare les hypothèses restantes :
+
+```sh
+curl -sI https://nos-villas.gcitt.com/chemin-inexistant-au-hasard-9876
+```
+
+* **500** — la panne concerne *tous* les chemins sans équivalent sur le
+  disque. C'est la portée de Passenger qui est en cause : bloc CloudLinux
+  absent, tronqué, ou `PassengerBaseURI` mal déclaré.
+* **404 d'Apache** — seuls les noms `healthz`, `pilotage` et `admin` sont
+  interceptés. Chercher alors un `Alias`, une règle de réécriture, une entrée
+  de cache (FastestCache) ou une règle mod_security portant sur ces noms.
+
+### Le bloc à vérifier
+
+Dans le `.htaccess` du répertoire racine de l'application (celui déclaré comme
+« Application root » dans le panneau) :
+
+```sh
+cat ~/nos-villas.gcitt.com/.htaccess     # adapter au chemin réel
+```
+
+Il doit contenir, intact, le bloc généré par cPanel :
+
+```apache
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/UTILISATEUR/nos-villas.gcitt.com"
+PassengerBaseURI "/"
+PassengerNodejs "/home/UTILISATEUR/nodevenv/nos-villas.gcitt.com/22/bin/node"
+PassengerAppType node
+PassengerStartupFile app.js
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+```
+
+Points de contrôle, dans l'ordre :
+
+1. **`PassengerBaseURI "/"` est-il présent ?** Absent, ou fixé à autre chose,
+   il explique à lui seul la signature ci-dessus.
+2. **Le bloc est-il complet, marqueurs BEGIN et END compris ?** cPanel ne le
+   reconnaît, et ne le régénère, que s'il est intact.
+3. **Y a-t-il autre chose dans le fichier ?** Une règle `RewriteRule`, un
+   `ErrorDocument`, un `Alias`, ou un bloc de cache placé **avant** le bloc
+   Passenger peut détourner les chemins avant lui.
+4. **`PassengerStartupFile` vaut-il bien `app.js` ?** Il doit correspondre au
+   fichier de démarrage du panneau, et à `npm start`.
+
+Ce fichier est **généré par l'hébergeur et ne doit pas être versionné**. Ne
+l'ajoutez pas au dépôt : le déploiement FTP écraserait la version de cPanel et
+casserait l'application — c'est précisément ce contre quoi les commentaires des
+`.htaccess` du projet mettent en garde.
+
+Si le bloc est absent ou abîmé, la remise en place propre passe par le panneau
+LWS : **Setup Node.js App → l'application → Restart**, ou un cycle
+Stop / Start, qui réécrit le bloc.
+
+### Vérifier ensuite côté serveur
+
+```sh
+# le processus réellement actif et sa date de lancement
+ps -eo pid,lstart,args | grep -i node | grep -v grep
+
+# les erreurs Apache correspondant aux requêtes de test
+tail -n 100 ~/logs/nos-villas.gcitt.com.error.log 2>/dev/null \
+  || tail -n 100 /usr/local/apache/logs/error_log
+```
+
+### Si le bloc est présent et correct
+
+Alors la configuration bloquante est hors de portée du compte, et il faut la
+demander au support LWS. Message à transmettre :
+
+> Le domaine nos-villas.gcitt.com héberge une application Node.js sous
+> Passenger. `GET /` répond 200 avec l'en-tête
+> `x-powered-by: Phusion Passenger 6.1.1` : l'application fonctionne. Mais tout
+> chemin sans correspondance sur le disque — par exemple `/healthz` — répond une
+> page 500 générique, sans en-tête Passenger, donc sans jamais atteindre
+> l'application. Le bloc CLOUDLINUX PASSENGER CONFIGURATION du `.htaccess`
+> racine est présent et contient `PassengerBaseURI "/"`. Merci de vérifier au
+> niveau du vhost ce qui empêche la transmission des URI non résolues sur le
+> système de fichiers : configuration Passenger du vhost, alias, règles de
+> réécriture, LiteSpeed FastestCache, ou mod_security.
+
+---
+
+## 9 quater. Vérifier qu'Apache ne sert pas les fichiers de l'application
 
 Sous Passenger, toutes les requêtes doivent passer par Node, qui n'expose que
 sa liste blanche. Si Apache sert les fichiers du répertoire lui-même, le code
