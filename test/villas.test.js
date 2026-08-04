@@ -20,7 +20,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -132,6 +132,34 @@ test('toutes les images citées existent sur le disque', () => {
     }
   }
   assert.deepEqual(manquantes, [], 'fichiers introuvables :\n  ' + manquantes.join('\n  '));
+});
+
+test('aucune photo n’est trop lourde pour un mobile béninois', () => {
+  // Le lot Béthel Duplex est arrivé à 32,6 Mo, dont un seul PNG de 10,9 Mo.
+  // Rien ne l'aurait signalé : les galeries sont en chargement différé, donc
+  // la page reste rapide — c'est le prospect qui ouvre la galerie sur sa
+  // connexion mobile qui paie, et il repart avant la troisième photo.
+  //
+  // 400 Ko est large pour une photo de 1600 px bien encodée. Au-delà, c'est
+  // que le fichier n'est pas passé par une réduction.
+  const MAX_KO = 400;
+  const trop = [];
+
+  for (const { where, img } of everyImage()) {
+    for (const chemin of [img.src, ...srcsetPaths(img.srcset)]) {
+      const abs = join(ROOT, chemin);
+      if (!existsSync(abs)) continue;
+      const ko = Math.round(statSync(abs).size / 1024);
+      if (ko > MAX_KO) trop.push(`${where} → ${chemin} (${ko} Ko)`);
+    }
+  }
+
+  assert.deepEqual(
+    trop,
+    [],
+    'photos trop lourdes :\n  ' + trop.join('\n  ') +
+      '\n  Réduire à 1600 px de large et réencoder en JPEG qualité ~82.',
+  );
 });
 
 test('chaque image porte un texte alternatif', () => {

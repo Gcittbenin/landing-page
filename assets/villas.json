@@ -250,16 +250,149 @@
             "Deux (02) balcons"
           ],
           "card": {
-            "src": "uploads/bethel-duplex.png",
-            "srcset": "uploads/bethel-duplex-sm.png 500w, uploads/bethel-duplex.png 706w",
-            "alt": "Villa Bethel Duplex à la Cité Béthel"
+            "src": "uploads/villas/bethel/bethel-duplex/IMG_8094 copie.jpg",
+            "srcset": "uploads/villas/bethel/bethel-duplex/IMG_8094 copie-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG_8094 copie.jpg 1600w",
+            "alt": "Villas Duplex de la Cité Béthel vues depuis la rue",
+            "focus": "center 38%"
           },
           "gallery": [
             {
-              "src": "uploads/bethel-duplex.png",
-              "srcset": "uploads/bethel-duplex-sm.png 500w, uploads/bethel-duplex.png 706w",
+              "src": "uploads/villas/bethel/bethel-duplex/IMG_8009 copie.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG_8009 copie-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG_8009 copie.jpg 1600w",
               "alt": "Villa Bethel Duplex à la Cité Béthel",
-              "caption": "Perspective d’architecte"
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG_8016 copie.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG_8016 copie-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG_8016 copie.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG_8020 copie.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG_8020 copie-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG_8020 copie.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG_8094 copie.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG_8094 copie-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG_8094 copie.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG_8959.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG_8959-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG_8959.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG_8997.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG_8997-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG_8997.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG_9010.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG_9010-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG_9010.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0007.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0007-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0007.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0010.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0010-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0010.jpg 1066w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0013.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0013-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0013.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0015.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0015-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0015.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0019.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0019-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0019.jpg 1066w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0021.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0021-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0021.jpg 1066w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0024.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0024-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0024.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0026.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0026-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0026.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0028.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0028-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0028.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0029.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0029-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0029.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0031.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0031-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0031.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0032.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0032-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0032.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0033.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0033-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0033.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0034.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0034-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0034.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0035.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0035-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0035.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
+            },
+            {
+              "src": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0038.jpg",
+              "srcset": "uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0038-sm.jpg 500w, uploads/villas/bethel/bethel-duplex/IMG-20231009-WA0038.jpg 1600w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": ""
             }
           ],
           "family": {

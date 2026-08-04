@@ -57,7 +57,21 @@ const LEXIQUE = {
   salle: 'salle', bain: 'bain', eau: 'eau', dressing: 'dressing', couloir: 'couloir',
 };
 
+/**
+ * Un nom d'appareil photo ne dit rien.
+ *
+ * « IMG-20231009-WA0007.jpg », « IMG_8959.png », « DSC04412.jpg » : les
+ * transformer en légende donnerait « Img 20231009 wa0007 » sous la photo, ce
+ * qui est pire que pas de légende du tout. Mieux vaut n'en mettre aucune et
+ * laisser parler l'image — la légende est facultative, le charabia ne l'est
+ * pas.
+ */
+const NOM_SANS_SENS = /^(img|image|photo|dsc|dscn|dji|pxl|screenshot|capture|whatsapp|received|signal)[-_ ]?\d*([-_ ](wa)?\d+)*$/i;
+
 function legendeDepuisNom(fichier) {
+  const brut = basename(fichier, extname(fichier)).replace(/^\d+[-_]?/, '');
+  if (!brut || NOM_SANS_SENS.test(brut.replace(/\s+copie$/i, ''))) return '';
+
   const mots = basename(fichier, extname(fichier))
     .replace(/^\d+[-_]?/, '')
     .split(/[-_]+/)
