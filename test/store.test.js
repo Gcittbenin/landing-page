@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, readFileSync, appendFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync, appendFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -180,6 +180,30 @@ test('an empty store answers without failing', async () => {
     assert.deepEqual(await store.listEvents(), []);
     assert.deepEqual(await store.listAudit(), []);
   });
+});
+
+test('writable() names the state of the data directory', async () => {
+  await withStore(async (store) => {
+    assert.equal(await store.writable(), 'ok');
+  });
+
+  // Every write path swallows its own error on purpose — a full disk must not
+  // cost a prospect who has already filled in the form — so a broken data
+  // directory used to show up only as a dashboard that stayed empty. These are
+  // the two shapes that failure really takes on a shared host.
+  const parent = mkdtempSync(join(tmpdir(), 'gcitt-store-'));
+  try {
+    // DATA_DIR pointing at a regular file: passes an access(W_OK) check and
+    // then fails every append with ENOTDIR.
+    const file = join(parent, 'pas-un-dossier');
+    writeFileSync(file, '');
+    assert.equal(await createStore({ dir: file }).writable(), 'pas un répertoire');
+
+    // A directory that cannot be created at all.
+    assert.equal(await createStore({ dir: join(file, 'data') }).writable(), 'absent');
+  } finally {
+    rmSync(parent, { recursive: true, force: true });
+  }
 });
 
 test('stats() hands the stored rows to the analytics module', async () => {

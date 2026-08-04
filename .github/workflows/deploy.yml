@@ -45,12 +45,23 @@ jobs:
           #
           # data/ pour la même raison, en plus grave : c'est la base des
           # prospects. Un déploiement ne doit jamais la remplacer ni la vider.
+          #
+          # api/ n'a rien à faire sur LWS : api/lead.js est l'adaptateur Vercel
+          # et server.js ne l'importe pas — il appelle lib/handler.js
+          # directement. Or api/.htaccess contient « Require all denied », et ce
+          # répertoire est le seul du projet dont le nom corresponde à une URL
+          # réellement servie : /api/lead et /api/event. Si Apache effectue la
+          # résolution disque avant de passer la main à Passenger, ce fichier
+          # répond 403 sur les deux — le formulaire et toute la collecte
+          # analytics. Ne pas l'envoyer supprime le risque à la racine, sans
+          # rien retirer à l'application.
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             logs/**
             data/**
+            api/**
             test/**
             docs/**
             *.md

@@ -1,10 +1,14 @@
-# Server-side source: never serve it over HTTP.
+# Vercel only. This directory is NOT deployed to LWS — see the `exclude:` list
+# in .github/workflows/deploy.yml, and the reason it is excluded.
 #
-# The primary guard is server.js, which serves only an allow-list of public
-# paths (assets/, uploads/, vendor/ and a handful of root files) and answers
-# 404 for everything else. These rules are a second layer, for the case where
-# Passenger is stopped and Apache serves this directory directly — the
-# application root sits inside public_html, so that fallback is reachable.
+# In short: `api/` is the one directory in the project whose name collides with
+# URLs the application really serves — /api/lead and /api/event. A directory of
+# that name sitting on disk lets Apache resolve those URLs to the filesystem,
+# and these rules would then answer 403 to the lead form and to every analytics
+# beacon, before Passenger is ever asked. On LWS the directory must simply not
+# exist; server.js calls lib/handler.js directly and never imports api/lead.js.
+#
+# The rules below remain for any host that does serve this directory from disk.
 #
 # Do NOT create an .htaccess in the application root: cPanel generates one
 # there with the Passenger directives, and overwriting it breaks the app.

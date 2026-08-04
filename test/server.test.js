@@ -460,7 +460,16 @@ test('a non-console request does not move the console counter', async () => {
 
 test('the counters disclose no path, address or visitor detail', async () => {
   const body = await (await get('/healthz')).json();
-  assert.deepEqual(Object.keys(body.requests).sort(), ['admin', 'adminErrors', 'total']);
+  // Counts only. `events` / `eventsStored` / `storeErrors` say whether the
+  // analytics beacons arrived and were written — not who sent them.
+  assert.deepEqual(Object.keys(body.requests).sort(), [
+    'admin',
+    'adminErrors',
+    'events',
+    'eventsStored',
+    'storeErrors',
+    'total',
+  ]);
   assert.ok(!JSON.stringify(body).includes('admin/'), 'the console path is never disclosed');
 });
 

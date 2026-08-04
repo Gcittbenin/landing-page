@@ -337,6 +337,12 @@ const server = createServer(async (req, res) => {
     // Lets the host, and you, confirm the process is alive without loading
     // the page. Carries no configuration and no secrets.
     if (urlPath === '/healthz') {
+      // Whether the store can be written to at all. Every write path swallows
+      // its own error by design, so without this a missing or read-only data
+      // directory shows up only as a dashboard that stays empty.
+      const store = getStore(loadConfig(process.env));
+      const storage = store ? await store.writable().catch(() => 'inconnu') : 'désactivé';
+
       res.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-store',
@@ -356,11 +362,15 @@ const server = createServer(async (req, res) => {
             (process.env.ADMIN_PASSWORD ?? '').trim() ||
               (process.env.ADMIN_PASSWORD_HASH ?? '').trim(),
           ),
+          // Can the store be written to: ok / lecture seule / absent /
+          // désactivé. A status word, never the path.
+          storage,
           // Requests this process has handled since it started. `admin` moves
           // only when a console URL actually reached Node, which is what
           // distinguishes "the handler failed" from "the request never
-          // arrived". Counters only — no paths, no addresses, nothing about
-          // any visitor.
+          // arrived"; `events` and `eventsStored` do the same for the
+          // analytics beacon — see lib/reqlog.js. Counters only — no paths, no
+          // addresses, nothing about any visitor.
           requests: { ...counters },
         }),
       );

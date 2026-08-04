@@ -161,12 +161,13 @@ racine de l'application/
 ├── robots.txt
 ├── sitemap.xml
 ├── site.webmanifest
-├── api/                           (adaptateur Vercel — inutilisé ici, sans effet)
 ├── assets/                        (CSS, polices, favicons, image de partage, tracking)
 ├── lib/                           (validation, WhatsApp, email, CRM, anti-spam)
 ├── uploads/                       (photos des villas et logo)
-├── vendor/                        (React 18.3.1 auto-hébergé)
-└── test/
+└── vendor/                        (React 18.3.1 auto-hébergé)
+
+Non déployés : api/ (adaptateur Vercel), test/, docs/, data/ et logs/ —
+voir la liste « exclude » dans .github/workflows/deploy.yml.
 ```
 
 Points d'attention :
@@ -741,7 +742,95 @@ demander au support LWS. Message à transmettre :
 
 ---
 
-## 9 quater. Vérifier qu'Apache ne sert pas les fichiers de l'application
+## 9 quater. Le tableau de bord est vide — auditer la chaîne analytics
+
+La chaîne complète est :
+
+```
+navigateur → assets/tracking.js → POST /api/event → data/events.jsonl
+           → lib/analytics.js → API de la console → tableau de bord
+```
+
+Un seul endpoint permet de situer la rupture sans accès aux journaux :
+
+```sh
+curl -s https://nos-villas.gcitt.com/healthz | python3 -m json.tool
+```
+
+Trois champs comptent :
+
+| Champ | Signification |
+| --- | --- |
+| `storage` | `ok`, `lecture seule`, `pas un répertoire`, `absent` ou `désactivé` |
+| `requests.events` | balises analytics **reçues** par Node depuis le démarrage |
+| `requests.eventsStored` | balises **écrites** sur le disque |
+
+Lecture :
+
+* **`events` = 0 après une visite réelle** → les balises n'atteignent pas Node.
+  La rupture est en amont : Apache/LiteSpeed, un cache, ou une règle sur
+  `/api/`. Voir § 9 ter — `/api/event` est un chemin sans équivalent sur le
+  disque, exactement la classe d'URL concernée.
+* **`events` > 0 mais `eventsStored` = 0** → les balises arrivent et ne
+  s'écrivent pas. Regarder `storage`, puis :
+  ```sh
+  grep "NON ENREGISTRÉ" logs/startup.log | tail
+  ```
+* **`eventsStored` > 0 et tableau de bord vide** → la rupture est côté console.
+  Ouvrir l'onglet Réseau du navigateur sur `/pilotage` et relever le code des
+  appels `\/pilotage/api/…` : ils doivent tous répondre `200` et
+  `Cache-Control: no-store`.
+
+Ces compteurs sont remis à zéro à chaque redémarrage de l'application, et ne
+contiennent aucun chemin, aucune adresse et rien concernant un visiteur.
+
+### La visite de contrôle
+
+```sh
+# 1. relever le point de départ
+curl -s https://nos-villas.gcitt.com/healthz
+
+# 2. ouvrir https://nos-villas.gcitt.com dans un navigateur,
+#    faire défiler jusqu'aux villas, cliquer un bouton, puis fermer l'onglet
+
+# 3. les compteurs doivent avoir bougé
+curl -s https://nos-villas.gcitt.com/healthz
+```
+
+Le test automatisé qui rejoue exactement cette chaîne —
+`page_view → session → interaction → lead → tableau de bord` — est
+`test/pipeline.test.js` ; il tourne à chaque déploiement.
+
+### Le répertoire `api/` ne doit pas exister sur le serveur
+
+`api/lead.js` est l'adaptateur Vercel : `server.js` ne l'importe pas, il
+appelle `lib/handler.js` directement. Le répertoire n'est donc plus envoyé par
+le déploiement — mais l'exclusion n'efface pas ce qui s'y trouve déjà. À
+supprimer une fois, par FTP ou par le gestionnaire de fichiers :
+
+```
+<racine de l'application>/api/
+```
+
+Raison : `api/` est le seul répertoire du projet dont le nom corresponde à des
+URL réellement servies (`/api/lead`, `/api/event`), et il contient un
+`.htaccess` en `Require all denied`. Si Apache résout ces URL sur le disque
+avant de passer la main à Passenger, ce fichier répond 403 au formulaire et à
+toute la collecte. Vérification :
+
+```sh
+curl -s -o /dev/null -w '%{http_code}\n' -X POST \
+  -H 'Content-Type: application/json' -H 'Origin: https://nos-villas.gcitt.com' \
+  -d '{"name":"page_view","sid":"test"}' \
+  https://nos-villas.gcitt.com/api/event
+```
+
+`204` : la collecte passe. `403` : le `.htaccess` de `api/` s'applique — la
+suppression du répertoire est la correction.
+
+---
+
+## 9 quinquies. Vérifier qu'Apache ne sert pas les fichiers de l'application
 
 Sous Passenger, toutes les requêtes doivent passer par Node, qui n'expose que
 sa liste blanche. Si Apache sert les fichiers du répertoire lui-même, le code
