@@ -354,6 +354,12 @@ const server = createServer(async (req, res) => {
           node: process.version,
           env: process.env.NODE_ENV || 'development',
           uptimeSeconds: Math.round((Date.now() - STARTED_AT) / 1000),
+          // Which process answered. Passenger keeps a pool, and the counters
+          // below are per-process: a beacon can be handled by one worker and
+          // /healthz by another, so `events: 0` next to a changing pid means
+          // "not this worker", not "nothing arrived". The file on disk, and
+          // the console, are the shared truth.
+          pid: process.pid,
           // Whether the console is switched on — not where it lives. A 500 on
           // the console while this says `true` proves the request never
           // reached this process, which is the one thing you cannot otherwise

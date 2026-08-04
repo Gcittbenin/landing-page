@@ -784,6 +784,81 @@ Lecture :
 Ces compteurs sont remis à zéro à chaque redémarrage de l'application, et ne
 contiennent aucun chemin, aucune adresse et rien concernant un visiteur.
 
+### Le piège du 204 : `curl` est un robot
+
+`/api/event` répond **`204` quoi qu'il arrive** — c'est délibéré : une balise
+analytics ne doit jamais faire apparaître une erreur sur la page. Un `204` ne
+prouve donc **rien** sur l'enregistrement.
+
+Et le collecteur écarte les robots, pour que Googlebot ne vienne pas gonfler le
+nombre de visiteurs. `curl`, `wget`, `python-requests`, `axios` et `okhttp`
+sont dans cette liste. Un test en `curl` nu répond `204` et n'écrit rien :
+c'est exactement ce que montrent des compteurs restés à zéro alors que la
+requête arrive bien.
+
+**Il faut donc envoyer un vrai `User-Agent` de navigateur.**
+
+```sh
+NAVIGATEUR='Mozilla/5.0 (Linux; Android 13; SM-A536B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36'
+
+curl -s -o /dev/null -w '%{http_code}\n' -X POST \
+  -A "$NAVIGATEUR" \
+  -H 'Content-Type: application/json' -H 'Origin: https://nos-villas.gcitt.com' \
+  -d '{"name":"page_view","sid":"test-manuel","path":"/","source":"Direct","tz":"Africa/Porto-Novo","lang":"fr-FR"}' \
+  https://nos-villas.gcitt.com/api/event
+```
+
+#### Charge utile minimale
+
+Le seul champ **obligatoire** est `name`, et il doit figurer dans la liste
+blanche de `lib/events.js` (`page_view`, `section_view`, `cta_click`, `click`,
+`select_item`, `form_open`, `form_start`, `form_submit`, `generate_lead`,
+`whatsapp_click`, `hero_slide_view`, `scroll`, `engagement`, `web_vital`) :
+
+```json
+{"name":"page_view"}
+```
+
+Mais un événement sans `sid` est enregistré et **ne compte pour rien** :
+visiteurs, sessions, taux de rebond, tunnel, temps réel et heatmap sont tous
+calculés par session. La charge utile minimale *utile* est donc :
+
+```json
+{"name":"page_view","sid":"<identifiant de session>"}
+```
+
+`Content-Type` n'est pas contrôlé. `Origin` est facultatif — s'il est présent,
+il doit correspondre à l'hôte. Tout le reste (appareil, navigateur, système,
+horodatage) est déduit côté serveur et ne peut pas être fourni par le client.
+
+Ordre des rejets, tous silencieux et tous en `204` : méthode ≠ POST → `405` ;
+base désactivée ; origine étrangère ; corps > 4 Ko ; JSON invalide ; `name`
+inconnu ; quota de 300 événements / 10 min / IP dépassé ; **robot** ; puis
+seulement l'écriture.
+
+### Les compteurs sont par processus Passenger
+
+`requests.events` et `requests.eventsStored` vivent dans la mémoire du
+processus Node qui répond. Passenger entretient un **pool de processus** et en
+choisit un par requête : une balise peut être comptée par un worker et
+`/healthz` répondu par un autre, qui affichera `0`.
+
+`/healthz` renvoie donc aussi son `pid`. Deux appels successifs :
+
+* **même `pid`, `events` inchangé** → l'événement n'a pas été reçu par ce
+  processus ;
+* **`pid` différent** → les compteurs ne sont pas comparables, recommencez.
+
+Ce que tous les workers partagent, c'est le fichier sur disque. **L'autorité,
+c'est `data/events.jsonl` et la console**, pas les compteurs :
+
+```sh
+tail -3 data/events.jsonl
+wc -l data/events.jsonl
+```
+
+Les compteurs sont un indice rapide ; le fichier est la preuve.
+
 ### La visite de contrôle
 
 ```sh
@@ -820,13 +895,17 @@ toute la collecte. Vérification :
 
 ```sh
 curl -s -o /dev/null -w '%{http_code}\n' -X POST \
+  -A "$NAVIGATEUR" \
   -H 'Content-Type: application/json' -H 'Origin: https://nos-villas.gcitt.com' \
-  -d '{"name":"page_view","sid":"test"}' \
+  -d '{"name":"page_view","sid":"test-manuel"}' \
   https://nos-villas.gcitt.com/api/event
 ```
 
-`204` : la collecte passe. `403` : le `.htaccess` de `api/` s'applique — la
-suppression du répertoire est la correction.
+`204` : la requête atteint Node. `403` : le `.htaccess` de `api/` s'applique —
+la suppression du répertoire est la correction.
+
+**`-A "$NAVIGATEUR"` n'est pas décoratif.** Voir « Le piège du 204 » ci-dessous :
+sans lui, la commande répond `204` **et n'enregistre rien**.
 
 ---
 
