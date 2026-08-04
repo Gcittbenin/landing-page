@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "description": "Landing page GCITT BENIN — Cité Cœur Joie & Cité Bethel, avec notification WhatsApp Business et email des prospects.",
-  "keywords": ["gcitt", "benin", "landing-page", "whatsapp-business", "immobilier"],
+  "keywords": [
+    "gcitt",
+    "benin",
+    "landing-page",
+    "whatsapp-business",
+    "immobilier"
+  ],
   "license": "UNLICENSED",
   "type": "module",
   "main": "app.js",
@@ -14,9 +20,11 @@
   "scripts": {
     "start": "node app.js",
     "dev": "node --watch app.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "photos": "node scripts/photos.mjs"
   },
   "//dependencies": "Aucune dépendance runtime : le serveur n'utilise que les modules natifs de Node (node:http, node:zlib, node:crypto). `npm install` n'a donc rien à télécharger et ne peut pas échouer sur l'hébergement.",
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {},
+  "//photos": "« npm run photos » relit uploads/villas/ et met assets/villas.json en accord avec ce qui est réellement sur le disque. Sans --ecrire, il ne fait que montrer. Déposer une photo et lancer cette commande suffit : plus de chemin à recopier à la main."
 }

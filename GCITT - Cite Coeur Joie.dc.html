@@ -429,7 +429,7 @@ a:hover{color:#d21f2d}
 </section>
 
 <!-- 02 PROBLEMATIQUES -->
-<section id="problemes" data-screen-label="02 Problematiques" data-reveal-key="problems" style="background:#f3f4f6;padding:104px 48px;{{ revealStyle('problems') }}">
+<section id="problemes" data-screen-label="02 Problematiques" data-reveal-key="problems" style="background:#f3f4f6;padding:104px 48px;{{ reveal.problems }}">
   <div style="max-width:1200px;margin:0 auto">
     <div style="text-align:center;margin-bottom:56px">
       <div class="gc-kicker" style="margin-bottom:14px">Nous comprenons vos préoccupations</div>
@@ -448,7 +448,7 @@ a:hover{color:#d21f2d}
 </section>
 
 <!-- 03 PROJECTION -->
-<section id="cite" data-screen-label="03 Projection" data-reveal-key="projection" style="padding:104px 48px;{{ revealStyle('projection') }}">
+<section id="cite" data-screen-label="03 Projection" data-reveal-key="projection" style="padding:104px 48px;{{ reveal.projection }}">
   <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center">
     <div style="border-radius:18px;overflow:hidden;height:460px">
       <img width="1200" height="800" loading="lazy" decoding="async" src="uploads/Image COEUR-JOIE/FENOU-SEJOUR.jpg" srcset="uploads/Image%20COEUR-JOIE/FENOU-SEJOUR-sm.jpg 780w, uploads/Image%20COEUR-JOIE/FENOU-SEJOUR.jpg 1200w" sizes="(max-width: 1024px) 100vw, 45vw" alt="Séjour villa Fenou F4 à Cœur Joie" style="width:100%;height:100%;object-fit:cover;filter:saturate(0.92) contrast(0.97)">
@@ -470,7 +470,7 @@ a:hover{color:#d21f2d}
 </section>
 
 <!-- 03b EXPERIENCE -->
-<section id="experience" class="gc-exp" data-screen-label="03b Experience" data-reveal-key="experience" style="padding:104px 48px;{{ revealStyle('experience') }}">
+<section id="experience" class="gc-exp" data-screen-label="03b Experience" data-reveal-key="experience" style="padding:104px 48px;{{ reveal.experience }}">
   <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1.02fr 1fr;gap:72px;align-items:center">
 
     <!-- Collage : équipe au premier plan, cité en arrière-plan, accents GCITT -->
@@ -519,7 +519,7 @@ a:hover{color:#d21f2d}
 </section>
 
 <!-- 04 VILLAS -->
-<section id="villas" data-screen-label="04 Villas" data-reveal-key="villas" style="background:#f3f4f6;padding:104px 48px;{{ revealStyle('villas') }}">
+<section id="villas" data-screen-label="04 Villas" data-reveal-key="villas" style="background:#f3f4f6;padding:104px 48px;{{ reveal.villas }}">
   <div style="max-width:1280px;margin:0 auto">
     <div style="text-align:center;margin-bottom:52px">
       <div class="gc-kicker" style="margin-bottom:14px">Plus qu’une exception</div>
@@ -603,7 +603,7 @@ a:hover{color:#d21f2d}
   n’est fournie — mieux vaut rien qu’un cadre vide.
 -->
 <sc-if value="{{ hasFamilies }}" hint-placeholder-val="{{ false }}">
-  <section id="projection-familles" data-screen-label="04b Projection" data-reveal-key="familles" style="padding:104px 48px;{{ revealStyle('familles') }}">
+  <section id="projection-familles" data-screen-label="04b Projection" data-reveal-key="familles" style="padding:104px 48px;{{ reveal.familles }}">
     <div style="max-width:1280px;margin:0 auto">
       <div style="text-align:center;margin-bottom:44px">
         <div class="gc-kicker" style="margin-bottom:14px">Imaginez votre vie ici</div>
@@ -619,7 +619,14 @@ a:hover{color:#d21f2d}
             </div>
             <figcaption class="gc-famille__caption">
               <span class="gc-famille__villa">{{ f.villa }}</span>
-              <span class="gc-famille__note">Mise en scène illustrative</span>
+              <!--
+                La mention n'apparaît que sur une scène jouée. L'apposer à une
+                vraie photo de clients, publiée avec leur accord, serait aussi
+                faux que de présenter une mise en scène comme réelle.
+              -->
+              <sc-if value="{{ f.staged }}" hint-placeholder-val="{{ true }}">
+                <span class="gc-famille__note">Mise en scène illustrative</span>
+              </sc-if>
             </figcaption>
           </figure>
         </sc-for>
@@ -629,7 +636,7 @@ a:hover{color:#d21f2d}
 </sc-if>
 
 <!-- 05 POURQUOI GCITT -->
-<section id="pourquoi" data-screen-label="05 Pourquoi GCITT" data-reveal-key="pourquoi" style="padding:104px 48px;{{ revealStyle('pourquoi') }}">
+<section id="pourquoi" data-screen-label="05 Pourquoi GCITT" data-reveal-key="pourquoi" style="padding:104px 48px;{{ reveal.pourquoi }}">
   <div style="max-width:1280px;margin:0 auto">
     <div style="text-align:center;margin-bottom:52px">
       <div class="gc-kicker" style="margin-bottom:14px">Pourquoi GCITT ?</div>
@@ -662,7 +669,7 @@ a:hover{color:#d21f2d}
 </section>
 
 <!-- 06 PARCOURS CLIENT -->
-<section id="parcours" data-screen-label="06 Parcours client" data-reveal-key="parcours" style="background:#f3f4f6;padding:104px 48px;{{ revealStyle('parcours') }}">
+<section id="parcours" data-screen-label="06 Parcours client" data-reveal-key="parcours" style="background:#f3f4f6;padding:104px 48px;{{ reveal.parcours }}">
   <div style="max-width:1280px;margin:0 auto">
     <div style="text-align:center;margin-bottom:60px">
       <div class="gc-kicker" style="margin-bottom:14px">Votre parcours avec nous</div>
@@ -682,7 +689,7 @@ a:hover{color:#d21f2d}
 </section>
 
 <!-- 07 CONFIANCE / TEMOIGNAGES -->
-<section id="confiance" data-screen-label="07 Confiance" data-reveal-key="confiance" style="padding:104px 48px;{{ revealStyle('confiance') }}">
+<section id="confiance" data-screen-label="07 Confiance" data-reveal-key="confiance" style="padding:104px 48px;{{ reveal.confiance }}">
   <div style="max-width:1280px;margin:0 auto">
     <div style="text-align:center;margin-bottom:12px">
       <div class="gc-kicker" style="margin-bottom:14px">Preuves &amp; confiance</div>
@@ -751,7 +758,7 @@ a:hover{color:#d21f2d}
 </section>
 
 <!-- 08 FAQ -->
-<section id="faq" data-screen-label="08 FAQ" data-reveal-key="faq" style="background:#f3f4f6;padding:104px 48px;{{ revealStyle('faq') }}">
+<section id="faq" data-screen-label="08 FAQ" data-reveal-key="faq" style="background:#f3f4f6;padding:104px 48px;{{ reveal.faq }}">
   <div style="max-width:820px;margin:0 auto">
     <div style="text-align:center;margin-bottom:48px">
       <div class="gc-kicker" style="margin-bottom:14px">FAQ &amp; Ressources</div>
@@ -780,7 +787,7 @@ a:hover{color:#d21f2d}
 </section>
 
 <!-- 09 RENDEZ-VOUS -->
-<section id="rdv" data-screen-label="09 Rendez-vous" data-reveal-key="rdv" style="background:#12305c;padding:104px 48px;{{ revealStyle('rdv') }}">
+<section id="rdv" data-screen-label="09 Rendez-vous" data-reveal-key="rdv" style="background:#12305c;padding:104px 48px;{{ reveal.rdv }}">
   <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1.1fr;gap:64px;align-items:start">
     <div style="padding-top:24px">
       <h2 class="gc-h2" style="font-family:'Newsreader',serif;font-weight:600;font-size:38px;color:#fff;line-height:1.25;margin:0 0 22px">Construisons votre avenir, ensemble.</h2>
@@ -918,7 +925,7 @@ a:hover{color:#d21f2d}
 </section>
 
 <!-- 10 CLOSING -->
-<section data-screen-label="10 Closing" data-reveal-key="closing" style="position:relative;height:480px;{{ revealStyle('closing') }}">
+<section data-screen-label="10 Closing" data-reveal-key="closing" style="position:relative;height:480px;{{ reveal.closing }}">
   <img width="1280" height="720" loading="lazy" decoding="async" src="uploads/Image COEUR-JOIE/FENOU NUIT (2).jpg" srcset="uploads/Image%20COEUR-JOIE/FENOU%20NUIT%20(2)-sm.jpg 800w, uploads/Image%20COEUR-JOIE/FENOU%20NUIT%20(2).jpg 1280w" sizes="100vw" alt="Villa Cœur Joie illuminée le soir" style="width:100%;height:100%;object-fit:cover;object-position:center 40%;position:absolute;inset:0">
   <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,25,45,0.4),rgba(12,20,38,0.68))"></div>
   <div style="position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 24px;gap:26px">
@@ -1131,6 +1138,11 @@ const HERO_SLIDES = [
 class Component extends DCLogic {
   state = {
     revealed: {},
+    // Respecté partout où une transition existe : le visiteur qui a demandé
+    // moins d'animations voit les sections directement, sans décalage.
+    reducedMotion: typeof window !== 'undefined' && window.matchMedia
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false,
     // Loaded from assets/temoignages.json on mount, so publishing a client
     // quote is an FTP upload of one small file rather than a redeployment.
     testimonials: [],
@@ -1385,13 +1397,28 @@ class Component extends DCLogic {
     document.removeEventListener('keydown', this.onGalleryKey);
   }
 
+  /**
+   * Les sections qui apparaissent au défilement.
+   *
+   * Rendu sous forme de chaîne CSS, et exposé comme une propriété — jamais
+   * comme un appel de fonction. Les expressions {{ }} du gabarit ne savent
+   * lire que des chemins de propriétés : « revealStyle('villas') » y renvoyait
+   * silencieusement undefined, l'interpolation le remplaçait par une chaîne
+   * vide, et aucune section ne s'est jamais animée. Rien ne le signalait,
+   * puisque l'absence de style laisse la section visible.
+   *
+   * Le mouvement respecte « prefers-reduced-motion » : sans transition ni
+   * décalage pour qui a demandé moins d'animations, mais toujours visible.
+   */
+  REVEAL_KEYS = ['problems', 'projection', 'experience', 'villas', 'familles',
+                 'pourquoi', 'parcours', 'confiance', 'faq', 'rdv', 'closing'];
+
   revealStyle = (key) => {
+    if (this.state.reducedMotion) return 'opacity:1';
     const visible = !!this.state.revealed[key];
-    return {
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'translateY(0)' : 'translateY(24px)',
-      transition: 'opacity 0.7s ease, transform 0.7s ease'
-    };
+    return visible
+      ? 'opacity:1;transform:translateY(0);transition:opacity 0.7s ease, transform 0.7s ease'
+      : 'opacity:0;transform:translateY(24px);transition:opacity 0.7s ease, transform 0.7s ease';
   };
 
   toggleVilla = (id) => {
@@ -1666,11 +1693,15 @@ class Component extends DCLogic {
       for (const v of cite.villas || []) {
         const f = v.family || {};
         if (!f.src) continue;
+        // `staged` absent = prudence : on annonce une mise en scène plutôt
+        // que de laisser croire à une photo de clients réels.
+        const staged = f.staged !== false;
         families.push({
           villa: v.name,
           src: f.src,
           srcset: this.encodeSrcset(f.srcset),
-          alt: f.alt || ('Mise en scène illustrative devant la ' + v.name)
+          staged,
+          alt: f.alt || ((staged ? 'Mise en scène illustrative devant la ' : 'Photo devant la ') + v.name)
         });
       }
     }
@@ -1843,6 +1874,7 @@ class Component extends DCLogic {
         { icon: this.icon('roots'), label: 'Racines' },
         { icon: this.icon('star'), label: 'Réussite' }
       ],
+      reveal: Object.fromEntries(this.REVEAL_KEYS.map(k => [k, this.revealStyle(k)])),
       cites,
       families,
       hasFamilies: families.length > 0,

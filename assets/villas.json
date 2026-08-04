@@ -3,15 +3,15 @@
     "SOURCE UNIQUE du contenu des villas. La page lit ce fichier au chargement ;",
     "changer un prix, une description ou une photo se fait ici et nulle part ailleurs.",
     "",
-    "AJOUTER UNE PHOTO À UNE VILLA :",
-    "  déposer le fichier dans uploads/villas/<cite>/<villa>/ puis ajouter une entrée",
-    "  dans le tableau « gallery » de cette villa. Rien d'autre à modifier.",
+    "LE PLUS SIMPLE : déposer les fichiers dans uploads/villas/… puis lancer",
+    "  npm run photos              (montre ce qui serait fait)",
+    "  npm run photos -- --ecrire  (applique)",
+    "Le dossier fait foi. Les légendes et textes alternatifs déjà rédigés à la",
+    "main sont conservés ; le script ne remplit que ce qui manque.",
     "",
-    "AJOUTER UNE PHOTO À UNE CITÉ :",
-    "  même chose dans uploads/villas/<cite>/cite/ et le « gallery » de la cité.",
-    "",
-    "REMPLACER UNE ILLUSTRATION PAR UNE VRAIE PHOTO :",
-    "  écraser le fichier, ou changer le chemin ici. Voir uploads/villas/README.md.",
+    "À LA MAIN, si vous préférez : ajouter une entrée { src, srcset, alt, caption }",
+    "dans le « gallery » de la villa ou de la cité concernée. Voir",
+    "uploads/villas/README.md.",
     "",
     "RÈGLES :",
     "  - « formValue » doit correspondre EXACTEMENT à lib/validate.js (VILLAS).",
@@ -19,8 +19,16 @@
     "  - Ne jamais utiliser une photo de Cœur Joie pour Béthel, ni l'inverse.",
     "    Un test le vérifie également.",
     "  - « srcset » est facultatif. Quand il est vide, « src » est servi tel quel.",
-    "  - « family » est une MISE EN SCÈNE ILLUSTRATIVE, jamais un vrai client.",
-    "    Les vrais témoignages vivent dans assets/temoignages.json, séparément."
+    "  - « focus » recadre la vignette de la carte, ex. « center 30% », pour",
+    "    écarter un premier plan ingrat sans retoucher le fichier.",
+    "",
+    "LE CHAMP « family » (section « Imaginez votre vie ici ») :",
+    "  - staged: true  → mise en scène. La mention « Mise en scène illustrative »",
+    "    est affichée sous la photo.",
+    "  - staged: false → vraie photo, publiée AVEC L'ACCORD ÉCRIT des personnes",
+    "    reconnaissables. Aucune mention n'est affichée.",
+    "  Dans les deux cas : aucun nom, aucune citation. Un témoignage est autre",
+    "  chose et vit dans assets/temoignages.json."
   ],
   "version": 1,
   "cites": [
@@ -60,7 +68,13 @@
           "price": "49 000 000 FCFA",
           "formValue": "Villa Fenou (F4)",
           "description": "Une villa moderne et chaleureuse, idéale pour les familles à la recherche de confort et de fonctionnalité.",
-          "chips": ["3 chambres", "Séjour", "Cuisine", "Jardin", "2 garages"],
+          "chips": [
+            "3 chambres",
+            "Séjour",
+            "Cuisine",
+            "Jardin",
+            "2 garages"
+          ],
           "specs": [
             "Un (01) séjour + repas",
             "3 chambres (avec salle d’eau + placard)",
@@ -96,7 +110,11 @@
               "caption": "Vue de nuit"
             }
           ],
-          "family": { "src": "", "srcset": "", "alt": "" }
+          "family": {
+            "src": "",
+            "srcset": "",
+            "alt": ""
+          }
         },
         {
           "id": "kafui",
@@ -106,7 +124,13 @@
           "price": "80 000 000 FCFA",
           "formValue": "Villa Kafui (Duplex)",
           "description": "Un duplex spacieux et élégant, pensé pour offrir espace, intimité et prestige à toute la famille.",
-          "chips": ["4 chambres", "2 séjours", "2 balcons", "Terrasses", "Garage"],
+          "chips": [
+            "4 chambres",
+            "2 séjours",
+            "2 balcons",
+            "Terrasses",
+            "Garage"
+          ],
           "specs": [
             "Deux (02) séjours + repas",
             "4 chambres (avec salle d’eau + placard)",
@@ -137,7 +161,11 @@
               "caption": "Vue de nuit"
             }
           ],
-          "family": { "src": "", "srcset": "", "alt": "" }
+          "family": {
+            "src": "",
+            "srcset": "",
+            "alt": ""
+          }
         }
       ]
     },
@@ -158,7 +186,13 @@
           "price": "39 000 000 FCFA",
           "formValue": "Villa Bethel (F4)",
           "description": "Une villa familiale chaleureuse au sein de la Cité Béthel, déjà plus de 600 fois livrée et habitée.",
-          "chips": ["3 chambres", "Séjour", "Cuisine", "Garage 2 voitures", "Dépendance"],
+          "chips": [
+            "3 chambres",
+            "Séjour",
+            "Cuisine",
+            "Garage 2 voitures",
+            "Dépendance"
+          ],
           "specs": [
             "Un (01) séjour + repas",
             "Chambre 1 avec salle d’eau + placard",
@@ -183,7 +217,11 @@
               "caption": "Perspective d’architecte"
             }
           ],
-          "family": { "src": "", "srcset": "", "alt": "" }
+          "family": {
+            "src": "",
+            "srcset": "",
+            "alt": ""
+          }
         },
         {
           "id": "bethel-duplex",
@@ -193,7 +231,13 @@
           "price": "72 000 000 FCFA",
           "formValue": "Villa Bethel (Duplex)",
           "description": "Un duplex généreux à Béthel, avec dressing, balcons et double terrasse pour toute la famille.",
-          "chips": ["4 chambres", "Dressing", "2 balcons", "Terrasses", "Garage"],
+          "chips": [
+            "4 chambres",
+            "Dressing",
+            "2 balcons",
+            "Terrasses",
+            "Garage"
+          ],
           "specs": [
             "Un (01) séjour + repas",
             "Quatre (04) chambres avec salle d’eau + placard",
@@ -218,7 +262,11 @@
               "caption": "Perspective d’architecte"
             }
           ],
-          "family": { "src": "", "srcset": "", "alt": "" }
+          "family": {
+            "src": "",
+            "srcset": "",
+            "alt": ""
+          }
         }
       ]
     }
