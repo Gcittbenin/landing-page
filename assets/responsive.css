@@ -291,3 +291,24 @@
   .gc-testi__grid { grid-template-columns: 1fr !important; }
   .gc-testi__media { height: 190px !important; }
 }
+
+/* Galeries et familles illustratives */
+@media (max-width: 1100px) {
+  .gc-familles { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 900px) {
+  /* Les flèches mangent la photo sur un écran étroit : le swipe et les
+     miniatures suffisent. */
+  .gc-lightbox__nav { display: none !important; }
+  .gc-lightbox { padding: 14px 14px 18px !important; }
+  .gc-lightbox__title strong { font-size: 17px !important; }
+  .gc-lightbox__thumb { width: 72px !important; height: 52px !important; }
+}
+
+@media (max-width: 640px) {
+  .gc-familles { grid-template-columns: 1fr !important; }
+  .gc-famille__media { height: 220px !important; }
+  .gc-villa__gallery { right: 12px !important; bottom: 12px !important; }
+  .gc-lightbox__thumbs { justify-content: flex-start !important; }
+}

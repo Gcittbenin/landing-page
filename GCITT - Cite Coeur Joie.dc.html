@@ -372,7 +372,6 @@ a:hover{color:#d21f2d}
            style="display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center">
 
         <div class="gc-slide__copy">
-          <div class="gc-eyebrow" style="margin-bottom:20px"><span class="gc-eyebrow__dot"></span>{{ slide.eyebrow }}</div>
           <h1 style="font-family:'Newsreader',serif;font-weight:600;font-size:52px;line-height:1.09;letter-spacing:-0.022em;color:#12305c;margin:0 0 22px;text-wrap:balance">{{ slide.title }}</h1>
           <p style="font-size:17px;line-height:1.72;color:#4c5566;max-width:560px;margin:0 0 18px">{{ slide.text }}</p>
 
@@ -526,87 +525,68 @@ a:hover{color:#d21f2d}
       <div class="gc-kicker" style="margin-bottom:14px">Plus qu’une exception</div>
       <h2 class="gc-h2" style="font-family:'Newsreader',serif;font-weight:600;font-size:38px;color:#12305c;max-width:760px;margin:0 auto;line-height:1.25">Choisissez la villa qui correspond à votre projet de vie.</h2>
     </div>
-    <div id="coeur-joie" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:26px;padding-bottom:18px;border-bottom:2px solid rgba(18,48,92,0.1)">
-      <div>
-        <h3 style="font-family:'Newsreader',serif;font-weight:600;font-size:26px;color:#12305c;margin:0 0 6px">Cité Cœur Joie</h3>
-        <p style="font-size:14px;color:#5b6472;margin:0">Hêvié Zoungo (Kossidénou), commune d’Abomey-Calavi. 70 villas sur un domaine de 4 hectares, à 25 min de la plage de Togbin.</p>
-      </div>
-      <span style="background:#eaf0fb;color:#1f4e96;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;white-space:nowrap">70 villas · 4 hectares</span>
-    </div>
-    <div class="gc-stagger" style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:64px">
-      <sc-for list="{{ coeurJoieVillas }}" as="v" hint-placeholder-count="2">
-        <div class="gc-villa" style="background:#fff">
-          <div class="gc-villa__media" style="height:288px">
-            <img width="1220" height="681" loading="lazy" decoding="async" src="{{ v.image }}" srcset="{{ v.imageSrcset }}" sizes="(max-width: 1024px) 100vw, 45vw" alt="{{ v.name }}" style="width:100%;height:100%;object-fit:cover">
-            <div class="gc-villa__tag" style="position:absolute;top:16px;left:16px;background:rgba(18,48,92,0.86);color:#fff;font-weight:700;font-size:12.5px;letter-spacing:0.02em;padding:7px 15px;border-radius:999px">{{ v.tag }}</div>
-          </div>
-          <div style="padding:26px 28px 28px">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:8px">
-              <h3 style="font-family:'Newsreader',serif;font-size:24px;font-weight:600;color:#12305c;margin:0">{{ v.name }}</h3>
-              <span class="gc-villa__price" style="font-weight:800;font-size:19px;color:#d21f2d;white-space:nowrap">{{ v.price }}</span>
-            </div>
-            <p style="font-size:14.5px;line-height:1.65;color:#5b6472;margin:0 0 20px">{{ v.desc }}</p>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px">
-              <sc-for list="{{ v.chips }}" as="chip" hint-placeholder-count="5">
-                <span class="gc-chip" style="background:#f3f4f6;color:#334055;font-size:12.5px;font-weight:600;padding:6px 13px">{{ chip }}</span>
-              </sc-for>
-            </div>
-            <sc-if value="{{ v.expanded }}" hint-placeholder-val="{{ false }}">
-              <ul class="gc-villa__specs" style="margin:0 0 20px;padding-left:18px;font-size:13.5px;line-height:1.9;color:#4c5566">
-                <sc-for list="{{ v.fullSpecs }}" as="spec" hint-placeholder-count="6">
-                  <li>{{ spec }}</li>
-                </sc-for>
-              </ul>
-            </sc-if>
-            <div style="display:flex;gap:12px;align-items:center">
-              <a href="#rdv" sc-camel-on-click="{{ v.chooseHandler }}" class="gc-btn gc-btn--primary" style="font-size:14.5px;padding:14px 24px">Choisir cette villa {{ arrowIcon }}</a>
-              <button sc-camel-on-click="{{ v.toggleHandler }}" class="gc-link-btn" style="background:none;border:none;color:#1f4e96;font-weight:700;font-size:14px;cursor:pointer;padding:8px 2px">{{ v.detailsLabel }}</button>
-            </div>
-          </div>
-        </div>
-      </sc-for>
-    </div>
 
-    <div id="bethel" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:26px;padding-bottom:18px;border-bottom:2px solid rgba(18,48,92,0.1)">
-      <div>
-        <h3 style="font-family:'Newsreader',serif;font-weight:600;font-size:26px;color:#12305c;margin:0 0 6px">Cité Béthel</h3>
-        <p style="font-size:14px;color:#5b6472;margin:0">Ouèdo Somè, commune d’Abomey-Calavi, à 6 km du carrefour Calavi-Kpota. Un domaine de 30 hectares.</p>
-      </div>
-      <span style="background:#eaf0fb;color:#1f4e96;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;white-space:nowrap">+600 villas livrées et habitées</span>
-    </div>
-    <div class="gc-stagger" style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
-      <sc-for list="{{ bethelVillas }}" as="v" hint-placeholder-count="2">
-        <div class="gc-villa" style="background:#fff">
-          <div class="gc-villa__media" style="height:288px">
-            <img width="1220" height="681" loading="lazy" decoding="async" src="{{ v.image }}" srcset="{{ v.imageSrcset }}" sizes="(max-width: 1024px) 100vw, 45vw" alt="{{ v.name }}" style="width:100%;height:100%;object-fit:cover">
-            <div class="gc-villa__tag" style="position:absolute;top:16px;left:16px;background:rgba(18,48,92,0.86);color:#fff;font-weight:700;font-size:12.5px;letter-spacing:0.02em;padding:7px 15px;border-radius:999px">{{ v.tag }}</div>
-          </div>
-          <div style="padding:26px 28px 28px">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:8px">
-              <h3 style="font-family:'Newsreader',serif;font-size:24px;font-weight:600;color:#12305c;margin:0">{{ v.name }}</h3>
-              <span class="gc-villa__price" style="font-weight:800;font-size:19px;color:#d21f2d;white-space:nowrap">{{ v.price }}</span>
-            </div>
-            <p style="font-size:14.5px;line-height:1.65;color:#5b6472;margin:0 0 20px">{{ v.desc }}</p>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px">
-              <sc-for list="{{ v.chips }}" as="chip" hint-placeholder-count="5">
-                <span class="gc-chip" style="background:#f3f4f6;color:#334055;font-size:12.5px;font-weight:600;padding:6px 13px">{{ chip }}</span>
-              </sc-for>
-            </div>
-            <sc-if value="{{ v.expanded }}" hint-placeholder-val="{{ false }}">
-              <ul class="gc-villa__specs" style="margin:0 0 20px;padding-left:18px;font-size:13.5px;line-height:1.9;color:#4c5566">
-                <sc-for list="{{ v.fullSpecs }}" as="spec" hint-placeholder-count="6">
-                  <li>{{ spec }}</li>
-                </sc-for>
-              </ul>
-            </sc-if>
-            <div style="display:flex;gap:12px;align-items:center">
-              <a href="#rdv" sc-camel-on-click="{{ v.chooseHandler }}" class="gc-btn gc-btn--primary" style="font-size:14.5px;padding:14px 24px">Choisir cette villa {{ arrowIcon }}</a>
-              <button sc-camel-on-click="{{ v.toggleHandler }}" class="gc-link-btn" style="background:none;border:none;color:#1f4e96;font-weight:700;font-size:14px;cursor:pointer;padding:8px 2px">{{ v.detailsLabel }}</button>
-            </div>
-          </div>
+    <!--
+      Une seule boucle pour les deux cités. Le contenu vient d’assets/villas.json :
+      changer un prix, une description ou une photo se fait dans ce fichier, pas ici.
+    -->
+    <sc-for list="{{ cites }}" as="cite" hint-placeholder-count="2">
+      <div id="{{ cite.anchor }}" class="gc-cite-head" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:26px;padding-bottom:18px;border-bottom:2px solid rgba(18,48,92,0.1)">
+        <div>
+          <h3 style="font-family:'Newsreader',serif;font-weight:600;font-size:26px;color:#12305c;margin:0 0 6px">{{ cite.name }}</h3>
+          <p style="font-size:14px;color:#5b6472;margin:0">{{ cite.blurb }}</p>
         </div>
-      </sc-for>
-    </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="background:#eaf0fb;color:#1f4e96;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;white-space:nowrap">{{ cite.badge }}</span>
+          <!-- Pas de bouton tant qu’il n’y a rien à montrer : une galerie vide est pire que pas de galerie. -->
+          <sc-if value="{{ cite.hasGallery }}" hint-placeholder-val="{{ true }}">
+            <button type="button" class="gc-gallery-btn" sc-camel-on-click="{{ cite.openGallery }}" aria-label="{{ cite.galleryAria }}">
+              <span class="gc-gallery-btn__icon">{{ imagesIcon }}</span>{{ cite.galleryLabel }}
+            </button>
+          </sc-if>
+        </div>
+      </div>
+
+      <div class="gc-stagger" style="{{ cite.gridStyle }}">
+        <sc-for list="{{ cite.villas }}" as="v" hint-placeholder-count="2">
+          <div class="gc-villa" style="background:#fff">
+            <div class="gc-villa__media" style="height:288px">
+              <img width="1220" height="681" loading="lazy" decoding="async" src="{{ v.card.src }}" srcset="{{ v.card.srcset }}" sizes="(max-width: 1024px) 100vw, 45vw" alt="{{ v.card.alt }}" style="{{ v.card.style }}">
+              <div class="gc-villa__tag" style="position:absolute;top:16px;left:16px;background:rgba(18,48,92,0.86);color:#fff;font-weight:700;font-size:12.5px;letter-spacing:0.02em;padding:7px 15px;border-radius:999px">{{ v.tag }}</div>
+              <sc-if value="{{ v.hasGallery }}" hint-placeholder-val="{{ true }}">
+                <button type="button" class="gc-villa__gallery" sc-camel-on-click="{{ v.openGallery }}" aria-label="{{ v.galleryAria }}">
+                  <span class="gc-gallery-btn__icon">{{ imagesIcon }}</span>{{ v.galleryLabel }}
+                </button>
+              </sc-if>
+            </div>
+            <div style="padding:26px 28px 28px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:8px">
+                <h3 style="font-family:'Newsreader',serif;font-size:24px;font-weight:600;color:#12305c;margin:0">{{ v.name }}</h3>
+                <span class="gc-villa__price" style="font-weight:800;font-size:19px;color:#d21f2d;white-space:nowrap">{{ v.price }}</span>
+              </div>
+              <p style="font-size:14.5px;line-height:1.65;color:#5b6472;margin:0 0 20px">{{ v.description }}</p>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px">
+                <sc-for list="{{ v.chips }}" as="chip" hint-placeholder-count="5">
+                  <span class="gc-chip" style="background:#f3f4f6;color:#334055;font-size:12.5px;font-weight:600;padding:6px 13px">{{ chip }}</span>
+                </sc-for>
+              </div>
+              <sc-if value="{{ v.expanded }}" hint-placeholder-val="{{ false }}">
+                <ul class="gc-villa__specs" style="margin:0 0 20px;padding-left:18px;font-size:13.5px;line-height:1.9;color:#4c5566">
+                  <sc-for list="{{ v.specs }}" as="spec" hint-placeholder-count="6">
+                    <li>{{ spec }}</li>
+                  </sc-for>
+                </ul>
+              </sc-if>
+              <div style="display:flex;gap:12px;align-items:center">
+                <a href="#rdv" sc-camel-on-click="{{ v.chooseHandler }}" class="gc-btn gc-btn--primary" style="font-size:14.5px;padding:14px 24px">Choisir cette villa {{ arrowIcon }}</a>
+                <button sc-camel-on-click="{{ v.toggleHandler }}" class="gc-link-btn" style="background:none;border:none;color:#1f4e96;font-weight:700;font-size:14px;cursor:pointer;padding:8px 2px">{{ v.detailsLabel }}</button>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+
     <div style="display:flex;justify-content:center;gap:56px;margin-top:52px;flex-wrap:wrap">
       <sc-for list="{{ trustStrip }}" as="t" hint-placeholder-count="4">
         <div style="display:flex;align-items:center;gap:10px"><span style="color:#12305c">{{ t.icon }}</span><span style="font-size:13.5px;font-weight:700;color:#334055">{{ t.label }}</span></div>
@@ -614,6 +594,39 @@ a:hover{color:#d21f2d}
     </div>
   </div>
 </section>
+
+<!-- 04b IMAGINEZ VOTRE VIE ICI -->
+<!--
+  Mises en scène illustratives, jamais de vrais clients : aucun nom, aucune
+  citation, aucun témoignage. Les vrais témoignages sont section 07, alimentés
+  par assets/temoignages.json. La section n’existe pas tant qu’aucune image
+  n’est fournie — mieux vaut rien qu’un cadre vide.
+-->
+<sc-if value="{{ hasFamilies }}" hint-placeholder-val="{{ false }}">
+  <section id="projection-familles" data-screen-label="04b Projection" data-reveal-key="familles" style="padding:104px 48px;{{ revealStyle('familles') }}">
+    <div style="max-width:1280px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:44px">
+        <div class="gc-kicker" style="margin-bottom:14px">Imaginez votre vie ici</div>
+        <h2 class="gc-h2" style="font-family:'Newsreader',serif;font-weight:600;font-size:38px;color:#12305c;max-width:820px;margin:0 auto 14px;line-height:1.25">Votre maison est prête. Votre projet devient réalité.</h2>
+        <p style="font-size:15.5px;color:#5b6472;max-width:640px;margin:0 auto">Le jour de la remise des clés, chaque villa cesse d’être un plan pour devenir un chez-soi.</p>
+      </div>
+      <div class="gc-familles">
+        <sc-for list="{{ families }}" as="f" hint-placeholder-count="4">
+          <figure class="gc-famille" style="margin:0">
+            <div class="gc-famille__media">
+              <img src="{{ f.src }}" srcset="{{ f.srcset }}" sizes="(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 25vw"
+                   width="900" height="600" alt="{{ f.alt }}" loading="lazy" decoding="async">
+            </div>
+            <figcaption class="gc-famille__caption">
+              <span class="gc-famille__villa">{{ f.villa }}</span>
+              <span class="gc-famille__note">Mise en scène illustrative</span>
+            </figcaption>
+          </figure>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+</sc-if>
 
 <!-- 05 POURQUOI GCITT -->
 <section id="pourquoi" data-screen-label="05 Pourquoi GCITT" data-reveal-key="pourquoi" style="padding:104px 48px;{{ revealStyle('pourquoi') }}">
@@ -972,6 +985,55 @@ a:hover{color:#d21f2d}
 
 </div>
 
+<!-- VISIONNEUSE (galerie plein écran) -->
+<!--
+  Un seul exemplaire pour toutes les galeries : la cité comme la villa ouvrent
+  la même visionneuse avec une liste différente. Les images ne sont rendues
+  qu’une fois ouverte, donc rien de tout cela ne pèse sur le chargement initial.
+-->
+<sc-if value="{{ lightbox.open }}" hint-placeholder-val="{{ false }}">
+  <div class="gc-lightbox" role="dialog" aria-modal="true" aria-label="{{ lightbox.title }}"
+       sc-camel-on-click="{{ lightboxBackdrop }}"
+       sc-camel-on-touch-start="{{ lightboxTouchStart }}"
+       sc-camel-on-touch-end="{{ lightboxTouchEnd }}">
+
+    <div class="gc-lightbox__bar">
+      <div class="gc-lightbox__title">
+        <strong>{{ lightbox.title }}</strong>
+        <span class="gc-lightbox__count">{{ lightbox.counter }}</span>
+      </div>
+      <button type="button" class="gc-lightbox__close" aria-label="Fermer la galerie" sc-camel-on-click="{{ closeGallery }}">{{ closeIcon }}</button>
+    </div>
+
+    <div class="gc-lightbox__stage">
+      <sc-if value="{{ lightbox.many }}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="gc-lightbox__nav gc-lightbox__nav--prev" aria-label="Photo précédente" sc-camel-on-click="{{ galleryPrev }}">{{ chevLeftIcon }}</button>
+      </sc-if>
+
+      <figure class="gc-lightbox__figure" style="margin:0">
+        <img class="gc-lightbox__img" src="{{ lightbox.current.src }}" srcset="{{ lightbox.current.srcset }}"
+             sizes="(max-width: 900px) 100vw, 90vw" alt="{{ lightbox.current.alt }}" decoding="async">
+        <figcaption class="gc-lightbox__caption">{{ lightbox.current.caption }}</figcaption>
+      </figure>
+
+      <sc-if value="{{ lightbox.many }}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="gc-lightbox__nav gc-lightbox__nav--next" aria-label="Photo suivante" sc-camel-on-click="{{ galleryNext }}">{{ chevRightIcon }}</button>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ lightbox.many }}" hint-placeholder-val="{{ true }}">
+      <div class="gc-lightbox__thumbs" role="tablist" aria-label="Choisir une photo">
+        <sc-for list="{{ lightbox.thumbs }}" as="th" hint-placeholder-count="4">
+          <button type="button" role="tab" class="gc-lightbox__thumb {{ th.stateClass }}"
+                  aria-selected="{{ th.selected }}" aria-label="{{ th.label }}" sc-camel-on-click="{{ th.go }}">
+            <img src="{{ th.src }}" alt="" width="96" height="64" loading="lazy" decoding="async">
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+</sc-if>
+
 </x-dc>
 <script type="text/x-dc" data-dc-script="">
 const ICONS = {
@@ -996,6 +1058,8 @@ const ICONS = {
   checkCircleBig: '<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>',
   chevron: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
   chevLeft: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
+  images: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 21h12a2 2 0 0 0 2-2V7"/><circle cx="8" cy="8" r="1.6"/><path d="M3 13.5l3.2-3.1a2 2 0 0 1 2.7 0L17 17"/></svg>',
+  close: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
   chevRight: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
   pin: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>',
   play: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16" fill="currentColor" stroke="none"/></svg>',
@@ -1016,7 +1080,6 @@ const CJ = 'uploads/Image COEUR-JOIE/';
 const HERO_SLIDES = [
   {
     id: 'coeur-joie',
-    eyebrow: 'Cité Cœur Joie · Hêvié Zoungo, Abomey-Calavi',
     ariaLabel: 'Cité Cœur Joie',
     short: 'Cœur Joie',
     title: 'Construisez votre villa dans un cadre pensé pour votre tranquillité.',
@@ -1041,7 +1104,6 @@ const HERO_SLIDES = [
   },
   {
     id: 'bethel',
-    eyebrow: 'Cité Béthel · Ouèdo Somè, Abomey-Calavi',
     ariaLabel: 'Cité Béthel',
     short: 'Béthel',
     title: 'Un véritable paradis résidentiel aux portes de Cotonou.',
@@ -1075,6 +1137,12 @@ class Component extends DCLogic {
     heroSlide: 0,
     heroPaused: false,
     expandedVilla: null,
+    // Contenu des cités et des villas, chargé depuis assets/villas.json.
+    // Vide tant que le fichier n’a pas répondu : la section villas s’affiche
+    // alors avec ses en-têtes et rien d’autre, jamais avec un contenu inventé.
+    cites: [],
+    // Galerie ouverte : { title, images: [...], index }. `null` = fermée.
+    gallery: null,
     openFaq: 0,
     submitted: false,
     submitting: false,
@@ -1095,6 +1163,31 @@ class Component extends DCLogic {
   formOpenedAt = Date.now();
 
   icon = (name) => React.createElement('span', { dangerouslySetInnerHTML: { __html: ICONS[name] }, style: { display: 'flex' } });
+
+  /**
+   * Encode les URL d’un srcset.
+   *
+   * Les photos officielles portent des noms avec des espaces (« HEVIE CJ .jpg ») ;
+   * un srcset non encodé est ignoré en silence par le navigateur, qui retombe
+   * sur src — la version mobile ne sert alors plus à rien. Le descripteur de
+   * largeur (« 780w ») doit rester tel quel, seul le chemin est encodé.
+   */
+  encodeSrcset = (raw) => {
+    if (!raw) return '';
+    return String(raw)
+      .split(',')
+      .map(part => {
+        // Le chemin peut contenir des espaces (« HEVIE CJ -sm.jpg ») : seul le
+        // dernier mot est le descripteur de largeur. Découper sur tous les
+        // espaces tronquerait le chemin au premier — le srcset serait alors
+        // silencieusement ignoré, et la version mobile ne servirait plus.
+        const m = /^(.*?)\s+(\d+w)$/.exec(part.trim());
+        if (!m) return part.trim() ? encodeURI(part.trim()) : '';
+        return encodeURI(m[1]) + ' ' + m[2];
+      })
+      .filter(Boolean)
+      .join(', ');
+  };
 
   // ── Hero slider ──────────────────────────────────────────────────────────
   // 7s per slide. Pauses on hover and while the tab is hidden, so a visitor
@@ -1145,9 +1238,109 @@ class Component extends DCLogic {
     if (dx < 0) this.heroNext(); else this.heroPrev();
   };
 
+
+  // ── Contenu des villas ────────────────────────────────────────────────────
+  //
+  // assets/villas.json est la source unique : prix, description, photos,
+  // galeries, illustrations. Même principe que les témoignages — publier une
+  // photo est un dépôt de fichier, pas un redéploiement.
+  //
+  // Le fichier est validé par test/villas.test.js avant chaque mise en ligne,
+  // donc une faute de frappe ne peut pas atteindre la production. En cas
+  // d’échec réseau, la section garde ses en-têtes et n’invente rien.
+
+  loadVillas = () => {
+    fetch('assets/villas.json', { cache: 'no-cache' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        const cites = Array.isArray(data && data.cites) ? data.cites : [];
+        const clean = cites.filter(c => c && c.id && Array.isArray(c.villas));
+        if (clean.length) this.setState({ cites: clean });
+      })
+      .catch(() => { /* la section reste sur ses en-têtes, ce qui est honnête */ });
+  };
+
+  // ── Galerie ───────────────────────────────────────────────────────────────
+
+  /** Une image utilisable, avec ses valeurs par défaut. */
+  normaliseImage = (img) => ({
+    src: (img && img.src) || '',
+    srcset: (img && img.srcset) || '',
+    alt: (img && img.alt) || '',
+    caption: (img && img.caption) || ''
+  });
+
+  /**
+   * Ouvre la visionneuse.
+   *
+   * Les images sans `src` sont écartées ici plutôt qu’affichées cassées : une
+   * entrée incomplète dans le JSON fait une photo en moins, jamais un carré
+   * gris au milieu de la galerie.
+   */
+  openGallery = (title, images, itemName) => () => {
+    const usable = (Array.isArray(images) ? images : []).map(this.normaliseImage).filter(i => i.src);
+    if (!usable.length) return;
+    this.setState({ gallery: { title, images: usable, index: 0 } });
+    this.track('select_item', { item_name: itemName || title });
+  };
+
+  closeGallery = () => this.setState({ gallery: null });
+
+  /** Le clic sur le fond ferme ; un clic sur la photo ou les boutons, non. */
+  lightboxBackdrop = (e) => {
+    if (e && e.target === e.currentTarget) this.closeGallery();
+  };
+
+  moveGallery = (step) => {
+    this.setState(s => {
+      if (!s.gallery) return null;
+      const n = s.gallery.images.length;
+      return { gallery: { ...s.gallery, index: (s.gallery.index + step + n) % n } };
+    });
+  };
+
+  galleryNext = () => this.moveGallery(1);
+  galleryPrev = () => this.moveGallery(-1);
+  goToPhoto = (i) => () => {
+    this.setState(s => (s.gallery ? { gallery: { ...s.gallery, index: i } } : null));
+  };
+
+  /**
+   * Clavier : Échap ferme, les flèches naviguent.
+   *
+   * Un seul écouteur pour toute la page plutôt qu’un focus piégé dans la
+   * visionneuse — la galerie n’a que trois actions et elles doivent marcher
+   * quel que soit l’élément qui a le focus.
+   */
+  onGalleryKey = (e) => {
+    if (!this.state.gallery) return;
+    if (e.key === 'Escape') { e.preventDefault(); this.closeGallery(); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); this.galleryNext(); return; }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); this.galleryPrev(); }
+  };
+
+  // Swipe, même seuil que le hero : 45 px horizontaux, et un geste plus
+  // vertical qu’horizontal est un défilement, pas un changement de photo.
+  lightboxTouchStart = (e) => {
+    const t = e.touches && e.touches[0];
+    if (t) this._galleryTouch = { x: t.clientX, y: t.clientY };
+  };
+
+  lightboxTouchEnd = (e) => {
+    const t = e.changedTouches && e.changedTouches[0];
+    if (!t || !this._galleryTouch) return;
+    const dx = t.clientX - this._galleryTouch.x;
+    const dy = t.clientY - this._galleryTouch.y;
+    this._galleryTouch = null;
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return;
+    if (dx < 0) this.galleryNext(); else this.galleryPrev();
+  };
+
   componentDidMount() {
     this.loadTestimonials();
+    this.loadVillas();
     this.startHeroTimer();
+    document.addEventListener('keydown', this.onGalleryKey);
     // Preload the second slide's imagery so switching never shows a gap.
     HERO_SLIDES.forEach((slide, i) => {
       if (i === 0) return;
@@ -1189,6 +1382,7 @@ class Component extends DCLogic {
   componentWillUnmount() {
     this._observer && this._observer.disconnect();
     this.stopHeroTimer();
+    document.removeEventListener('keydown', this.onGalleryKey);
   }
 
   revealStyle = (key) => {
@@ -1394,113 +1588,111 @@ class Component extends DCLogic {
 
   renderVals() {
     const s = this.state;
-    const villaFull = {
-      fenou: [
-        'Un (01) séjour + repas',
-        '3 chambres (avec salle d’eau + placard)',
-        'Une (01) cuisine',
-        'Une (01) toilette visiteur',
-        'Un (01) jardin',
-        'Deux (02) terrasses (entrée + arrière-cour)',
-        'Deux (02) garages pour deux véhicules',
-        'Possibilité d’avoir une dépendance'
-      ],
-      kafui: [
-        'Deux (02) séjours + repas',
-        '4 chambres (avec salle d’eau + placard)',
-        'Une (01) terrasse',
-        'Une (01) cuisine',
-        'Deux (02) toilettes',
-        'Deux (02) terrasses (entrée + arrière-cour)',
-        'Un (01) garage pour deux véhicules',
-        'Deux (02) balcons',
-        'Possibilité d’avoir une dépendance'
-      ],
-      bethelF4: [
-        'Un (01) séjour + repas',
-        'Chambre 1 avec salle d’eau + placard',
-        'Chambre 2 avec salle d’eau + placard',
-        'Chambre 3 avec salle d’eau + placard',
-        'Une (01) cuisine',
-        'Une (01) toilette visiteur',
-        'Un (01) garage 2 voitures',
-        'Une dépendance + salle d’eau',
-        'Possibilité d’avoir une dépendance'
-      ],
-      bethelDuplex: [
-        'Un (01) séjour + repas',
-        'Quatre (04) chambres avec salle d’eau + placard',
-        'Une (01) cuisine',
-        'Une (01) toilette visiteur',
-        'Un (01) dressing',
-        'Une terrasse à l’entrée et à l’arrière',
-        'Un (01) garage pour deux véhicules',
-        'Deux (02) dépôts',
-        'Deux (02) balcons'
-      ]
-    };
+    // ── Cités et villas ────────────────────────────────────────────────────
+    //
+    // Projection de assets/villas.json vers ce que le gabarit consomme. Rien
+    // n’est décrit ici : ni prix, ni photo, ni caractéristique. Tout vient du
+    // fichier, ce qui est l’objet même de cette structure — une nouvelle photo
+    // ou un nouveau tarif ne touche pas une ligne de ce composant.
+    //
+    // Les expressions {{ }} du gabarit ne savent que lire des propriétés, pas
+    // appeler une fonction : les libellés, les états et les gestionnaires sont
+    // donc calculés ici, pas dans le HTML.
 
-    // Small variants for phone-sized viewports; `sizes` on the tag picks one.
-    const srcsetFor = (path) => {
-      if (!path || path.indexOf('.') === -1) return '';
-      const dot = path.lastIndexOf('.');
-      const small = path.slice(0, dot) + '-sm' + path.slice(dot);
-      return encodeURI(small) + ' 500w, ' + encodeURI(path) + ' 1220w';
-    };
+    const plural = (n) => (n > 1 ? 's' : '');
 
-    const coeurJoieVillas = [
-      {
-        name: 'Villa Fenou F4', tag: 'Villa F4', price: '49 000 000 FCFA',
-        image: (window.__resources && window.__resources.villaFenouImg) || "uploads/Image COEUR-JOIE/FENOU HEVIEE.jpg",
-        imageSrcset: srcsetFor((window.__resources && window.__resources.villaFenouImg) || "uploads/Image COEUR-JOIE/FENOU HEVIEE.jpg"),
-        desc: "Une villa moderne et chaleureuse, idéale pour les familles à la recherche de confort et de fonctionnalité.",
-        chips: ['3 chambres', 'Séjour', 'Cuisine', 'Jardin', '2 garages'],
-        expanded: s.expandedVilla === 'fenou',
-        fullSpecs: villaFull.fenou,
-        detailsLabel: s.expandedVilla === 'fenou' ? 'Réduire' : 'Voir les détails',
-        toggleHandler: () => this.toggleVilla('fenou'),
-        chooseHandler: () => this.onChooseVilla('Villa Fenou (F4)')
-      },
-      {
-        name: 'Villa Kafui Duplex', tag: 'Villa Duplex', price: '80 000 000 FCFA',
-        image: (window.__resources && window.__resources.villaKafuiImg) || "uploads/Image COEUR-JOIE/DUPLEX CJ .jpg",
-        imageSrcset: srcsetFor((window.__resources && window.__resources.villaKafuiImg) || "uploads/Image COEUR-JOIE/DUPLEX CJ .jpg"),
-        desc: "Un duplex spacieux et élégant, pensé pour offrir espace, intimité et prestige à toute la famille.",
-        chips: ['4 chambres', '2 séjours', '2 balcons', 'Terrasses', 'Garage'],
-        expanded: s.expandedVilla === 'kafui',
-        fullSpecs: villaFull.kafui,
-        detailsLabel: s.expandedVilla === 'kafui' ? 'Réduire' : 'Voir les détails',
-        toggleHandler: () => this.toggleVilla('kafui'),
-        chooseHandler: () => this.onChooseVilla('Villa Kafui (Duplex)')
+    const cites = (s.cites || []).map((cite, ci) => {
+      const citeGallery = (cite.gallery || []).filter(img => img && img.src);
+      const villas = (cite.villas || []).map((v) => {
+        const gallery = (v.gallery || []).filter(img => img && img.src);
+        const card = v.card || {};
+        return {
+          id: v.id,
+          name: v.name,
+          tag: v.tag,
+          price: v.price,
+          description: v.description,
+          chips: v.chips || [],
+          specs: v.specs || [],
+          card: {
+            src: card.src || '',
+            // encodeURI : les noms de fichiers officiels contiennent des
+            // espaces, qu’un navigateur refuse de charger tels quels.
+            srcset: this.encodeSrcset(card.srcset),
+            alt: card.alt || v.name,
+            // « focus » décide de la partie gardée quand la photo est recadrée
+            // à la hauteur de la carte. C’est ce qui permet d’écarter un
+            // premier plan ingrat — terre retournée, herbes, gravats — sans
+            // retoucher le fichier : « center 28% » remonte le cadrage vers la
+            // façade. Voir uploads/villas/README.md.
+            style: 'width:100%;height:100%;object-fit:cover;object-position:' + (card.focus || 'center')
+          },
+          expanded: s.expandedVilla === v.id,
+          detailsLabel: s.expandedVilla === v.id ? 'Réduire' : 'Voir les détails',
+          toggleHandler: () => this.toggleVilla(v.id),
+          chooseHandler: () => this.onChooseVilla(v.formValue),
+          // Une seule photo ne fait pas une galerie : le bouton n’apparaît
+          // qu’à partir de deux, sinon il promet plus qu’il ne montre.
+          hasGallery: gallery.length > 1,
+          galleryLabel: gallery.length + ' photo' + plural(gallery.length),
+          galleryAria: 'Voir les ' + gallery.length + ' photos de la ' + v.name,
+          openGallery: this.openGallery(v.name, gallery, v.name)
+        };
+      });
+
+      return {
+        anchor: cite.anchor || cite.id,
+        name: cite.name,
+        blurb: cite.blurb,
+        badge: cite.badge,
+        villas,
+        // La dernière cité colle à la bande de confiance ; les autres respirent.
+        gridStyle: 'display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:' +
+          (ci === (s.cites || []).length - 1 ? '0' : '64px'),
+        hasGallery: citeGallery.length > 1,
+        galleryLabel: 'La cité en ' + citeGallery.length + ' photo' + plural(citeGallery.length),
+        galleryAria: 'Voir les ' + citeGallery.length + ' photos de la ' + cite.name,
+        openGallery: this.openGallery(cite.name, citeGallery, cite.name)
+      };
+    });
+
+    // ── Familles illustratives ─────────────────────────────────────────────
+    //
+    // Mises en scène, jamais de vrais clients. La section n’existe pas tant
+    // qu’aucune image n’est fournie : un cadre vide vaut moins que rien, et
+    // aucune image n’est inventée pour le remplir.
+    const families = [];
+    for (const cite of s.cites || []) {
+      for (const v of cite.villas || []) {
+        const f = v.family || {};
+        if (!f.src) continue;
+        families.push({
+          villa: v.name,
+          src: f.src,
+          srcset: this.encodeSrcset(f.srcset),
+          alt: f.alt || ('Mise en scène illustrative devant la ' + v.name)
+        });
       }
-    ];
+    }
 
-    const bethelVillas = [
-      {
-        name: 'Villa Bethel F4', tag: 'Villa F4', price: '39 000 000 FCFA',
-        image: (window.__resources && window.__resources.villaBethelF4Img) || "uploads/bethel-f4.png",
-        imageSrcset: srcsetFor((window.__resources && window.__resources.villaBethelF4Img) || "uploads/bethel-f4.png"),
-        desc: "Une villa familiale chaleureuse au sein de la Cité Béthel, déjà plus de 600 fois livrée et habitée.",
-        chips: ['3 chambres', 'Séjour', 'Cuisine', 'Garage 2 voitures', 'Dépendance'],
-        expanded: s.expandedVilla === 'bethelF4',
-        fullSpecs: villaFull.bethelF4,
-        detailsLabel: s.expandedVilla === 'bethelF4' ? 'Réduire' : 'Voir les détails',
-        toggleHandler: () => this.toggleVilla('bethelF4'),
-        chooseHandler: () => this.onChooseVilla('Villa Bethel (F4)')
-      },
-      {
-        name: 'Villa Bethel Duplex', tag: 'Villa Duplex', price: '72 000 000 FCFA',
-        image: (window.__resources && window.__resources.villaBethelDuplexImg) || "uploads/bethel-duplex.png",
-        imageSrcset: srcsetFor((window.__resources && window.__resources.villaBethelDuplexImg) || "uploads/bethel-duplex.png"),
-        desc: "Un duplex généreux à Béthel, avec dressing, balcons et double terrasse pour toute la famille.",
-        chips: ['4 chambres', 'Dressing', '2 balcons', 'Terrasses', 'Garage'],
-        expanded: s.expandedVilla === 'bethelDuplex',
-        fullSpecs: villaFull.bethelDuplex,
-        detailsLabel: s.expandedVilla === 'bethelDuplex' ? 'Réduire' : 'Voir les détails',
-        toggleHandler: () => this.toggleVilla('bethelDuplex'),
-        chooseHandler: () => this.onChooseVilla('Villa Bethel (Duplex)')
-      }
-    ];
+    // ── Visionneuse ────────────────────────────────────────────────────────
+    const g = s.gallery;
+    const lightbox = {
+      open: !!g,
+      title: g ? g.title : '',
+      many: !!g && g.images.length > 1,
+      counter: g ? (g.index + 1) + ' / ' + g.images.length : '',
+      current: g ? { ...g.images[g.index], srcset: this.encodeSrcset(g.images[g.index].srcset) } : { src: '', srcset: '', alt: '', caption: '' },
+      thumbs: g
+        ? g.images.map((img, i) => ({
+            src: img.src,
+            stateClass: i === g.index ? 'is-current' : '',
+            selected: i === g.index ? 'true' : 'false',
+            label: 'Photo ' + (i + 1) + ' sur ' + g.images.length,
+            go: this.goToPhoto(i)
+          }))
+        : []
+    };
 
     // ── Témoignages clients ────────────────────────────────────────────────
     //
@@ -1651,8 +1843,18 @@ class Component extends DCLogic {
         { icon: this.icon('roots'), label: 'Racines' },
         { icon: this.icon('star'), label: 'Réussite' }
       ],
-      coeurJoieVillas,
-      bethelVillas,
+      cites,
+      families,
+      hasFamilies: families.length > 0,
+      lightbox,
+      closeGallery: this.closeGallery,
+      galleryNext: this.galleryNext,
+      galleryPrev: this.galleryPrev,
+      lightboxBackdrop: this.lightboxBackdrop,
+      lightboxTouchStart: this.lightboxTouchStart,
+      lightboxTouchEnd: this.lightboxTouchEnd,
+      imagesIcon: this.icon('images'),
+      closeIcon: this.icon('close'),
       trustStrip: [
         { icon: this.icon('home'), label: 'Architecture moderne' },
         { icon: this.icon('award'), label: 'Matériaux de qualité' },

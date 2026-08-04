@@ -1049,3 +1049,224 @@ main > section,
   .gc-testi, .gc-testi__media img { transition: none !important; }
   .gc-testi:hover { transform: none !important; }
 }
+
+/* ── Galeries ──────────────────────────────────────────────────────────────
+ *
+ * Un bouton discret sur la carte de la villa et un autre à côté du badge de la
+ * cité : la galerie s'ouvre à la demande. Rien de tout cela n'est chargé tant
+ * que la visionneuse est fermée, donc le coût sur le premier affichage est nul.
+ */
+
+.gc-gallery-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border-radius: var(--gc-r-pill);
+  border: 1.5px solid rgba(31, 78, 150, 0.22);
+  background: #fff;
+  color: var(--gc-navy-soft);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--gc-fast) var(--gc-ease), border-color var(--gc-fast) var(--gc-ease);
+}
+.gc-gallery-btn:hover { background: rgba(31, 78, 150, 0.07); border-color: rgba(31, 78, 150, 0.4); }
+.gc-gallery-btn__icon { display: flex; }
+
+/* Sur la photo de la villa : lisible sur n'importe quelle image grâce au voile. */
+.gc-villa__gallery {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--gc-r-pill);
+  background: rgba(18, 48, 92, 0.82);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--gc-fast) var(--gc-ease), transform var(--gc-fast) var(--gc-ease);
+}
+.gc-villa__gallery:hover { background: rgba(18, 48, 92, 0.95); transform: translateY(-1px); }
+
+/* ── Visionneuse ───────────────────────────────────────────────────────────*/
+
+.gc-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px 22px;
+  background: rgba(9, 20, 38, 0.94);
+  backdrop-filter: blur(10px);
+  animation: gc-lightbox-in 0.22s var(--gc-ease);
+}
+@keyframes gc-lightbox-in { from { opacity: 0; } to { opacity: 1; } }
+
+.gc-lightbox__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #fff;
+  flex: 0 0 auto;
+}
+.gc-lightbox__title { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+.gc-lightbox__title strong {
+  font-family: 'Newsreader', serif;
+  font-size: 21px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gc-lightbox__count {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.62);
+  white-space: nowrap;
+}
+.gc-lightbox__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--gc-fast) var(--gc-ease);
+}
+.gc-lightbox__close:hover { background: rgba(255, 255, 255, 0.24); }
+
+.gc-lightbox__stage {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 0;
+}
+.gc-lightbox__figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.gc-lightbox__img {
+  max-width: 100%;
+  /* min-height:0 sur les parents flex, sinon une photo portrait déborde. */
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--gc-r-md);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+.gc-lightbox__caption {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: center;
+  flex: 0 0 auto;
+}
+.gc-lightbox__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--gc-fast) var(--gc-ease);
+}
+.gc-lightbox__nav:hover { background: rgba(255, 255, 255, 0.26); }
+
+.gc-lightbox__thumbs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  flex: 0 0 auto;
+  justify-content: center;
+  scrollbar-width: thin;
+}
+.gc-lightbox__thumb {
+  width: 96px;
+  height: 64px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--gc-r-sm);
+  overflow: hidden;
+  background: none;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity var(--gc-fast) var(--gc-ease), border-color var(--gc-fast) var(--gc-ease);
+}
+.gc-lightbox__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gc-lightbox__thumb:hover { opacity: 0.85; }
+.gc-lightbox__thumb.is-current { opacity: 1; border-color: #fff; }
+
+/* ── Familles illustratives ────────────────────────────────────────────────*/
+
+.gc-familles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+.gc-famille__media {
+  height: 260px;
+  border-radius: var(--gc-r-md);
+  overflow: hidden;
+  box-shadow: var(--gc-shadow-2);
+}
+.gc-famille__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--gc-slow) var(--gc-ease);
+}
+.gc-famille:hover .gc-famille__media img { transform: scale(1.04); }
+.gc-famille__caption {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 14px;
+}
+.gc-famille__villa { font-size: 14.5px; font-weight: 700; color: var(--gc-navy); }
+/* La mention n'est pas décorative : elle dit que la scène est jouée. */
+.gc-famille__note {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a929f;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gc-lightbox { animation: none; }
+  .gc-famille__media img,
+  .gc-gallery-btn,
+  .gc-villa__gallery { transition: none !important; }
+  .gc-famille:hover .gc-famille__media img { transform: none !important; }
+}

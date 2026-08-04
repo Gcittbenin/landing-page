@@ -1,0 +1,226 @@
+{
+  "_lisezMoi": [
+    "SOURCE UNIQUE du contenu des villas. La page lit ce fichier au chargement ;",
+    "changer un prix, une description ou une photo se fait ici et nulle part ailleurs.",
+    "",
+    "AJOUTER UNE PHOTO À UNE VILLA :",
+    "  déposer le fichier dans uploads/villas/<cite>/<villa>/ puis ajouter une entrée",
+    "  dans le tableau « gallery » de cette villa. Rien d'autre à modifier.",
+    "",
+    "AJOUTER UNE PHOTO À UNE CITÉ :",
+    "  même chose dans uploads/villas/<cite>/cite/ et le « gallery » de la cité.",
+    "",
+    "REMPLACER UNE ILLUSTRATION PAR UNE VRAIE PHOTO :",
+    "  écraser le fichier, ou changer le chemin ici. Voir uploads/villas/README.md.",
+    "",
+    "RÈGLES :",
+    "  - « formValue » doit correspondre EXACTEMENT à lib/validate.js (VILLAS).",
+    "    Un test échoue si ce n'est plus le cas : le formulaire ne peut pas casser en silence.",
+    "  - Ne jamais utiliser une photo de Cœur Joie pour Béthel, ni l'inverse.",
+    "    Un test le vérifie également.",
+    "  - « srcset » est facultatif. Quand il est vide, « src » est servi tel quel.",
+    "  - « family » est une MISE EN SCÈNE ILLUSTRATIVE, jamais un vrai client.",
+    "    Les vrais témoignages vivent dans assets/temoignages.json, séparément."
+  ],
+  "version": 1,
+  "cites": [
+    {
+      "id": "coeur-joie",
+      "name": "Cité Cœur Joie",
+      "location": "Hêvié Zoungo (Kossidénou), Abomey-Calavi",
+      "blurb": "Hêvié Zoungo (Kossidénou), commune d’Abomey-Calavi. 70 villas sur un domaine de 4 hectares, à 25 min de la plage de Togbin.",
+      "badge": "70 villas · 4 hectares",
+      "anchor": "coeur-joie",
+      "gallery": [
+        {
+          "src": "uploads/Image COEUR-JOIE/HEVIE CJ .jpg",
+          "srcset": "uploads/Image COEUR-JOIE/HEVIE CJ -sm.jpg 780w, uploads/Image COEUR-JOIE/HEVIE CJ .jpg 1400w",
+          "alt": "Rangée de villas achevées à la Cité Cœur Joie",
+          "caption": "Vue d’ensemble de la cité"
+        },
+        {
+          "src": "uploads/Image COEUR-JOIE/FENOU NUIT (2).jpg",
+          "srcset": "uploads/Image COEUR-JOIE/FENOU NUIT (2)-sm.jpg 800w, uploads/Image COEUR-JOIE/FENOU NUIT (2).jpg 1280w",
+          "alt": "Villa de la Cité Cœur Joie illuminée le soir",
+          "caption": "La cité à la tombée du jour"
+        },
+        {
+          "src": "uploads/Image COEUR-JOIE/DUPLEX CJ .jpg",
+          "srcset": "uploads/Image COEUR-JOIE/DUPLEX CJ -sm.jpg 780w, uploads/Image COEUR-JOIE/DUPLEX CJ .jpg 1220w",
+          "alt": "Duplex de la Cité Cœur Joie vu depuis la rue",
+          "caption": "Voirie et duplex"
+        }
+      ],
+      "villas": [
+        {
+          "id": "fenou",
+          "name": "Villa Fenou F4",
+          "tag": "Villa F4",
+          "type": "F4",
+          "price": "49 000 000 FCFA",
+          "formValue": "Villa Fenou (F4)",
+          "description": "Une villa moderne et chaleureuse, idéale pour les familles à la recherche de confort et de fonctionnalité.",
+          "chips": ["3 chambres", "Séjour", "Cuisine", "Jardin", "2 garages"],
+          "specs": [
+            "Un (01) séjour + repas",
+            "3 chambres (avec salle d’eau + placard)",
+            "Une (01) cuisine",
+            "Une (01) toilette visiteur",
+            "Un (01) jardin",
+            "Deux (02) terrasses (entrée + arrière-cour)",
+            "Deux (02) garages pour deux véhicules",
+            "Possibilité d’avoir une dépendance"
+          ],
+          "card": {
+            "src": "uploads/Image COEUR-JOIE/FENOU HEVIEE.jpg",
+            "srcset": "uploads/Image COEUR-JOIE/FENOU HEVIEE-sm.jpg 500w, uploads/Image COEUR-JOIE/FENOU HEVIEE.jpg 900w",
+            "alt": "Villa Fenou F4 à la Cité Cœur Joie"
+          },
+          "gallery": [
+            {
+              "src": "uploads/Image COEUR-JOIE/FENOU HEVIEE.jpg",
+              "srcset": "uploads/Image COEUR-JOIE/FENOU HEVIEE-sm.jpg 500w, uploads/Image COEUR-JOIE/FENOU HEVIEE.jpg 900w",
+              "alt": "Façade de la Villa Fenou F4",
+              "caption": "Façade avant"
+            },
+            {
+              "src": "uploads/Image COEUR-JOIE/FENOU-SEJOUR.jpg",
+              "srcset": "uploads/Image COEUR-JOIE/FENOU-SEJOUR-sm.jpg 780w, uploads/Image COEUR-JOIE/FENOU-SEJOUR.jpg 1200w",
+              "alt": "Séjour de la Villa Fenou F4",
+              "caption": "Séjour"
+            },
+            {
+              "src": "uploads/Image COEUR-JOIE/FENOU NUIT (2).jpg",
+              "srcset": "uploads/Image COEUR-JOIE/FENOU NUIT (2)-sm.jpg 800w, uploads/Image COEUR-JOIE/FENOU NUIT (2).jpg 1280w",
+              "alt": "Villa Fenou F4 illuminée le soir",
+              "caption": "Vue de nuit"
+            }
+          ],
+          "family": { "src": "", "srcset": "", "alt": "" }
+        },
+        {
+          "id": "kafui",
+          "name": "Villa Kafui Duplex",
+          "tag": "Villa Duplex",
+          "type": "Duplex",
+          "price": "80 000 000 FCFA",
+          "formValue": "Villa Kafui (Duplex)",
+          "description": "Un duplex spacieux et élégant, pensé pour offrir espace, intimité et prestige à toute la famille.",
+          "chips": ["4 chambres", "2 séjours", "2 balcons", "Terrasses", "Garage"],
+          "specs": [
+            "Deux (02) séjours + repas",
+            "4 chambres (avec salle d’eau + placard)",
+            "Une (01) terrasse",
+            "Une (01) cuisine",
+            "Deux (02) toilettes",
+            "Deux (02) terrasses (entrée + arrière-cour)",
+            "Un (01) garage pour deux véhicules",
+            "Deux (02) balcons",
+            "Possibilité d’avoir une dépendance"
+          ],
+          "card": {
+            "src": "uploads/Image COEUR-JOIE/DUPLEX CJ .jpg",
+            "srcset": "uploads/Image COEUR-JOIE/DUPLEX CJ -sm.jpg 780w, uploads/Image COEUR-JOIE/DUPLEX CJ .jpg 1220w",
+            "alt": "Villa Kafui Duplex à la Cité Cœur Joie"
+          },
+          "gallery": [
+            {
+              "src": "uploads/Image COEUR-JOIE/DUPLEX CJ .jpg",
+              "srcset": "uploads/Image COEUR-JOIE/DUPLEX CJ -sm.jpg 780w, uploads/Image COEUR-JOIE/DUPLEX CJ .jpg 1220w",
+              "alt": "Façade de la Villa Kafui Duplex",
+              "caption": "Façade avant"
+            },
+            {
+              "src": "uploads/Image COEUR-JOIE/KAFUI NUIT.jpg",
+              "srcset": "uploads/Image COEUR-JOIE/KAFUI NUIT-sm.jpg 500w, uploads/Image COEUR-JOIE/KAFUI NUIT.jpg 900w",
+              "alt": "Villa Kafui Duplex illuminée le soir",
+              "caption": "Vue de nuit"
+            }
+          ],
+          "family": { "src": "", "srcset": "", "alt": "" }
+        }
+      ]
+    },
+    {
+      "id": "bethel",
+      "name": "Cité Béthel",
+      "location": "Ouèdo Somè, Abomey-Calavi",
+      "blurb": "Ouèdo Somè, commune d’Abomey-Calavi, à 6 km du carrefour Calavi-Kpota. Un domaine de 30 hectares.",
+      "badge": "+600 villas livrées et habitées",
+      "anchor": "bethel",
+      "gallery": [],
+      "villas": [
+        {
+          "id": "bethel-f4",
+          "name": "Villa Bethel F4",
+          "tag": "Villa F4",
+          "type": "F4",
+          "price": "39 000 000 FCFA",
+          "formValue": "Villa Bethel (F4)",
+          "description": "Une villa familiale chaleureuse au sein de la Cité Béthel, déjà plus de 600 fois livrée et habitée.",
+          "chips": ["3 chambres", "Séjour", "Cuisine", "Garage 2 voitures", "Dépendance"],
+          "specs": [
+            "Un (01) séjour + repas",
+            "Chambre 1 avec salle d’eau + placard",
+            "Chambre 2 avec salle d’eau + placard",
+            "Chambre 3 avec salle d’eau + placard",
+            "Une (01) cuisine",
+            "Une (01) toilette visiteur",
+            "Un (01) garage 2 voitures",
+            "Une dépendance + salle d’eau",
+            "Possibilité d’avoir une dépendance"
+          ],
+          "card": {
+            "src": "uploads/bethel-f4.png",
+            "srcset": "uploads/bethel-f4-sm.png 500w, uploads/bethel-f4.png 713w",
+            "alt": "Villa Bethel F4 à la Cité Béthel"
+          },
+          "gallery": [
+            {
+              "src": "uploads/bethel-f4.png",
+              "srcset": "uploads/bethel-f4-sm.png 500w, uploads/bethel-f4.png 713w",
+              "alt": "Villa Bethel F4 à la Cité Béthel",
+              "caption": "Perspective d’architecte"
+            }
+          ],
+          "family": { "src": "", "srcset": "", "alt": "" }
+        },
+        {
+          "id": "bethel-duplex",
+          "name": "Villa Bethel Duplex",
+          "tag": "Villa Duplex",
+          "type": "Duplex",
+          "price": "72 000 000 FCFA",
+          "formValue": "Villa Bethel (Duplex)",
+          "description": "Un duplex généreux à Béthel, avec dressing, balcons et double terrasse pour toute la famille.",
+          "chips": ["4 chambres", "Dressing", "2 balcons", "Terrasses", "Garage"],
+          "specs": [
+            "Un (01) séjour + repas",
+            "Quatre (04) chambres avec salle d’eau + placard",
+            "Une (01) cuisine",
+            "Une (01) toilette visiteur",
+            "Un (01) dressing",
+            "Une terrasse à l’entrée et à l’arrière",
+            "Un (01) garage pour deux véhicules",
+            "Deux (02) dépôts",
+            "Deux (02) balcons"
+          ],
+          "card": {
+            "src": "uploads/bethel-duplex.png",
+            "srcset": "uploads/bethel-duplex-sm.png 500w, uploads/bethel-duplex.png 706w",
+            "alt": "Villa Bethel Duplex à la Cité Béthel"
+          },
+          "gallery": [
+            {
+              "src": "uploads/bethel-duplex.png",
+              "srcset": "uploads/bethel-duplex-sm.png 500w, uploads/bethel-duplex.png 706w",
+              "alt": "Villa Bethel Duplex à la Cité Béthel",
+              "caption": "Perspective d’architecte"
+            }
+          ],
+          "family": { "src": "", "srcset": "", "alt": "" }
+        }
+      ]
+    }
+  ]
+}

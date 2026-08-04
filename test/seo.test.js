@@ -131,8 +131,17 @@ test('JSON-LD prices match the prices shown on the page', () => {
   assert.equal(byName['Villa Bethel (F4) — Cité Béthel'], '39000000');
   assert.equal(byName['Villa Bethel (Duplex) — Cité Béthel'], '72000000');
 
-  for (const price of ['49 000 000 FCFA', '80 000 000 FCFA', '39 000 000 FCFA', '72 000 000 FCFA']) {
-    assert.ok(html.includes(price), `price ${price} not visible on the page`);
+  // The visible prices now live in assets/villas.json, the single source the
+  // page reads at load. Checking the HTML for them would only re-assert that
+  // they are *not* hard-coded there — so compare against the real source.
+  const villas = JSON.parse(readFileSync(root + 'assets/villas.json', 'utf8'))
+    .cites.flatMap((c) => c.villas);
+  for (const v of villas) {
+    const digits = v.price.replace(/[^\d]/g, '');
+    assert.ok(
+      Object.values(byName).includes(digits),
+      `${v.name} is priced ${v.price} but the JSON-LD does not offer ${digits}`,
+    );
   }
 });
 
@@ -185,7 +194,13 @@ test('below-the-fold images are lazy and above-the-fold ones are not', () => {
   assert.equal(eager.length, 1, 'only the nav logo should load eagerly');
 
   // Intrinsic dimensions on every image, so nothing reflows as it loads.
-  for (const tag of imgs) {
+  //
+  // The lightbox photo is the one exception, and deliberately: it is an
+  // overlay opened on demand, it shifts no page content, and its gallery mixes
+  // portrait and landscape shots. Declaring one pair of dimensions would be
+  // wrong for most of them — `object-fit: contain` inside a sized stage is
+  // what keeps it stable instead.
+  for (const tag of imgs.filter((t) => !t.includes('gc-lightbox__img'))) {
     assert.match(tag, /width="\d+"/, `no width on ${tag.slice(0, 70)}`);
     assert.match(tag, /height="\d+"/, `no height on ${tag.slice(0, 70)}`);
   }
